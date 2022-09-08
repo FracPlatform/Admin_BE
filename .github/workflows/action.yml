@@ -1,0 +1,36 @@
+name: admin-be
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+jobs:
+  # build:
+  #   runs-on: ubuntu-latest
+
+  #   strategy:
+  #     matrix:
+  #       node-version: [16.x]
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Use Node.js ${{ matrix.node-version }}
+  #       uses: actions/setup-node@v2
+  #       with:
+  #         node-version: ${{ matrix.node-version }}
+  #     - name: Install dependencies
+  #       run: yarn install
+  #     - run: yarn run build
+  deploy:
+    name: Deploy
+    # needs: [build]
+    runs-on: self-hosted
+    steps:
+      - name: deploy
+        run: | # run with multiple script
+          cd /home/ekoios/source/Admin_BE
+          git reset --h
+          git pull origin develop
+          npm install
+          npm run build
+          pm2 restart iao-admin-be
