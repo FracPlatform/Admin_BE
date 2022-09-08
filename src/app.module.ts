@@ -8,12 +8,10 @@ import { WorkerModule } from './providers/worker/worker.module';
 import { CommonModule } from './common-service/common.module';
 import { SocketModule } from './providers/socket/socket.module';
 import { DataServicesModule } from './services';
-import { FractorModule } from './modules/fractor/fractor.module';
 import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
 import { Asset, AssetSchema } from './datalayer/model';
 import { Connection } from 'mongoose';
 import * as AutoIncrementFactory from 'mongoose-sequence';
-import { AssetTypeModule } from './modules/asset-type/asset-type.module';
 import { S3Module } from './s3/s3.module';
 
 @Module({
@@ -48,8 +46,6 @@ import { S3Module } from './s3/s3.module';
     CommonModule,
     TasksModule,
     WorkerModule,
-    FractorModule,
-    AssetTypeModule,
     S3Module,
   ],
   controllers: [AppController],
