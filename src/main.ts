@@ -35,7 +35,7 @@ async function bootstrap() {
   // Swagger
   if (process.env.NODE_ENV === 'dev') {
     app.use(
-      ['/swagger'],
+      ['/admin-swagger'],
       expressBasicAuth({
         challenge: true,
         users: {
