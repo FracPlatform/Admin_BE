@@ -1,0 +1,8 @@
+{
+  "apps": [
+    {
+      "name": "iao-fractor-be",
+      "script": "node dist/main.js"
+    }
+  ]
+}
