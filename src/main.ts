@@ -56,7 +56,7 @@ async function bootstrap() {
       },
       customSiteTitle: 'My API Docs',
     };
-    SwaggerModule.setup('swagger', app, document, customOptions);
+    SwaggerModule.setup('admin-swagger', app, document, customOptions);
   }
 
   await app.listen(process.env.PORT);
