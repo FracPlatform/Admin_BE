@@ -13,6 +13,7 @@ import { Asset, AssetSchema } from './datalayer/model';
 import { Connection } from 'mongoose';
 import * as AutoIncrementFactory from 'mongoose-sequence';
 import { S3Module } from './s3/s3.module';
+import { AssetTypeModule } from './modules/asset-type/asset-type.module';
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { S3Module } from './s3/s3.module';
           return schema;
         },
         inject: [getConnectionToken()],
-      }
+      },
     ]),
     DataServicesModule,
     ScheduleModule.forRoot(),
@@ -47,6 +48,7 @@ import { S3Module } from './s3/s3.module';
     TasksModule,
     WorkerModule,
     S3Module,
+    AssetTypeModule,
   ],
   controllers: [AppController],
 })
