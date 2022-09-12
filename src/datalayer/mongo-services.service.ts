@@ -10,6 +10,8 @@ import {
   FractorDocument,
   AssetType,
   AssetTypeDocument,
+  Admin,
+  AdminDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -18,6 +20,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   fractor: IGenericRepository<Fractor>;
   assetTypes: IGenericRepository<AssetType>;
   asset: IGenericRepository<Asset>;
+  admin: IGenericRepository<Admin>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -26,6 +29,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private AssetTypeRepository: Model<AssetTypeDocument>,
     @InjectModel(Asset.name)
     private AssetRepository: Model<AssetDocument>,
+    @InjectModel(Admin.name)
+    private AdminRepository: Model<AdminDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -35,9 +40,11 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     this.assetTypes = new MongoGenericRepository<AssetTypeDocument>(
       this.AssetTypeRepository,
     );
-
     this.asset = new MongoGenericRepository<AssetDocument>(
       this.AssetRepository,
+    );
+    this.admin = new MongoGenericRepository<AdminDocument>(
+      this.AdminRepository,
     );
   }
 }

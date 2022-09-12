@@ -1,0 +1,70 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
+const paginate = require('mongoose-paginate-v2');
+const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
+
+export type AdminDocument = Admin & Document;
+
+export enum ADMIN_ROLE {
+  BD = 1,
+  HEAD_OF_BD = 2,
+  OPERATION_ADMIN = 3,
+  SUPER_ADMIN = 4,
+}
+
+export enum ADMIN_STATUS {
+  ACTIVE = 1,
+  INACTIVE = 2,
+}
+
+@Schema({
+  timestamps: true,
+  collection: 'Admin',
+})
+export class Admin {
+  @Prop({ type: String })
+  prefix: string;
+
+  @Prop({ type: Number })
+  idcounter: number;
+
+  @Prop({ type: String })
+  email: string;
+
+  @Prop({ type: String, default: '' })
+  fullname: string;
+
+  @Prop({ type: String, default: '' })
+  description: string;
+
+  @Prop({ type: String, default: '' })
+  avatar: string;
+
+  @Prop({ type: Number, default: null })
+  networkType: number;
+
+  @Prop({ type: String, default: null })
+  walletAddress: string;
+
+  @Prop({ type: Number, default: null })
+  role: number;
+
+  @Prop({ type: Number, default: ADMIN_STATUS.ACTIVE })
+  status: number;
+
+  @Prop({ type: String })
+  referral: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
+  createBy: string;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
+  lastUpdateBy: string;
+
+  @Prop({ type: Boolean, default: false })
+  deleted: boolean;
+}
+
+export const AdminSchema = SchemaFactory.createForClass(Admin);
+AdminSchema.plugin(paginate);
+AdminSchema.plugin(aggregatePaginate);

@@ -14,6 +14,7 @@ import { Connection } from 'mongoose';
 import * as AutoIncrementFactory from 'mongoose-sequence';
 import { S3Module } from './s3/s3.module';
 import { AssetTypeModule } from './modules/asset-type/asset-type.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AssetTypeModule } from './modules/asset-type/asset-type.module';
     WorkerModule,
     S3Module,
     AssetTypeModule,
+    AuthModule,
   ],
   controllers: [AppController],
 })

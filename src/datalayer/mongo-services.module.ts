@@ -8,6 +8,8 @@ import {
   FractorSchema,
   AssetType,
   AssetTypeSchema,
+  Admin,
+  AdminSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -19,6 +21,7 @@ import * as AutoIncrementFactory from 'mongoose-sequence';
     MongooseModule.forFeature([
       { name: Fractor.name, schema: FractorSchema },
       { name: Asset.name, schema: AssetSchema },
+      { name: Admin.name, schema: AdminSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
     MongooseModule.forFeatureAsync([
@@ -28,6 +31,19 @@ import * as AutoIncrementFactory from 'mongoose-sequence';
           const schema = AssetTypeSchema;
           const AutoIncrement = AutoIncrementFactory(connection);
           schema.plugin(AutoIncrement, { inc_field: 'typeId' });
+          return schema;
+        },
+        inject: [getConnectionToken()],
+      },
+      {
+        name: Admin.name,
+        useFactory: (connection: Connection) => {
+          const AutoIncrement = AutoIncrementFactory(connection);
+          const schema = AdminSchema;
+          schema.plugin(AutoIncrement, {
+            inc_field: 'idcounter',
+            start_seq: 1,
+          });
           return schema;
         },
         inject: [getConnectionToken()],
