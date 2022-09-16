@@ -4,106 +4,105 @@ const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import * as mongoose from 'mongoose';
 import { AssetType } from './asset_type.model';
 import { CollectionItem } from './collection-item.model';
-import { Fractor } from './fractor.model';
+import { SpecificationField } from './asset_type.model';
+import { DocumentItem, DocumentItemSchema } from './document-item.model';
+import { PREFIX_ID } from 'src/common/constants';
 
 export type AssetDocument = Asset & Document;
 
 export enum OWNERSHIP_PRIVACY {
-    PUBLIC = 1,
-    PRIVATE = 2,
+  PUBLIC = 1,
+  PRIVATE = 2,
 }
 
 export enum ASSET_STATUS {
-    OPEN = 1,
-    IN_REVIEW = 2,
-    IAO = 3,
-    EXCHANGE = 4,
-    SOLD_OUT = 5,
+  OPEN = 1,
+  IN_REVIEW = 2,
+  IAO = 3,
+  EXCHANGE = 4,
+  SOLD_OUT = 5,
 }
 
 export enum NETWORK {
-    ETH = 'eth',
-    BSC = 'bsc',
-    OTHER = 'other'
+  ETH = 'eth',
+  BSC = 'bsc',
+  OTHER = 'other',
 }
 
-
 export enum MEDIA_TYPE {
-    VIDEO = 1,
-    AUDIO = 2,
-    PHOTO = 3,
+  VIDEO = 1,
+  AUDIO = 2,
+  PHOTO = 3,
 }
 
 export const MAX_PHOTOS = 5;
 export const MIN_PHOTOS = 1;
 
-export enum CATEGORY_TYPE {
-    PHYSICAL = 'physical',
-    VIRTUAL = 'virtual',
-}
-
 export const ITEM_PREFIX = 'ITEM';
 
 export class Media {
-    url: string;
-    type: number;
+  url: string;
+  type: number;
+}
+
+export class Specifications extends SpecificationField {
+  value: string;
 }
 
 @Schema({
-    timestamps: true,
-    collection: 'Asset',
+  timestamps: true,
+  collection: 'Asset',
 })
 export class Asset {
-    @Prop({ required: true, type: String })
-    name: string;
+  @Prop({ required: true, type: String })
+  name: string;
 
-    @Prop({ required: true, type: String })
-    category: string;
+  @Prop({ required: true, type: String })
+  category: string;
 
-    @Prop({ type: Boolean, default: false })
-    isMintNFT: boolean;
+  @Prop({ type: Boolean, default: false })
+  isMintNFT: boolean;
 
-    @Prop({ type: String })
-    network: string;
+  @Prop({ type: String })
+  network: string;
 
-    @Prop({ type: Number, default: OWNERSHIP_PRIVACY.PUBLIC })
-    ownershipPrivacy: number;
+  @Prop({ type: Number, default: OWNERSHIP_PRIVACY.PUBLIC })
+  ownershipPrivacy: number;
 
-    @Prop({ type: String })
-    description: string;
+  @Prop({ type: String })
+  description: string;
 
-    @Prop({ type: Array, default: [] })
-    specifications: [];
+  @Prop({ type: Array, default: [] })
+  specifications: Specifications[];
 
-    @Prop({ type: Number, default: ASSET_STATUS.OPEN })
-    status?: number;
+  @Prop({ type: Number, default: ASSET_STATUS.OPEN })
+  status?: number;
 
-    @Prop({ type: Array })
-    media: Media[];
+  @Prop({ type: Array })
+  media: Media[];
 
-    @Prop({ type: String })
-    previewUrl: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: AssetType.name })
+  typeId: string;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: AssetType.name })
-    typeId: string;
+  @Prop({ type: String, default: PREFIX_ID.ASSET })
+  itemId?: string;
 
-    @Prop({ unique: true })
-    itemId?: number;
+  @Prop({ type: String })
+  ownerId: string;
 
-    @Prop({ type: String, default: ITEM_PREFIX })
-    itemPrefix?: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionItem.name })
+  collectionId: string;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Fractor.name })
-    ownerId: string;
+  @Prop({ type: [DocumentItemSchema], default: [] })
+  documents: DocumentItem[];
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionItem.name })
-    collectionId: string;
+  @Prop({ type: Boolean, default: false })
+  deleted: boolean;
 
-    @Prop({ type: Boolean, default: false })
-    deleted: boolean;
+  @Prop({ type: Boolean, default: false })
+  inDraft?: boolean;
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
 AssetSchema.plugin(paginate);
 AssetSchema.plugin(aggregatePaginate);
-

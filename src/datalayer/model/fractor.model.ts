@@ -10,6 +10,13 @@ export enum AccountStatus {
   DEACTIVE = 'deactive',
 }
 
+export enum SocialType {
+  FB = 'facebook',
+  TELEGRAM = 'telegram',
+  DISCORD = 'discord',
+  TWITTER = 'twitter',
+}
+
 export class SocialLink {
   @Prop({ type: String })
   type: string;
@@ -64,9 +71,16 @@ export class Fractor {
 
   @Prop({ type: [CollectionItemSchema] })
   collections: CollectionItem[];
+
+  @Prop({ type: Boolean, default: false })
+  isBlocked: boolean;
+
+  @Prop({ type: String })
+  fractorId?: string;
 }
 
 export const FractorSchema = SchemaFactory.createForClass(Fractor);
 FractorSchema.plugin(paginate);
 FractorSchema.plugin(aggregatePaginate);
 FractorSchema.index({ email: 1 });
+

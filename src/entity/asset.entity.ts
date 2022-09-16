@@ -1,4 +1,6 @@
 import { Media } from '../datalayer/model/asset.model';
+import { Specifications } from 'src/datalayer/model';
+import { DocumentItem } from 'src/datalayer/model/document-item.model';
 export class AssetEntity {
     name: string;
     media: Media[];
@@ -11,18 +13,16 @@ export class AssetEntity {
     ownerId: string;
     collectionId: string;
     typeId: string;
-    specifications: [];
+    specifications: Specifications[];
+    documents: DocumentItem[];
     deleted: boolean;
+    itemId?: string;
 }
 
 export class AssetForOwnerEntity {
     _id: string;
     name: string;
-    photos: [];
-    video: {
-        url: string,
-        type: string
-    }
+    media: Media[];
     category: string;
     isMintNFT: boolean;
     network: string;
@@ -36,4 +36,7 @@ export class AssetForOwnerEntity {
     status: number;
     owner: object;
     assetTypeName: string;
+    documents: DocumentItem[];
+    createdAt: Date;
+    updatedAt: Date;
 }
