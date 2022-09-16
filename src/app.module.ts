@@ -9,6 +9,7 @@ import { CommonModule } from './common-service/common.module';
 import { SocketModule } from './providers/socket/socket.module';
 import { DataServicesModule } from './services';
 import { S3Module } from './s3/s3.module';
+import { AssetTypeModule } from './modules/asset-type/asset-type.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { S3Module } from './s3/s3.module';
     TasksModule,
     WorkerModule,
     S3Module,
+    AssetTypeModule,
   ],
   controllers: [AppController],
 })
