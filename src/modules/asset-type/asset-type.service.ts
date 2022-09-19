@@ -13,6 +13,7 @@ import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
 import { Utils } from 'src/common/utils';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { EditSpecificationDto } from './dto/edit-specification.dto';
 
 @Injectable()
 export class AssetTypeService {
@@ -38,7 +39,7 @@ export class AssetTypeService {
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
-    else sort['$sort']['createdAt'] = -1;
+    else sort['$sort']['name.en'] = 1;
     if (limit !== -1) dataPagination.push({ $limit: limit });
     const listAssetTypesAggregate = await this.dataService.assetTypes.aggregate(
       [
@@ -123,6 +124,34 @@ export class AssetTypeService {
         },
       },
     );
+    return { success: true };
+  }
+
+  async editSpecification(
+    params: GetAssetTypeByIdDto,
+    editedSpecification: EditSpecificationDto,
+  ) {
+    console.log(editedSpecification.newSpecification.label);
+
+    const res = await this.dataService.assetTypes.updateOne(
+      {
+        assetTypeId: params.id,
+        'specifications._id': editedSpecification.id,
+      },
+      {
+        $set: {
+          'specifications.$.label': editedSpecification.newSpecification.label,
+          'specifications.$.description':
+            editedSpecification.newSpecification.description,
+          'specifications.$.required':
+            editedSpecification.newSpecification.required,
+          'specifications.$.placeholder':
+            editedSpecification.newSpecification.placeholder,
+        },
+      },
+    );
+    console.log(res);
+
     return { success: true };
   }
 }
