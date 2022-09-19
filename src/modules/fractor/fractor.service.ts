@@ -18,7 +18,16 @@ export class FractorService {
     });
     if (!fractor) throw ApiError('', 'Fractor not exists');
 
-    await this._validateDataWhenUpdateFractor(fractor, data);
+    const validation = await this._validateDataWhenUpdateFractor(fractor, data);
+    if (!validation.valid) throw ApiError('', validation.message);
+
+    await this.dataServices.fractor.updateOne(
+      { fractorId: fractorId },
+      {
+        $set: data,
+      },
+    );
+    return { success: true };
   }
 
   async getFractorById(fractorId: string) {
@@ -29,21 +38,21 @@ export class FractorService {
             fractorId: fractorId,
           },
         },
-        // {
-        //   $lookup: {
-        //     from: 'Fractor',
-        //     let: { items: '$fractor' },
-        //     pipeline: [
-        //       { $project: { _id: 1, name: 1, previewUrl: 1 } },
-        //     ],
-        //     as: 'items',
-        //   },
-        // },
+        {
+          $lookup: {
+            from: 'Admin',
+            localField: 'assignedBD',
+            foreignField: 'adminId',
+            pipeline: [{ $project: { _id: 1, fullname: 1, adminId: 1 } }],
+            as: 'assignedBDInfor',
+          },
+        },
         {
           $project: {
             password: 0,
             verificationCode: 0,
             verificationCodeExpireTime: 0,
+            assignedBDInfor: { $arrayElemAt: ['$assignedBDInfor', 0] },
           },
         },
       ],
@@ -88,6 +97,7 @@ export class FractorService {
     }
 
     const bdIds = await this._filterAdminIdByName(filter.textSearch.trim());
+
     if (bdIds.length > 0) {
       match.assignedBD = {
         $in: bdIds,
@@ -146,7 +156,7 @@ export class FractorService {
   }
 
   private async _filterAdminIdByName(name: string): Promise<string[]> {
-    const data = await this.dataServices.fractor.aggregate(
+    const data = await this.dataServices.admin.aggregate(
       [
         {
           $match: {
@@ -158,7 +168,7 @@ export class FractorService {
         },
         {
           $project: {
-            fractorId: 1,
+            adminId: 1,
             _id: 0,
           },
         },
@@ -168,13 +178,25 @@ export class FractorService {
       },
     );
     const ids = [];
-    data.forEach((e: { fractorId: string }) => {
-      ids.push(e.fractorId);
+    data.forEach((e: { adminId: string }) => {
+      ids.push(e.adminId);
     });
     return ids;
   }
 
-  private _validateDataWhenUpdateFractor(fractor: Fractor, data: UpdateFractorDto) {
-    console.log(fractor);
+  private _validateDataWhenUpdateFractor(
+    fractor: Fractor,
+    data: UpdateFractorDto,
+  ): { valid: boolean; message: string } {
+    if (!fractor.isBlocked && data.deactivationComment !== '') {
+      return {
+        valid: false,
+        message: "Can't edit deactivation comment of fractor is active",
+      };
+    }
+    return {
+      valid: true,
+      message: '',
+    };
   }
 }
