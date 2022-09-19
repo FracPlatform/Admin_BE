@@ -14,6 +14,39 @@ export class IaoRequestService {
   constructor(private readonly dataService: IDataServices) {}
   async findAll(filter: FilterIAORequestDto) {
     const query = {};
+
+    if (filter.keyword) {
+      let fractors: any = await this.dataService.fractor.findMany(
+        {
+          $or: [
+            {
+              fullname: {
+                $regex: filter.keyword.trim(),
+                $options: 'i',
+              },
+            },
+            {
+              fractorId: {
+                $regex: filter.keyword.trim(),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        { fractorId: 1 },
+      );
+      fractors = fractors.map((f) => f.fractorId);
+      query['$or'] = [
+        {
+          iaoId: {
+            $regex: filter.keyword.trim(),
+            $options: 'i',
+          },
+        },
+        { ownerId: { $in: fractors } },
+      ];
+    }
+
     if (filter.status) query['status'] = filter.status;
     if (filter.type) query['type'] = filter.type;
 
@@ -115,33 +148,6 @@ export class IaoRequestService {
         },
       },
     );
-
-    if (filter.keyword) {
-      agg.push({
-        $match: {
-          $or: [
-            {
-              'fractor.fullname': {
-                $regex: filter.keyword.trim(),
-                $options: 'i',
-              },
-            },
-            {
-              ownerId: {
-                $regex: filter.keyword.trim(),
-                $options: 'i',
-              },
-            },
-            {
-              iaoId: {
-                $regex: filter.keyword.trim(),
-                $options: 'i',
-              },
-            },
-          ],
-        },
-      });
-    }
 
     agg.push(
       {

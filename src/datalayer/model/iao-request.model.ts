@@ -6,7 +6,6 @@ export class ApprovedBy {
   adminId: string;
   status: string;
   createdAt: Date;
-  updatedAt: Date;
 }
 
 export enum IAO_REQUEST_TYPE {
