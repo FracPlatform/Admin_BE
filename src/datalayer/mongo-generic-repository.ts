@@ -34,8 +34,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.updateMany(filter, update, options);
   }
 
-  findOne(conditions: object, options?: object): Promise<T> {
-    return this._repository.findOne(conditions, options).exec();
+  findOne(conditions: object, projection?: object, options?: object): Promise<T> {
+    return this._repository.findOne(conditions, projection, options).exec();
   }
 
   findOneAndUpdate(conditions: object, update: object, options: object) {

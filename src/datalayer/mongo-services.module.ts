@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule, getConnectionToken } from '@nestjs/mongoose';
+import { MongooseModule } from '@nestjs/mongoose';
 import { IDataServices } from '../core/abstracts/data-services.abstract';
 import {
   Asset,
