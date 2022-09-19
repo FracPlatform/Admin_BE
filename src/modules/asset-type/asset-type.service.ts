@@ -131,9 +131,7 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     editedSpecification: EditSpecificationDto,
   ) {
-    console.log(editedSpecification.newSpecification.label);
-
-    const res = await this.dataService.assetTypes.updateOne(
+    await this.dataService.assetTypes.updateOne(
       {
         assetTypeId: params.id,
         'specifications._id': editedSpecification.id,
@@ -150,8 +148,6 @@ export class AssetTypeService {
         },
       },
     );
-    console.log(res);
-
     return { success: true };
   }
 }
