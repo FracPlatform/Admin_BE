@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_LIMIT, DEFAULT_OFFET } from 'src/common/constants';
+import { DEFAULT_LIMIT, DEFAULT_OFFET, PREFIX_ID } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
@@ -10,10 +10,16 @@ import {
 import { get } from 'lodash';
 import { AddSpecificationDto } from './dto/add-specifications.dto';
 import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
+import { Utils } from 'src/common/utils';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 @Injectable()
 export class AssetTypeService {
-  constructor(private readonly dataService: IDataServices) {}
+  constructor(
+    private readonly dataService: IDataServices,
+    @InjectConnection() private readonly connection: Connection,
+  ) {}
 
   async getListAssetType({
     category,
@@ -26,34 +32,22 @@ export class AssetTypeService {
   }: GetListAssetTypeDto) {
     const where = { isActive: true };
     const sort = { $sort: {} };
+    const dataPagination: any[] = [{ $skip: offset }];
     if (category) where['category'] = category;
     if (keyword) where['name.en'] = { $regex: keyword, $options: 'i' };
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
     else sort['$sort']['createdAt'] = -1;
+    if (limit !== -1) dataPagination.push({ $limit: limit });
     const listAssetTypesAggregate = await this.dataService.assetTypes.aggregate(
       [
         { $match: where },
-        {
-          $project: {
-            assetTypeId: {
-              $concat: ['$prefix', '-', { $toString: '$typeId' }],
-            },
-            name: 1,
-            category: 1,
-            isActive: 1,
-            borderColor: 1,
-            logoImage: 1,
-            description: 1,
-            specifications: 1,
-          },
-        },
         sort,
         {
           $facet: {
             count: [{ $count: 'count' }],
-            data: [{ $skip: offset }, limit && { $limit: limit }],
+            data: dataPagination,
           },
         },
       ],
@@ -70,25 +64,44 @@ export class AssetTypeService {
   }
 
   async getAssetTypeById(params: GetAssetTypeByIdDto) {
-    const counter = parseInt(params.id.split('-')[1]);
     const assetType = await this.dataService.assetTypes.findOne({
-      typeId: counter,
+      assetTypeId: params.id,
     });
     return assetType;
   }
 
   async createAssetType(createAssetTypeBody: CreateAssetTypeDto) {
-    await this.dataService.assetTypes.create(createAssetTypeBody);
-    return { success: true };
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      const assetTypeId = await Utils.getNextPrefixId(
+        this.dataService.counterId,
+        PREFIX_ID.ASSET_TYPE,
+        session,
+      );
+      await this.dataService.assetTypes.create(
+        {
+          ...createAssetTypeBody,
+          assetTypeId,
+        },
+        { session },
+      );
+      await session.commitTransaction();
+      return { success: true };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   async updateAssetType(
     params: GetAssetTypeByIdDto,
     newAssetTypeData: EditAssetTypeDto,
   ) {
-    const counter = parseInt(params.id.split('-')[1]);
     await this.dataService.assetTypes.updateOne(
-      { typeId: counter },
+      { assetTypeId: params.id },
       {
         $set: newAssetTypeData,
       },
@@ -100,10 +113,9 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     newSpecifications: AddSpecificationDto,
   ) {
-    const counter = parseInt(params.id.split('-')[1]);
     await this.dataService.assetTypes.updateOne(
       {
-        typeId: counter,
+        assetTypeId: params.id,
       },
       {
         $push: {
