@@ -23,6 +23,7 @@ import 'dotenv/config';
     MongooseModule.forFeature([
       { name: Fractor.name, schema: FractorSchema },
       { name: Asset.name, schema: AssetSchema },
+      { name: AssetType.name, schema: AssetTypeSchema},
       { name: Admin.name, schema: AdminSchema },
       { name: IAORequest.name, schema: IAORequestSchema },
       { name: CounterId.name, schema: CounterIdSchema },
