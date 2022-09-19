@@ -17,6 +17,8 @@ export class FractorService {
       fractorId: fractorId,
     });
     if (!fractor) throw ApiError('', 'Fractor not exists');
+
+    await this._validateDataWhenUpdateFractor(fractor, data);
   }
 
   async getFractorById(fractorId: string) {
@@ -173,6 +175,6 @@ export class FractorService {
   }
 
   private _validateDataWhenUpdateFractor(fractor: Fractor, data: UpdateFractorDto) {
-
+    console.log(fractor);
   }
 }
