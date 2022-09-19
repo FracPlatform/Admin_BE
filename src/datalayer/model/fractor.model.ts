@@ -77,6 +77,27 @@ export class Fractor {
 
   @Prop({ type: String })
   fractorId?: string;
+
+  @Prop({ type: String })
+  assignedBD: string;
+
+  @Prop({ type: Number, default: null })
+  iaoFeeRate: number;
+
+  @Prop({ type: Number, default: null })
+  tradingFeeProfit: number;
+
+  @Prop({ type: String })
+  lastUpdatedBy: string;
+
+  @Prop({ type: String })
+  deactivatedBy: string;
+
+  @Prop({ type: Date, default: null })
+  deactivetedOn: Date;
+
+  @Prop({ type: String })
+  deactivationComment: string;
 }
 
 export const FractorSchema = SchemaFactory.createForClass(Fractor);

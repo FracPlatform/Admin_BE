@@ -25,6 +25,13 @@ export class FractorEntity {
   referBy: string;
   collections: CollectionItem[];
   isBlocked: boolean;
+  assignedBD: string;
+  iaoFeeRate: number;
+  tradingFeeProfit: number
+  lastUpdatedBy: string;
+  deactivatedBy: string;
+  deactivetedOn: Date;
+  deactivationComment: string;
 }
 
 export class Profile {
