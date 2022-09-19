@@ -13,7 +13,7 @@ export abstract class IGenericRepository<T> {
 
   abstract updateMany(filter: object, update: object, options?: object);
 
-  abstract findOne(conditions: object, options?: object): Promise<T>;
+  abstract findOne(conditions: object, projection?: object, options?: object): Promise<T>;
 
   abstract findOneAndUpdate(
     conditions: object,

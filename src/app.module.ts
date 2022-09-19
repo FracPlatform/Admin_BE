@@ -10,6 +10,7 @@ import { SocketModule } from './providers/socket/socket.module';
 import { DataServicesModule } from './services';
 import { S3Module } from './s3/s3.module';
 import { AssetTypeModule } from './modules/asset-type/asset-type.module';
+import { FractorModule } from './modules/fractor/fractor.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { AssetTypeModule } from './modules/asset-type/asset-type.module';
     WorkerModule,
     S3Module,
     AssetTypeModule,
+    FractorModule,
   ],
   controllers: [AppController],
 })

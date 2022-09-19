@@ -322,4 +322,8 @@ export class Utils {
     );
     return `${prefix}-${res.sequenceValue}`;
   }
+
+  public static escapeRegex(string) {
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  }
 }
