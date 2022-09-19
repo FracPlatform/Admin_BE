@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
@@ -7,6 +7,7 @@ import { AssetTypeService } from './asset-type.service';
 import { AddSpecificationDto } from './dto/add-specifications.dto';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
+import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
 import { GetListAssetTypeDto } from './dto/get-list-asset-type.dto';
 
@@ -16,6 +17,9 @@ export class AssetTypeController {
   constructor(private readonly assetTypeService: AssetTypeService) {}
 
   @Get()
+  @ApiOperation({
+    summary: 'Get list Asset type',
+  })
   async getListAssetTypes(@Query() queries: GetListAssetTypeDto) {
     try {
       const responseData = await this.assetTypeService.getListAssetType(
@@ -28,6 +32,7 @@ export class AssetTypeController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get Asset type by assetTypeId' })
   async getAssetTypeById(@Param() params: GetAssetTypeByIdDto) {
     try {
       const responseData = await this.assetTypeService.getAssetTypeById(params);
@@ -38,6 +43,7 @@ export class AssetTypeController {
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create asset type' })
   async createAssetType(@Body() createAssetTypeBody: CreateAssetTypeDto) {
     try {
       const responseData = await this.assetTypeService.createAssetType(
@@ -50,6 +56,7 @@ export class AssetTypeController {
   }
 
   @Put('edit/:id')
+  @ApiOperation({ summary: 'Edit asset type' })
   async updateAssetType(
     @Param() params: GetAssetTypeByIdDto,
     @Body() newAssetTypeData: EditAssetTypeDto,
@@ -66,6 +73,7 @@ export class AssetTypeController {
   }
 
   @Put('add-specifications/:id')
+  @ApiOperation({ summary: 'Add specification field' })
   async addSpecifications(
     @Param() params: GetAssetTypeByIdDto,
     @Body() newSpecifications: AddSpecificationDto,
@@ -74,6 +82,23 @@ export class AssetTypeController {
       const responseData = await this.assetTypeService.addSpecifications(
         params,
         newSpecifications,
+      );
+      return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
+  @Put('edit-specification/:id')
+  @ApiOperation({ summary: 'Edit one specification' })
+  async editSpecification(
+    @Param() params: GetAssetTypeByIdDto,
+    @Body() editedSpecification: EditSpecificationDto,
+  ) {
+    try {
+      const responseData = await this.assetTypeService.editSpecification(
+        params,
+        editedSpecification,
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
