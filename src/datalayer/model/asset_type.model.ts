@@ -39,8 +39,8 @@ export const SpecificationFieldSchema =
 
 @Schema({ collection: 'AssetType', timestamps: true })
 export class AssetType {
-  @Prop({ type: String, default: 'ATYPE', required: false })
-  prefix?: string;
+  @Prop({ type: String })
+  assetTypeId: string;
 
   @Prop({ required: true, type: String })
   category: CategoryType;
