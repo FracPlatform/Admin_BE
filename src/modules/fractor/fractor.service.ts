@@ -4,10 +4,20 @@ import { IDataServices } from '../../core/abstracts/data-services.abstract';
 import { FilterFractorDto } from './dto/filter-fractor.dto';
 import { get } from 'lodash';
 import { ListDocument } from '../../common/common-type';
+import { UpdateFractorDto } from './dto/update-fractor.dto';
+import { ApiError } from '../../common/api';
+import { Fractor } from '../../datalayer/model';
 
 @Injectable()
 export class FractorService {
   constructor(private readonly dataServices: IDataServices) {}
+
+  async editFractorById(fractorId: string, data: UpdateFractorDto) {
+    const fractor = await this.dataServices.fractor.findOne({
+      fractorId: fractorId,
+    });
+    if (!fractor) throw ApiError('', 'Fractor not exists');
+  }
 
   async getFractorById(fractorId: string) {
     const dataQuery = await this.dataServices.fractor.aggregate(
@@ -160,5 +170,9 @@ export class FractorService {
       ids.push(e.fractorId);
     });
     return ids;
+  }
+
+  private _validateDataWhenUpdateFractor(fractor: Fractor, data: UpdateFractorDto) {
+
   }
 }
