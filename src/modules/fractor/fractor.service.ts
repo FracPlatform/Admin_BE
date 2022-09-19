@@ -66,6 +66,14 @@ export class FractorService {
   async filterFractor(filter: FilterFractorDto) {
     let match: Record<string, any> = {};
     if (filter.textSearch) {
+      const bdIds = await this._filterAdminIdByName(filter.textSearch.trim());
+
+      if (bdIds.length > 0) {
+        match.assignedBD = {
+          $in: bdIds,
+        };
+      }
+
       match = {
         $or: [
           {
@@ -93,14 +101,6 @@ export class FractorService {
             },
           },
         ],
-      };
-    }
-
-    const bdIds = await this._filterAdminIdByName(filter.textSearch.trim());
-
-    if (bdIds.length > 0) {
-      match.assignedBD = {
-        $in: bdIds,
       };
     }
 
