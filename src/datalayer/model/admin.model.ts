@@ -17,12 +17,6 @@ export enum ADMIN_STATUS {
 })
 export class Admin {
   @Prop({ type: String })
-  prefix: string;
-
-  @Prop({ type: Number })
-  idcounter: number;
-
-  @Prop({ type: String })
   email: string;
 
   @Prop({ type: String, default: '' })
