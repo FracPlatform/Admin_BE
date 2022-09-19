@@ -5,13 +5,15 @@ export abstract class IGenericRepository<T> {
 
   abstract getById(id: string);
 
-  abstract create(item: T): Promise<T>;
+  abstract create(item: T, options?: object);
 
   abstract updateById(id: string, item: T);
 
   abstract updateOne(filter: object, update: object, options?: object);
 
-  abstract findOne(conditions: object): Promise<T>;
+  abstract updateMany(filter: object, update: object, options?: object);
+
+  abstract findOne(conditions: object, options?: object): Promise<T>;
 
   abstract findOneAndUpdate(
     conditions: object,

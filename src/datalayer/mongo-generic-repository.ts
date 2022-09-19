@@ -18,8 +18,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.findById(id).populate(this._populateOnFind).exec();
   }
 
-  create(item: T): Promise<T> {
-    return this._repository.create(item);
+  create(item: T, options?: object) {
+    return this._repository.create([item], options);
   }
 
   updateById(id: string, item: T) {
@@ -30,8 +30,12 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.updateOne(filter, update, options);
   }
 
-  findOne(conditions: object): Promise<T> {
-    return this._repository.findOne(conditions).exec();
+  updateMany(filter: object, update: object, options?: object) {
+    return this._repository.updateMany(filter, update, options);
+  }
+
+  findOne(conditions: object, options?: object): Promise<T> {
+    return this._repository.findOne(conditions, options).exec();
   }
 
   findOneAndUpdate(conditions: object, update: object, options: object) {
@@ -45,8 +49,4 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   aggregate(pipeline: PipelineStage[], options?: object) {
     return this._repository.aggregate(pipeline, options);
   }
-
-  // aggregatePaginate(aggregate: Aggregate<any[]>, options: object) {
-  //   return this._repository.a
-  // };
 }

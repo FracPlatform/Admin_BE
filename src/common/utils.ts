@@ -8,6 +8,8 @@ import { ErrorCode } from './constants';
 import { ApiError } from './api';
 import { AwsUtils } from './aws.util';
 import mongoose from 'mongoose';
+import { IGenericRepository } from '../core/abstracts/generic-repository.abstract';
+import { CounterId } from '../datalayer/model';
 const jwt = require('jsonwebtoken');
 const { URL, parse } = require('url');
 export class Utils {
@@ -298,7 +300,9 @@ export class Utils {
       const parsed = parse(s);
       return protocols
         ? parsed.protocol
-          ? protocols.map(x => `${x.toLowerCase()}:`).includes(parsed.protocol)
+          ? protocols
+              .map((x) => `${x.toLowerCase()}:`)
+              .includes(parsed.protocol)
           : false
         : true;
     } catch (err) {
@@ -306,4 +310,16 @@ export class Utils {
     }
   };
 
+  public static async getNextPrefixId(
+    counterRepository: IGenericRepository<CounterId>,
+    prefix,
+    session,
+  ) {
+    const res = await counterRepository.findOneAndUpdate(
+      { _id: prefix },
+      { $inc: { sequenceValue: 1 } },
+      { new: true, session: session },
+    );
+    return `${prefix}-${res.sequenceValue}`;
+  }
 }

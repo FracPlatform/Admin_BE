@@ -10,6 +10,10 @@ import {
   AssetTypeSchema,
   Admin,
   AdminSchema,
+  IAORequest,
+  IAORequestSchema,
+  CounterId,
+  CounterIdSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -22,6 +26,8 @@ import * as AutoIncrementFactory from 'mongoose-sequence';
       { name: Fractor.name, schema: FractorSchema },
       { name: Asset.name, schema: AssetSchema },
       { name: Admin.name, schema: AdminSchema },
+      { name: IAORequest.name, schema: IAORequestSchema },
+      { name: CounterId.name, schema: CounterIdSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
     MongooseModule.forFeatureAsync([

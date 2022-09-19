@@ -8,31 +8,13 @@ import { WorkerModule } from './providers/worker/worker.module';
 import { CommonModule } from './common-service/common.module';
 import { SocketModule } from './providers/socket/socket.module';
 import { DataServicesModule } from './services';
-import { getConnectionToken, MongooseModule } from '@nestjs/mongoose';
-import { Asset, AssetSchema } from './datalayer/model';
-import { Connection } from 'mongoose';
-import * as AutoIncrementFactory from 'mongoose-sequence';
 import { S3Module } from './s3/s3.module';
 import { AssetTypeModule } from './modules/asset-type/asset-type.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { IaoRequestModule } from './modules/iao-request/iao-request.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeatureAsync([
-      {
-        name: Asset.name,
-        useFactory: (connection: Connection) => {
-          const AutoIncrement = AutoIncrementFactory(connection);
-          const schema = AssetSchema;
-          schema.plugin(AutoIncrement, {
-            inc_field: 'itemId',
-            start_seq: 1,
-          });
-          return schema;
-        },
-        inject: [getConnectionToken()],
-      },
-    ]),
     DataServicesModule,
     ScheduleModule.forRoot(),
     CacheModule.register<RedisClientOptions>({
@@ -50,7 +32,7 @@ import { AuthModule } from './modules/auth/auth.module';
     WorkerModule,
     S3Module,
     AssetTypeModule,
-    AuthModule,
+    IaoRequestModule,
   ],
   controllers: [AppController],
 })

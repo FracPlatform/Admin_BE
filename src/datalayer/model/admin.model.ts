@@ -1,16 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { PREFIX_ID } from 'src/common/constants';
 const paginate = require('mongoose-paginate-v2');
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type AdminDocument = Admin & Document;
-
-export enum ADMIN_ROLE {
-  BD = 1,
-  HEAD_OF_BD = 2,
-  OPERATION_ADMIN = 3,
-  SUPER_ADMIN = 4,
-}
 
 export enum ADMIN_STATUS {
   ACTIVE = 1,
@@ -46,9 +40,6 @@ export class Admin {
   @Prop({ type: String, default: null })
   walletAddress: string;
 
-  @Prop({ type: Number, default: null })
-  role: number;
-
   @Prop({ type: Number, default: ADMIN_STATUS.ACTIVE })
   status: number;
 
@@ -60,6 +51,9 @@ export class Admin {
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
   lastUpdateBy: string;
+
+  @Prop({ type: String, default: PREFIX_ID.ADMIN })
+  adminId?: string;
 
   @Prop({ type: Boolean, default: false })
   deleted: boolean;

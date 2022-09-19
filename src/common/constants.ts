@@ -8,7 +8,7 @@ export const ErrorCode = {
   INVALID_DATA: 'E15',
   NO_DATA_EXISTS: 'E14',
   ALREADY_COMPLETED: 'already completed',
-  MIN_PHOTOS:'E14',
+  MIN_PHOTOS: 'E14',
 };
 export const Contract = {
   EVENT: {
@@ -65,3 +65,11 @@ export const STRONG_PASSWORD_REGEX =
 export const DEFAULT_OFFET = 0;
 
 export const DEFAULT_LIMIT = 10;
+
+export enum PREFIX_ID {
+  FRACTOR = 'F',
+  ADMIN = 'A',
+  ASSET = 'ITEM',
+  IAO_REQUEST = 'IAO-REQUEST',
+  ASSET_TYPE = 'ATYPE',
+}
