@@ -38,7 +38,7 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.findOne(conditions, projection, options).exec();
   }
 
-  findOneAndUpdate(conditions: object, update: object, options: object) {
+  findOneAndUpdate(conditions: object, update: object, options?: object) {
     return this._repository.findOneAndUpdate(conditions, update, options);
   }
 

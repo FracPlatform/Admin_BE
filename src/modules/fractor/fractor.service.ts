@@ -8,6 +8,7 @@ import { UpdateFractorDto } from './dto/update-fractor.dto';
 import { ApiError } from '../../common/api';
 import { Admin, Fractor } from '../../datalayer/model';
 import { Role } from '../auth/role.enum';
+import { DeactiveDto } from './dto/active-deactive-fractor.dto';
 
 @Injectable()
 export class FractorService {
@@ -173,6 +174,45 @@ export class FractorService {
       totalDocs: count,
       docs: data || [],
     } as ListDocument;
+  }
+
+  async deactiveFractor(admin: Admin, fractorId: string, data: DeactiveDto) {
+    const fractor = await this.dataServices.fractor.findOne({
+      fractorId: fractorId,
+    });
+    if (!fractor) throw ApiError('', 'Fractor not exists');
+
+    const updateStatus = await this.dataServices.fractor.findOneAndUpdate(
+      { fractorId: fractorId, updatedAt: fractor['updatedAt'] },
+      {
+        isBlocked: true,
+        lastUpdatedBy: admin.adminId,
+        deactivationComment: data.deactivationComment,
+        deactivatedBy: admin.adminId,
+        deactivetedOn: new Date(),
+      },
+    );
+    if (!updateStatus) {
+      throw ApiError('', 'Fractor already deactive');
+    }
+  }
+
+  async activeFractor(admin: Admin, fractorId: string) {
+    const fractor = await this.dataServices.fractor.findOne({
+      fractorId: fractorId,
+    });
+    if (!fractor) throw ApiError('', 'Fractor not exists');
+
+    const updateStatus = await this.dataServices.fractor.findOneAndUpdate(
+      { fractorId: fractorId, updatedAt: fractor['updatedAt'] },
+      {
+        isBlocked: false,
+        lastUpdatedBy: admin.adminId,
+      },
+    );
+    if (!updateStatus) {
+      throw ApiError('', 'Fractor already active');
+    }
   }
 
   private async _filterAdminIdByName(name: string): Promise<string[]> {
