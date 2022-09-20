@@ -32,6 +32,16 @@ export class FractorService {
       lastUpdatedBy: admin.adminId,
     };
 
+    // set default value of fee if blank
+    if (admin.role === Role.OWNER || admin.role === Role.SuperAdmin) {
+      if (!Object.keys(data).includes('iaoFeeRate')) {
+        updateFractorData['iaoFeeRate'] = 0;
+      }
+      if (!Object.keys(data).includes('tradingFeeProfit')) {
+        updateFractorData['tradingFeeProfit'] = 0;
+      }
+    }
+
     await this.dataServices.fractor.updateOne(
       { fractorId: fractorId },
       {
@@ -207,11 +217,38 @@ export class FractorService {
         "Can't edit deactivation comment of fractor is active",
       );
     }
+
+    if (
+      fractor.isBlocked &&
+      !Object.keys(data).includes('deactivationComment')
+    ) {
+      throw ApiError('', 'deactivationComment is require');
+    }
+
+    if (Object.keys(data).includes('assignedBD')) {
+      const admin = this.dataServices.admin.findOne({
+        adminId: data.assignedBD,
+      });
+      if (!admin) {
+        throw ApiError('', 'Not found BD');
+      }
+    }
   }
 
   private _validateRoleEditFractor(role: number, data: UpdateFractorDto) {
     if (Object.keys(data).includes('assignedBD') && role !== Role.HeadOfBD) {
       throw ApiError('', 'Only head of BD can edit assignedBD');
+    }
+    if (
+      (Object.keys(data).includes('iaoFeeRate') ||
+        Object.keys(data).includes('tradingFeeProfit') ||
+        Object.keys(data).includes('deactivationComment')) &&
+      role === Role.HeadOfBD
+    ) {
+      throw ApiError(
+        '',
+        'Only super admin can edit fee and deactivationComment',
+      );
     }
   }
 }
