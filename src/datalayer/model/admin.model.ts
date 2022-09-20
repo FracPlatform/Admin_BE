@@ -29,7 +29,7 @@ export class Admin {
   @Prop({ type: String, default: null })
   walletAddress: string;
 
-  @Prop({ type: String })
+  @Prop({ type: Number })
   role: Role;
 
   @Prop({ type: Number, default: ADMIN_STATUS.ACTIVE })
