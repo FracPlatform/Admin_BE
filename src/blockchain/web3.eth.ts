@@ -109,6 +109,11 @@ export class Web3ETH implements IWeb3API {
     return this.web3Instance.eth.accounts.recover(hash, signature);
   }
 
+  public async getContractInstance() {
+    await this.setProvider();
+    return this.contractProxy;
+  }
+
   public toChecksumAddress(address: string) {
     try {
       return this.web3Instance.utils.toChecksumAddress(address, Number());

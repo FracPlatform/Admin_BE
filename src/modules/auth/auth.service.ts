@@ -1,36 +1,35 @@
 import { JwtService } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { MailService } from 'src/services/mail/mail.service';
-import { AuthBuilderService } from './auth-factory.service';
-import { Utils } from 'src/common/utils';
-import { ethers } from 'ethers';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
-import { Web3Utils } from 'src/common/web3';
 import { LoginDto } from './dto/login.dto';
+import { Web3Gateway } from 'src/blockchain/web3.gateway';
+import { Web3ETH } from 'src/blockchain/web3.eth';
+import { ADMIN_STATUS } from '../../datalayer/model';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly dataServices: IDataServices,
-    private readonly mailService: MailService,
-    private readonly authBuilder: AuthBuilderService,
     private readonly jwtService: JwtService,
   ) {}
 
   async loginWithSignData(data: LoginDto) {
-    const user = await this._validateUser(data.email, data.signData);
+    const user = await this._validateUser(data.walletAddress, data.signData);
     if (!user)
       throw ApiError(
         ErrorCode.INVALID_EMAIL_OR_PASSWORD,
-        'Invalid email or password',
+        'Invalid address or signData',
       );
+
+    const role = await this.getRoleForAdmin(data.walletAddress);
 
     const accessToken = await this._signJwtToken({
       email: user.email,
       id: user['_id'],
       fullname: user.fullname,
+      role,
     });
     return { accessToken };
   }
@@ -39,31 +38,50 @@ export class AuthService {
     email: string;
     id: string;
     fullname: string;
+    role: string;
   }) {
     return await this.jwtService.signAsync(data);
   }
 
-  private async _validateUser(email: string, signData: string) {
-    const user = await this._validateEmail(email);
+  private async _validateUser(walletAddress: string, signData: string) {
+    const user = await this._validateAddress(walletAddress);
     const isSignVerified = await this._verifySign(signData, user.walletAddress);
-    console.log(49, isSignVerified);
-    
+
     return isSignVerified ? user : null;
   }
 
-  private async _validateEmail(email: string) {
-    const user = await this.dataServices.admin.findOne({ email });
+  private async _validateAddress(walletAddress: string) {
+    const user = await this.dataServices.admin.findOne({
+      walletAddress: walletAddress,
+      status: ADMIN_STATUS.ACTIVE,
+    });
     if (!user)
-      throw ApiError(ErrorCode.INVALID_EMAIL_OR_PASSWORD, 'Email not exists');
+      throw ApiError(ErrorCode.INVALID_EMAIL_OR_PASSWORD, 'Address not exists');
     return user;
   }
 
   private async _verifySign(signData: string, walletAddress: string) {
-    const hashData = ethers.utils.solidityKeccak256(
-      ['address'],
-      [walletAddress],
-    );
+    try {
+      const web3Gateway = new Web3Gateway(+process.env.CHAIN_ID);
+      const addressRecover = await web3Gateway.recover(
+        [walletAddress.trim()],
+        signData,
+      );
+      return addressRecover.toLowerCase() === walletAddress.toLowerCase();
+    } catch (error) {
+      throw ApiError('', `Can't verify signature: ${error.message}`);
+    }
+  }
 
-    return await Web3Utils.verifySignatureData(hashData, signData, walletAddress);
+  private async getRoleForAdmin(walletAddress: string) {
+    try {
+      const contractProxy = await new Web3ETH().getContractInstance();
+      const resVerifyAdmin = await contractProxy.methods
+        .getAdminRole(walletAddress.trim())
+        .call();
+      return resVerifyAdmin;
+    } catch (error) {
+      throw ApiError('', `Can't call contract: ${error.message}`);
+    }
   }
 }

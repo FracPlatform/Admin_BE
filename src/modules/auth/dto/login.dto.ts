@@ -7,9 +7,9 @@ import {
 
 export class LoginDto {
   @ApiProperty({ type: String, required: true, nullable: false })
+  @IsNotEmpty()
   @IsString()
-  @IsEmail()
-  email: string;
+  walletAddress: string;
 
   @ApiProperty({ type: String, required: true, nullable: false })
   @IsNotEmpty()
