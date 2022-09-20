@@ -5,6 +5,7 @@ export type IAORequestDocument = IAORequest & Document;
 export class ApprovedBy {
   adminId: string;
   status: string;
+  comment:string;
   createdAt: Date;
 }
 

@@ -3,6 +3,8 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
+import { AssetType, IAORequest, Asset } from 'src/datalayer/model';
+import { IaoRequestBuilderService } from './iao-request.factory.service';
 
 export interface ListDocument {
   docs?: any[];
@@ -11,7 +13,10 @@ export interface ListDocument {
 
 @Injectable()
 export class IaoRequestService {
-  constructor(private readonly dataService: IDataServices) {}
+  constructor(
+    private readonly dataService: IDataServices,
+    private readonly iaoRequestBuilderService: IaoRequestBuilderService,
+  ) {}
   async findAll(filter: FilterIAORequestDto) {
     const query = {};
 
@@ -226,8 +231,176 @@ export class IaoRequestService {
     } as ListDocument;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} iaoRequest`;
+  async findOne(id: string): Promise<IAORequest> {
+    const iaos = await this.dataService.iaoRequest.aggregate([
+      {
+        $match: {
+          iaoId: id,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fractor',
+          let: { ownerId: '$ownerId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$ownerId', '$fractorId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
+          ],
+          as: 'fractors',
+        },
+      },
+      {
+        $addFields: {
+          fractor: { $arrayElemAt: ['$fractors', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { adminId: '$firstReviewer.adminId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$adminId', '$adminId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, adminId: 1 } },
+          ],
+          as: '_firstReviewers',
+        },
+      },
+      {
+        $addFields: {
+          _firstReviewer: { $arrayElemAt: ['$_firstReviewers', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { adminId: '$secondReviewer.adminId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$adminId', '$adminId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, adminId: 1 } },
+          ],
+          as: '_secondReviewers',
+        },
+      },
+      {
+        $addFields: {
+          _secondReviewer: { $arrayElemAt: ['$_secondReviewers', 0] },
+        },
+      },
+      {
+        $addFields: {
+          sizeOfItem: { $size: '$items' },
+        },
+      },
+      {
+        $unwind: '$items',
+      },
+      {
+        $lookup: {
+          from: Asset.name,
+          let: { itemId: '$items' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$itemId', '$$itemId'] },
+              },
+            },
+            {
+              $project: {
+                itemId: 1,
+                name: 1,
+                media: 1,
+                documents: 1,
+                status: 1,
+                typeId: 1,
+                _id: 1,
+              },
+            },
+          ],
+          as: 'lookupItems',
+        },
+      },
+      {
+        $addFields: {
+          item: { $arrayElemAt: ['$lookupItems', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: AssetType.name,
+          let: { typeId: '$item.typeId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toString: '$_id' }, { $toString: '$$typeId' }],
+                },
+              },
+            },
+            { $project: { _id: 1, name: 1, assetTypeId: 1, category: 1 } },
+          ],
+          as: 'assetTypes',
+        },
+      },
+      {
+        $addFields: {
+          assetType: { $arrayElemAt: ['$assetTypes', 0] },
+        },
+      },
+      {
+        $addFields: {
+          itemDetail: {
+            _id: '$item._id',
+            itemId: '$item.itemId',
+            name: '$item.name',
+            media: '$item.media',
+            status: '$item.status',
+            documents: '$item.documents',
+            category: '$assetType.category',
+            type: '$assetType.name',
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          type: { $first: '$type' },
+          status: { $first: '$status' },
+          assetValuation: { $first: '$assetValuation' },
+          totalSupply: { $first: '$totalSupply' },
+          percentOffered: { $first: '$percentOffered' },
+          percentVault: { $first: '$percentVault' },
+          eventDuration: { $first: '$eventDuration' },
+          ownerId: { $first: '$ownerId' },
+          usdPrice: { $first: '$usdPrice' },
+          sizeOfItem: { $first: '$sizeOfItem' },
+          items: { $push: '$itemDetail' },
+          fractor: { $first: '$fractor' },
+          requestId: { $first: '$iaoId' },
+          _firstReviewer: { $first: '$_firstReviewer' },
+          firstReviewer: { $first: '$firstReviewer' },
+          _secondReviewer: { $first: '$_secondReviewer' },
+          secondReviewer: { $first: '$secondReviewer' },
+          createdAt: { $first: '$createdAt' },
+          updatedAt: { $first: '$updatedAt' },
+        },
+      },
+    ]);
+
+    if (iaos.length === 0) throw 'No data exists';
+    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
+    return iao;
   }
 
   remove(id: number) {
