@@ -31,6 +31,7 @@ import { IaoRequestModule } from './modules/iao-request/iao-request.module';
     TasksModule,
     WorkerModule,
     S3Module,
+    AuthModule,
     AssetTypeModule,
     IaoRequestModule,
   ],
