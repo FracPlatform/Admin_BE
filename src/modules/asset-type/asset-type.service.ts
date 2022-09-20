@@ -14,6 +14,7 @@ import { Utils } from 'src/common/utils';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
+import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 
 @Injectable()
 export class AssetTypeService {
@@ -146,6 +147,21 @@ export class AssetTypeService {
           'specifications.$.placeholder':
             editedSpecification.newSpecification.placeholder,
         },
+      },
+    );
+    return { success: true };
+  }
+
+  async deleteSpecification(
+    params: GetAssetTypeByIdDto,
+    deletedSpecification: DeleteSpecificationDto,
+  ) {
+    await this.dataService.assetTypes.updateOne(
+      {
+        assetTypeId: params.id,
+      },
+      {
+        $pull: { specifications: { _id: deletedSpecification.id } },
       },
     );
     return { success: true };
