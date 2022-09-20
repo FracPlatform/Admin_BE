@@ -337,6 +337,7 @@ export class IaoRequestService {
           assetValuation: { $first: '$assetValuation' },
           totalSupply: { $first: '$totalSupply' },
           percentOffered: { $first: '$percentOffered' },
+          percentVault: { $first: '$percentVault' },
           eventDuration: { $first: '$eventDuration' },
           ownerId: { $first: '$ownerId' },
           usdPrice: { $first: '$usdPrice' },
