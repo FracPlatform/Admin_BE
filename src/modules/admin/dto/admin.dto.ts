@@ -68,9 +68,9 @@ export class CreateAdminDto {
   @MaxLength(256)
   walletAddress: string;
 
-  @ApiProperty({ required: true, description: 'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5, OWNER = 100, WORKER = 101' })
+  @ApiProperty({ required: true, description: 'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5' })
   @Type(() => Number)
   @IsNumber()
-  @IsEnum(Role)
+  @IsEnum([1,2,3,4,5])
   role: number;
 }

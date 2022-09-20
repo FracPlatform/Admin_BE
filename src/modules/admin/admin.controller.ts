@@ -16,7 +16,7 @@ export class AdminController {
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  @Roles(Role.SuperAdmin)
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter Admins' })
   async findAll(
@@ -29,7 +29,7 @@ export class AdminController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @Roles(Role.SuperAdmin)
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create admin' })
   async createAdmin(

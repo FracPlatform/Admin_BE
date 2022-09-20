@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode, PREFIX_ID } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
@@ -11,6 +11,7 @@ import { ListDocument } from 'src/common/common-type';
 import { AdminBuilderService } from './admin.factory.service';
 import { ApiError } from 'src/common/api';
 import * as randomize from 'randomatic';
+import { Role } from '../auth/role.enum';
 
 @Injectable()
 export class AdminService {
@@ -90,7 +91,10 @@ export class AdminService {
     } as ListDocument;
   }
 
-  async createAdmin(user: any, data: CreateAdminDto) {
+  async createAdmin(user: any, data: CreateAdminDto) {    
+    if (data.role == Role.SuperAdmin && ![Role.OWNER, Role.SuperAdmin].includes(user.role))
+      throw new ForbiddenException('Forbidden');
+
     const session = await this.connection.startSession();
     session.startTransaction();
 
