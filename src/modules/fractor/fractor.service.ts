@@ -103,8 +103,7 @@ export class FractorService {
         ],
       };
     }
-
-    if (filter.status) {
+    if (Object.keys(filter).includes('status')) {
       match.isBlocked = !filter.status;
     }
 
