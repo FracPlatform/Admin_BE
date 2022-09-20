@@ -1,0 +1,31 @@
+import { Injectable } from '@nestjs/common';
+import { IAORequest } from 'src/datalayer/model';
+
+@Injectable()
+export class IaoRequestBuilderService {
+  createIaoRequestDetail(iaos): IAORequest {
+    // format documents
+    const documentsArray = [];
+    for (const item of iaos[0].items) {
+      item.documents = item.documents.map((doc) => {
+        return { ...doc, itemId: item._id };
+      });
+      documentsArray.push(...item.documents);
+    }
+    iaos[0]['documents'] = documentsArray;
+
+    // format reviewer
+    iaos[0]['firstReviewer'] = {
+      ...iaos[0]['firstReviewer'],
+      ...iaos[0]['_firstReviewer'],
+    };
+    iaos[0]['secondReviewer'] = {
+      ...iaos[0]['secondReviewer'],
+      ...iaos[0]['_secondReviewer'],
+    };
+    delete iaos[0]['_firstReviewer'];
+    delete iaos[0]['_secondReviewer'];
+
+    return iaos[0];
+  }
+}

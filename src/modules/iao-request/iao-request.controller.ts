@@ -18,14 +18,14 @@ export class IaoRequestController {
     return new ApiSuccessResponse().success(data, '');
   }
 
-  @Get(':id')
+  @Get(':requestId')
   @ApiOperation({ summary: 'IAO request detail' })
-  async findOne(@Param('id', ParseObjectIdPipe) id: string) {
+  async findOne(@Param('requestId') requestId: string) {
     try {
-      const data = await this.iaoRequestService.findOne(id);
+      const data = await this.iaoRequestService.findOne(requestId);
       return new ApiSuccessResponse().success(data, '');
     } catch (error) {
-      console.log(error)
+      console.log(error);
       throw ApiError('', 'Get iao request detail error');
     }
   }

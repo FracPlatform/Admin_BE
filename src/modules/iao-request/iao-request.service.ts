@@ -4,7 +4,7 @@ import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
 import { AssetType, IAORequest, Asset } from 'src/datalayer/model';
-import ObjectID from 'bson-objectid';
+import { IaoRequestBuilderService } from './iao-request.factory.service';
 
 export interface ListDocument {
   docs?: any[];
@@ -13,7 +13,10 @@ export interface ListDocument {
 
 @Injectable()
 export class IaoRequestService {
-  constructor(private readonly dataService: IDataServices) {}
+  constructor(
+    private readonly dataService: IDataServices,
+    private readonly iaoRequestBuilderService: IaoRequestBuilderService,
+  ) {}
   async findAll(filter: FilterIAORequestDto) {
     const query = {};
 
@@ -232,7 +235,7 @@ export class IaoRequestService {
     const iaos = await this.dataService.iaoRequest.aggregate([
       {
         $match: {
-          _id: new ObjectID(id),
+          iaoId: id,
         },
       },
       {
@@ -253,6 +256,46 @@ export class IaoRequestService {
       {
         $addFields: {
           fractor: { $arrayElemAt: ['$fractors', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { adminId: '$firstReviewer.adminId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$adminId', '$adminId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, adminId: 1 } },
+          ],
+          as: '_firstReviewers',
+        },
+      },
+      {
+        $addFields: {
+          _firstReviewer: { $arrayElemAt: ['$_firstReviewers', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { adminId: '$secondReviewer.adminId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$adminId', '$adminId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, adminId: 1 } },
+          ],
+          as: '_secondReviewers',
+        },
+      },
+      {
+        $addFields: {
+          _secondReviewer: { $arrayElemAt: ['$_secondReviewers', 0] },
         },
       },
       {
@@ -345,6 +388,10 @@ export class IaoRequestService {
           items: { $push: '$itemDetail' },
           fractor: { $first: '$fractor' },
           requestId: { $first: '$iaoId' },
+          _firstReviewer: { $first: '$_firstReviewer' },
+          firstReviewer: { $first: '$firstReviewer' },
+          _secondReviewer: { $first: '$_secondReviewer' },
+          secondReviewer: { $first: '$secondReviewer' },
           createdAt: { $first: '$createdAt' },
           updatedAt: { $first: '$updatedAt' },
         },
@@ -352,15 +399,8 @@ export class IaoRequestService {
     ]);
 
     if (iaos.length === 0) throw 'No data exists';
-    const documentsArray = [];
-    for (const item of iaos[0].items) {
-      item.documents = item.documents.map((doc) => {
-        return { ...doc, itemId: item._id };
-      });
-      documentsArray.push(...item.documents);
-    }
-    iaos[0]['documents'] = documentsArray;
-    return iaos[0];
+    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
+    return iao;
   }
 
   remove(id: number) {
