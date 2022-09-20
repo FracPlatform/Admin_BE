@@ -1,9 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { Injectable } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { MailService } from 'src/services/mail/mail.service';
-import { AuthBuilderService } from './auth-factory.service';
-import { Utils } from 'src/common/utils';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
 import { LoginDto } from './dto/login.dto';
@@ -14,10 +11,8 @@ import { Web3ETH } from 'src/blockchain/web3.eth';
 export class AuthService {
   constructor(
     private readonly dataServices: IDataServices,
-    private readonly mailService: MailService,
-    private readonly authBuilder: AuthBuilderService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
 
   async loginWithSignData(data: LoginDto) {
     const user = await this._validateUser(data.walletAddress, data.signData);
@@ -27,7 +22,7 @@ export class AuthService {
         'Invalid address or signData',
       );
 
-    const role = await this.getRoleForAdmin(user.walletAddress);
+    const role = await this.getRoleForAdmin(data.walletAddress);
 
     const accessToken = await this._signJwtToken({
       email: user.email,
@@ -48,7 +43,7 @@ export class AuthService {
   }
 
   private async _validateUser(walletAddress: string, signData: string) {
-    const user = await this._validateAddress(walletAddress);    
+    const user = await this._validateAddress(walletAddress);
     const isSignVerified = await this._verifySign(signData, user.walletAddress);
 
     return isSignVerified ? user : null;
@@ -63,23 +58,26 @@ export class AuthService {
 
   private async _verifySign(signData: string, walletAddress: string) {
     try {
-      const web3Gateway = new Web3Gateway(process.env.CHAIN_ID);
-      const addressRecover = await web3Gateway.recover([walletAddress.trim()], signData);
-
+      const web3Gateway = new Web3Gateway(+process.env.CHAIN_ID);
+      const addressRecover = await web3Gateway.recover(
+        [walletAddress.trim()],
+        signData,
+      );
       return addressRecover.toLowerCase() === walletAddress.toLowerCase();
     } catch (error) {
-      console.log('ERROR:', error)
+      throw ApiError('', `Can't verify signature: ${error.message}`);
     }
   }
 
   private async getRoleForAdmin(walletAddress: string) {
     try {
-      const contractProxy = new Web3ETH().getContractInstance();
-      const resVerifyAdmin = await contractProxy.methods.getAdminRole(walletAddress.trim()).call();
-      
+      const contractProxy = await new Web3ETH().getContractInstance();
+      const resVerifyAdmin = await contractProxy.methods
+        .getAdminRole(walletAddress.trim())
+        .call();
       return resVerifyAdmin;
     } catch (error) {
-      console.log('ERROR:', error)
+      throw ApiError('', `Can't call contract: ${error.message}`);
     }
   }
 }

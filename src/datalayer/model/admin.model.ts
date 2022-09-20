@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { PREFIX_ID } from 'src/common/constants';
+import { Role } from '../../modules/auth/role.enum';
 const paginate = require('mongoose-paginate-v2');
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
@@ -33,6 +34,9 @@ export class Admin {
 
   @Prop({ type: String, default: null })
   walletAddress: string;
+
+  @Prop({ type: String })
+  role: Role;
 
   @Prop({ type: Number, default: ADMIN_STATUS.ACTIVE })
   status: number;
