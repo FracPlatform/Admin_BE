@@ -26,7 +26,7 @@ export class FractorService {
     });
     if (!fractor) throw ApiError('', 'Fractor not exists');
 
-    this._validateDataWhenUpdateFractor(fractor, data);
+    await this._validateDataWhenUpdateFractor(fractor, data);
 
     const updateFractorData = {
       ...data,
@@ -244,7 +244,7 @@ export class FractorService {
     return ids;
   }
 
-  private _validateDataWhenUpdateFractor(
+  private async _validateDataWhenUpdateFractor(
     fractor: Fractor,
     data: UpdateFractorDto,
   ) {
@@ -266,11 +266,15 @@ export class FractorService {
     }
 
     if (Object.keys(data).includes('assignedBD')) {
-      const admin = this.dataServices.admin.findOne({
+      const admin = await this.dataServices.admin.findOne({
         adminId: data.assignedBD,
       });
       if (!admin) {
         throw ApiError('', 'Not found BD');
+      }
+
+      if (admin.role !== Role.FractorBD) {
+        throw ApiError('', 'Only assign to BD of fractor');
       }
     }
   }
