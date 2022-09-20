@@ -54,3 +54,4 @@ export class Admin {
 export const AdminSchema = SchemaFactory.createForClass(Admin);
 AdminSchema.plugin(paginate);
 AdminSchema.plugin(aggregatePaginate);
+AdminSchema.index({ adminId: 1 });
