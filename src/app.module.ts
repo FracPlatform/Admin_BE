@@ -10,6 +10,8 @@ import { SocketModule } from './providers/socket/socket.module';
 import { DataServicesModule } from './services';
 import { S3Module } from './s3/s3.module';
 import { AssetTypeModule } from './modules/asset-type/asset-type.module';
+import { FractorModule } from './modules/fractor/fractor.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { IaoRequestModule } from './modules/iao-request/iao-request.module';
 
 @Module({
@@ -30,7 +32,9 @@ import { IaoRequestModule } from './modules/iao-request/iao-request.module';
     TasksModule,
     WorkerModule,
     S3Module,
+    AuthModule,
     AssetTypeModule,
+    FractorModule,
     IaoRequestModule,
   ],
   controllers: [AppController],
