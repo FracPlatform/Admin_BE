@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Post,
   Put,
   Query,
   Req,
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
+import { DeactiveDto } from './dto/active-deactive-fractor.dto';
 import { FilterFractorDto } from './dto/filter-fractor.dto';
 import { UpdateFractorDto } from './dto/update-fractor.dto';
 import { FractorService } from './fractor.service';
@@ -56,6 +58,34 @@ export class FractorController {
       fractorId,
       data,
     );
+    return new ApiSuccessResponse().success(res, '');
+  }
+
+  @Post('deactive/:fractorId')
+  @ApiOperation({ summary: 'Deactive fractor' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  async deactiveFractor(
+    @Req() req,
+    @Param('fractorId') fractorId: string,
+    @Body() data: DeactiveDto,
+  ) {
+    const res = await this.fractorServices.deactiveFractor(
+      req.user,
+      fractorId,
+      data,
+    );
+    return new ApiSuccessResponse().success(res, '');
+  }
+
+  @Post('active/:fractorId')
+  @ApiOperation({ summary: 'active fractor' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  async activeFractor(@Req() req, @Param('fractorId') fractorId: string) {
+    const res = await this.fractorServices.activeFractor(req.user, fractorId);
     return new ApiSuccessResponse().success(res, '');
   }
 }
