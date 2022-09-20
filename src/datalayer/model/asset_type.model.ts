@@ -67,3 +67,4 @@ export class AssetType {
 export const AssetTypeSchema = SchemaFactory.createForClass(AssetType);
 AssetTypeSchema.plugin(paginate);
 AssetTypeSchema.plugin(aggregatePaginate);
+AssetTypeSchema.index({ assetTypeId: 1 });
