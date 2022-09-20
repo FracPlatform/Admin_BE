@@ -104,3 +104,4 @@ export class IAORequest {
 }
 
 export const IAORequestSchema = SchemaFactory.createForClass(IAORequest);
+IAORequestSchema.index({ iaoId: 1 });
