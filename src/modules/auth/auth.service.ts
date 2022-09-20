@@ -6,6 +6,7 @@ import { ErrorCode } from 'src/common/constants';
 import { LoginDto } from './dto/login.dto';
 import { Web3Gateway } from 'src/blockchain/web3.gateway';
 import { Web3ETH } from 'src/blockchain/web3.eth';
+import { ADMIN_STATUS } from '../../datalayer/model';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +51,10 @@ export class AuthService {
   }
 
   private async _validateAddress(walletAddress: string) {
-    const user = await this.dataServices.admin.findOne({ walletAddress });
+    const user = await this.dataServices.admin.findOne({
+      walletAddress: walletAddress,
+      status: ADMIN_STATUS.ACTIVE,
+    });
     if (!user)
       throw ApiError(ErrorCode.INVALID_EMAIL_OR_PASSWORD, 'Address not exists');
     return user;

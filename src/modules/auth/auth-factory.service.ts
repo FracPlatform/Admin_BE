@@ -10,7 +10,6 @@ export class AuthBuilderService {
       email: user.email,
       fullname: user.fullname,
       description: user.description,
-      avatar: user.avatar,
       referral: user.referral,
     };
     return profile;

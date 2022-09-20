@@ -26,12 +26,6 @@ export class Admin {
   @Prop({ type: String, default: '' })
   description: string;
 
-  @Prop({ type: String, default: '' })
-  avatar: string;
-
-  @Prop({ type: Number, default: null })
-  networkType: number;
-
   @Prop({ type: String, default: null })
   walletAddress: string;
 
