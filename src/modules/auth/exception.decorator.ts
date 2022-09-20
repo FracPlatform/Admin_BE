@@ -1,11 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-export class UnverifyEmailException extends HttpException {
+export class DeactiveAccountException extends HttpException {
   constructor() {
     super(
       {
         code: '',
-        message: "Email isn't verified.",
+        message: "Account is deactive.",
       },
       HttpStatus.UNAUTHORIZED,
     );
