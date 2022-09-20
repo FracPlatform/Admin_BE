@@ -352,7 +352,7 @@ export class IaoRequestService {
 
     if (iaos.length === 0) throw 'No data exists';
     const documentsArray = [];
-    for (let item of iaos[0].items) {
+    for (const item of iaos[0].items) {
       item.documents = item.documents.map((doc) => {
         return { ...doc, itemId: item._id };
       });
