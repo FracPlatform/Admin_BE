@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
@@ -6,6 +15,7 @@ import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { AssetTypeService } from './asset-type.service';
 import { AddSpecificationDto } from './dto/add-specifications.dto';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
+import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
@@ -99,6 +109,23 @@ export class AssetTypeController {
       const responseData = await this.assetTypeService.editSpecification(
         params,
         editedSpecification,
+      );
+      return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
+  @Delete('delete-specification/:id')
+  @ApiOperation({ summary: 'Delete a specification' })
+  async deleteSpecification(
+    @Param() params: GetAssetTypeByIdDto,
+    @Body() deletedSpecificationId: DeleteSpecificationDto,
+  ) {
+    try {
+      const responseData = await this.assetTypeService.deleteSpecification(
+        params,
+        deletedSpecificationId,
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
