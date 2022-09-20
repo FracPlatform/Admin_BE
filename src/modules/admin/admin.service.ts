@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode, PREFIX_ID } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
+import { ObjectId } from 'mongodb';
 import { Utils } from 'src/common/utils';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
@@ -21,6 +22,7 @@ export class AdminService {
 
   async getListAdmin(user: any, filter: FilterAdminDto) {
     const query: any = {
+      _id: { $ne: new ObjectId(user._id) },
       deleted: false,
     };
 
@@ -50,7 +52,7 @@ export class AdminService {
         $match: query,
       },
       {
-        $project: { adminId: 1, fullname: 1, role: 1, walletAddress: 1, status: 1, createAt: 1 },
+        $project: { adminId: 1, fullname: 1, role: 1, walletAddress: 1, status: 1, createdAt: 1 },
       },
     );
 

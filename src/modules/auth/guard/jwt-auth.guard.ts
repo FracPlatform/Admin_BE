@@ -4,7 +4,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UnverifyEmailException } from '../exception.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -18,9 +17,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException();
-    }
-    if (!user.verified) {
-      throw new UnverifyEmailException();
     }
     return user;
   }
@@ -42,9 +38,6 @@ export class JwtAuthGuardNonToken extends AuthGuard('jwt') {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException();
-    }
-    if (!user.verified) {
-      throw new UnverifyEmailException();
     }
     return user;
   }
