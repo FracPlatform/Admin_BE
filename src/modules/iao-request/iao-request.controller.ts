@@ -1,13 +1,10 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { IaoRequestService } from './iao-request.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
+import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
+import { ApiError } from 'src/common/api';
 
 @Controller('iao-request')
 @ApiTags('IAO Request')
@@ -22,8 +19,14 @@ export class IaoRequestController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.iaoRequestService.findOne(+id);
+  @ApiOperation({ summary: 'IAO request detail' })
+  async findOne(@Param('id', ParseObjectIdPipe) id: string) {
+    try {
+      const data = await this.iaoRequestService.findOne(id);
+      return new ApiSuccessResponse().success(data, '');
+    } catch (error) {
+      console.log(error)
+      throw ApiError('', 'Get iao request detail error');
+    }
   }
-
 }

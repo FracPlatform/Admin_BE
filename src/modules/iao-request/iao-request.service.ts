@@ -3,6 +3,8 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
+import { AssetType, IAORequest, Asset } from 'src/datalayer/model';
+import ObjectID from 'bson-objectid';
 
 export interface ListDocument {
   docs?: any[];
@@ -226,8 +228,138 @@ export class IaoRequestService {
     } as ListDocument;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} iaoRequest`;
+  async findOne(id: string): Promise<IAORequest> {
+    const iaos = await this.dataService.iaoRequest.aggregate([
+      {
+        $match: {
+          _id: new ObjectID(id),
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fractor',
+          let: { ownerId: '$ownerId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$ownerId', '$fractorId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
+          ],
+          as: 'fractors',
+        },
+      },
+      {
+        $addFields: {
+          fractor: { $arrayElemAt: ['$fractors', 0] },
+        },
+      },
+      {
+        $addFields: {
+          sizeOfItem: { $size: '$items' },
+        },
+      },
+      {
+        $unwind: '$items',
+      },
+      {
+        $lookup: {
+          from: Asset.name,
+          let: { itemId: '$items' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$itemId', '$$itemId'] },
+              },
+            },
+            {
+              $project: {
+                itemId: 1,
+                name: 1,
+                media: 1,
+                documents: 1,
+                status: 1,
+                typeId: 1,
+                _id: 1,
+              },
+            },
+          ],
+          as: 'lookupItems',
+        },
+      },
+      {
+        $addFields: {
+          item: { $arrayElemAt: ['$lookupItems', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: AssetType.name,
+          let: { typeId: '$item.typeId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $eq: [{ $toString: '$_id' }, { $toString: '$$typeId' }],
+                },
+              },
+            },
+            { $project: { _id: 1, name: 1, assetTypeId: 1, category: 1 } },
+          ],
+          as: 'assetTypes',
+        },
+      },
+      {
+        $addFields: {
+          assetType: { $arrayElemAt: ['$assetTypes', 0] },
+        },
+      },
+      {
+        $addFields: {
+          itemDetail: {
+            _id: '$item._id',
+            itemId: '$item.itemId',
+            name: '$item.name',
+            media: '$item.media',
+            status: '$item.status',
+            documents: '$item.documents',
+            category: '$assetType.category',
+            type: '$assetType.name',
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          type: { $first: '$type' },
+          status: { $first: '$status' },
+          assetValuation: { $first: '$assetValuation' },
+          totalSupply: { $first: '$totalSupply' },
+          percentOffered: { $first: '$percentOffered' },
+          eventDuration: { $first: '$eventDuration' },
+          ownerId: { $first: '$ownerId' },
+          usdPrice: { $first: '$usdPrice' },
+          sizeOfItem: { $first: '$sizeOfItem' },
+          items: { $push: '$itemDetail' },
+          fractor: { $first: '$fractor' },
+          requestId: { $first: '$iaoId' },
+          createdAt: { $first: '$createdAt' },
+          updatedAt: { $first: '$updatedAt' },
+        },
+      },
+    ]);
+
+    if (iaos.length === 0) throw 'No data exists';
+    const documentsArray = [];
+    for (let item of iaos[0].items) {
+      item.documents = item.documents.map((doc) => {
+        return { ...doc, itemId: item._id };
+      });
+      documentsArray.push(...item.documents);
+    }
+    iaos[0]['documents'] = documentsArray;
+    return iaos[0];
   }
 
   remove(id: number) {
