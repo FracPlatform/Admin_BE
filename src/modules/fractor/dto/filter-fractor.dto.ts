@@ -1,17 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { IsBoolean, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class FilterFractorDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString({ message: 'E0' })
+  @MaxLength(256)
   textSearch: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
+  @Transform(({ value }: TransformFnParams) =>  JSON.parse(value))
   status: boolean;
 
   @ApiProperty({ required: false })

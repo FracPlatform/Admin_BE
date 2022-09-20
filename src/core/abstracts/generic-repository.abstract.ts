@@ -18,7 +18,7 @@ export abstract class IGenericRepository<T> {
   abstract findOneAndUpdate(
     conditions: object,
     update: object,
-    options: object,
+    options?: object,
   );
 
   abstract findMany(conditions: object, options?: object): Promise<T[]>;

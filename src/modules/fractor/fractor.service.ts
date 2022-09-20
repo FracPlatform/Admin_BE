@@ -6,25 +6,47 @@ import { get } from 'lodash';
 import { ListDocument } from '../../common/common-type';
 import { UpdateFractorDto } from './dto/update-fractor.dto';
 import { ApiError } from '../../common/api';
-import { Fractor } from '../../datalayer/model';
+import { Admin, Fractor } from '../../datalayer/model';
+import { Role } from '../auth/role.enum';
+import { DeactiveDto } from './dto/active-deactive-fractor.dto';
 
 @Injectable()
 export class FractorService {
   constructor(private readonly dataServices: IDataServices) {}
 
-  async editFractorById(fractorId: string, data: UpdateFractorDto) {
+  async editFractorById(
+    admin: Admin,
+    fractorId: string,
+    data: UpdateFractorDto,
+  ) {
+    this._validateRoleEditFractor(admin.role, data);
+
     const fractor = await this.dataServices.fractor.findOne({
       fractorId: fractorId,
     });
     if (!fractor) throw ApiError('', 'Fractor not exists');
 
-    const validation = await this._validateDataWhenUpdateFractor(fractor, data);
-    if (!validation.valid) throw ApiError('', validation.message);
+    await this._validateDataWhenUpdateFractor(fractor, data);
+
+    const updateFractorData = {
+      ...data,
+      lastUpdatedBy: admin.adminId,
+    };
+
+    // set default value of fee if blank
+    if (admin.role === Role.OWNER || admin.role === Role.SuperAdmin) {
+      if (!Object.keys(data).includes('iaoFeeRate')) {
+        updateFractorData['iaoFeeRate'] = 0;
+      }
+      if (!Object.keys(data).includes('tradingFeeProfit')) {
+        updateFractorData['tradingFeeProfit'] = 0;
+      }
+    }
 
     await this.dataServices.fractor.updateOne(
       { fractorId: fractorId },
       {
-        $set: data,
+        $set: updateFractorData,
       },
     );
     return { success: true };
@@ -103,8 +125,7 @@ export class FractorService {
         ],
       };
     }
-
-    if (filter.status) {
+    if (Object.keys(filter).includes('status')) {
       match.isBlocked = !filter.status;
     }
 
@@ -155,6 +176,45 @@ export class FractorService {
     } as ListDocument;
   }
 
+  async deactiveFractor(admin: Admin, fractorId: string, data: DeactiveDto) {
+    const fractor = await this.dataServices.fractor.findOne({
+      fractorId: fractorId,
+    });
+    if (!fractor) throw ApiError('', 'Fractor not exists');
+
+    const updateStatus = await this.dataServices.fractor.findOneAndUpdate(
+      { fractorId: fractorId, updatedAt: fractor['updatedAt'] },
+      {
+        isBlocked: true,
+        lastUpdatedBy: admin.adminId,
+        deactivationComment: data.deactivationComment,
+        deactivatedBy: admin.adminId,
+        deactivetedOn: new Date(),
+      },
+    );
+    if (!updateStatus) {
+      throw ApiError('', 'Fractor already deactive');
+    }
+  }
+
+  async activeFractor(admin: Admin, fractorId: string) {
+    const fractor = await this.dataServices.fractor.findOne({
+      fractorId: fractorId,
+    });
+    if (!fractor) throw ApiError('', 'Fractor not exists');
+
+    const updateStatus = await this.dataServices.fractor.findOneAndUpdate(
+      { fractorId: fractorId, updatedAt: fractor['updatedAt'] },
+      {
+        isBlocked: false,
+        lastUpdatedBy: admin.adminId,
+      },
+    );
+    if (!updateStatus) {
+      throw ApiError('', 'Fractor already active');
+    }
+  }
+
   private async _filterAdminIdByName(name: string): Promise<string[]> {
     const data = await this.dataServices.admin.aggregate(
       [
@@ -184,19 +244,55 @@ export class FractorService {
     return ids;
   }
 
-  private _validateDataWhenUpdateFractor(
+  private async _validateDataWhenUpdateFractor(
     fractor: Fractor,
     data: UpdateFractorDto,
-  ): { valid: boolean; message: string } {
-    if (!fractor.isBlocked && data.deactivationComment !== '') {
-      return {
-        valid: false,
-        message: "Can't edit deactivation comment of fractor is active",
-      };
+  ) {
+    if (
+      !fractor.isBlocked &&
+      Object.keys(data).includes('deactivationComment')
+    ) {
+      throw ApiError(
+        '',
+        "Can't edit deactivation comment of fractor is active",
+      );
     }
-    return {
-      valid: true,
-      message: '',
-    };
+
+    if (
+      fractor.isBlocked &&
+      !Object.keys(data).includes('deactivationComment')
+    ) {
+      throw ApiError('', 'deactivationComment is require');
+    }
+
+    if (Object.keys(data).includes('assignedBD')) {
+      const admin = await this.dataServices.admin.findOne({
+        adminId: data.assignedBD,
+      });
+      if (!admin) {
+        throw ApiError('', 'Not found BD');
+      }
+
+      if (admin.role !== Role.FractorBD) {
+        throw ApiError('', 'Only assign to BD of fractor');
+      }
+    }
+  }
+
+  private _validateRoleEditFractor(role: number, data: UpdateFractorDto) {
+    if (Object.keys(data).includes('assignedBD') && role !== Role.HeadOfBD) {
+      throw ApiError('', 'Only head of BD can edit assignedBD');
+    }
+    if (
+      (Object.keys(data).includes('iaoFeeRate') ||
+        Object.keys(data).includes('tradingFeeProfit') ||
+        Object.keys(data).includes('deactivationComment')) &&
+      role === Role.HeadOfBD
+    ) {
+      throw ApiError(
+        '',
+        'Only super admin can edit fee and deactivationComment',
+      );
+    }
   }
 }

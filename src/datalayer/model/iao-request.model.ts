@@ -5,6 +5,7 @@ export type IAORequestDocument = IAORequest & Document;
 export class ApprovedBy {
   adminId: string;
   status: string;
+  comment:string;
   createdAt: Date;
 }
 
@@ -102,3 +103,4 @@ export class IAORequest {
 }
 
 export const IAORequestSchema = SchemaFactory.createForClass(IAORequest);
+IAORequestSchema.index({ iaoId: 1 });

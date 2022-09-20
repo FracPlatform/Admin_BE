@@ -29,7 +29,7 @@ export class Admin {
   @Prop({ type: String, default: null })
   walletAddress: string;
 
-  @Prop({ type: String })
+  @Prop({ type: Number })
   role: Role;
 
   @Prop({ type: Number, default: ADMIN_STATUS.ACTIVE })
@@ -54,3 +54,4 @@ export class Admin {
 export const AdminSchema = SchemaFactory.createForClass(Admin);
 AdminSchema.plugin(paginate);
 AdminSchema.plugin(aggregatePaginate);
+AdminSchema.index({ adminId: 1 });

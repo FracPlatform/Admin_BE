@@ -1,22 +1,40 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RolesGuard } from '../auth/guard/roles.guard';
+import { Role } from '../auth/role.enum';
+import { Roles } from '../auth/roles.decorator';
 import { AssetTypeService } from './asset-type.service';
 import { AddSpecificationDto } from './dto/add-specifications.dto';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
+import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
 import { GetListAssetTypeDto } from './dto/get-list-asset-type.dto';
 
 @Controller('asset-type')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('Asset Type')
+@ApiBearerAuth()
 export class AssetTypeController {
   constructor(private readonly assetTypeService: AssetTypeService) {}
 
   @Get()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiOperation({
     summary: 'Get list Asset type',
   })
@@ -32,6 +50,7 @@ export class AssetTypeController {
   }
 
   @Get(':id')
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Get Asset type by assetTypeId' })
   async getAssetTypeById(@Param() params: GetAssetTypeByIdDto) {
     try {
@@ -43,6 +62,7 @@ export class AssetTypeController {
   }
 
   @Post()
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Create asset type' })
   async createAssetType(@Body() createAssetTypeBody: CreateAssetTypeDto) {
     try {
@@ -56,6 +76,7 @@ export class AssetTypeController {
   }
 
   @Put('edit/:id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Edit asset type' })
   async updateAssetType(
     @Param() params: GetAssetTypeByIdDto,
@@ -73,6 +94,7 @@ export class AssetTypeController {
   }
 
   @Put('add-specifications/:id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Add specification field' })
   async addSpecifications(
     @Param() params: GetAssetTypeByIdDto,
@@ -90,6 +112,7 @@ export class AssetTypeController {
   }
 
   @Put('edit-specification/:id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Edit one specification' })
   async editSpecification(
     @Param() params: GetAssetTypeByIdDto,
@@ -99,6 +122,24 @@ export class AssetTypeController {
       const responseData = await this.assetTypeService.editSpecification(
         params,
         editedSpecification,
+      );
+      return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
+  @Delete('delete-specification/:id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Delete a specification' })
+  async deleteSpecification(
+    @Param() params: GetAssetTypeByIdDto,
+    @Body() deletedSpecificationId: DeleteSpecificationDto,
+  ) {
+    try {
+      const responseData = await this.assetTypeService.deleteSpecification(
+        params,
+        deletedSpecificationId,
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {

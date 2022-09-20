@@ -104,4 +104,4 @@ export const FractorSchema = SchemaFactory.createForClass(Fractor);
 FractorSchema.plugin(paginate);
 FractorSchema.plugin(aggregatePaginate);
 FractorSchema.index({ email: 1 });
-
+FractorSchema.index({ fractorId: 1 });

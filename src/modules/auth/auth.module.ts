@@ -6,7 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { MailModule } from 'src/services/mail/mail.module';
 import { DataServicesModule } from 'src/services';
-import { JwtStrategy } from './guard/jwt.strategy';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [

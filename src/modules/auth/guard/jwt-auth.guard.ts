@@ -4,6 +4,8 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ADMIN_STATUS } from '../../../datalayer/model';
+import { DeactiveAccountException } from '../exception.decorator';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -17,6 +19,9 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException();
+    }
+    if (user.status === ADMIN_STATUS.INACTIVE) {
+      throw new DeactiveAccountException();
     }
     return user;
   }
@@ -38,6 +43,9 @@ export class JwtAuthGuardNonToken extends AuthGuard('jwt') {
     // You can throw an exception based on either "info" or "err" arguments
     if (err || !user) {
       throw err || new UnauthorizedException();
+    }
+    if (user.status === ADMIN_STATUS.INACTIVE) {
+      throw new DeactiveAccountException();
     }
     return user;
   }
