@@ -1,12 +1,23 @@
-import { Body, Controller, Get, Param, Put, Query } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from '../../common/response/api-success';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { FilterFractorDto } from './dto/filter-fractor.dto';
 import { UpdateFractorDto } from './dto/update-fractor.dto';
 import { FractorService } from './fractor.service';
 
 @Controller('fractor')
 @ApiTags('Fractor User')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 export class FractorController {
   constructor(private readonly fractorServices: FractorService) {}
 
