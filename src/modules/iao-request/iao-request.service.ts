@@ -3,7 +3,7 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
-import { AssetType, IAORequest, Asset } from 'src/datalayer/model';
+import { AssetType, IAORequest, Asset, Fractor } from 'src/datalayer/model';
 import { IaoRequestBuilderService } from './iao-request.factory.service';
 
 export interface ListDocument {
@@ -299,6 +299,26 @@ export class IaoRequestService {
         },
       },
       {
+        $lookup: {
+          from: Fractor.name,
+          let: { fractorId: '$ownerId' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$$fractorId', '$fractorId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
+          ],
+          as: 'updatedBys',
+        },
+      },
+      {
+        $addFields: {
+          updatedBy: { $arrayElemAt: ['$updatedBys', 0] },
+        },
+      },
+      {
         $addFields: {
           sizeOfItem: { $size: '$items' },
         },
@@ -394,6 +414,7 @@ export class IaoRequestService {
           secondReviewer: { $first: '$secondReviewer' },
           createdAt: { $first: '$createdAt' },
           updatedAt: { $first: '$updatedAt' },
+          updatedBy: { $first: '$updatedBy' },
         },
       },
     ]);
