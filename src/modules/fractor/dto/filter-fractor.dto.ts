@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class FilterFractorDto {
@@ -10,8 +10,7 @@ export class FilterFractorDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
+  @Transform(({ value }: TransformFnParams) =>  JSON.parse(value))
   status: boolean;
 
   @ApiProperty({ required: false })
