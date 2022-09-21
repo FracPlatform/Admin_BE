@@ -94,8 +94,6 @@ export class AssetService {
         $lte: new Date(filter.toDate),
       });
     }
-    console.log(query);
-
     const agg = [];
     agg.push(
       {
