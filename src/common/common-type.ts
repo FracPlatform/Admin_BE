@@ -13,6 +13,7 @@ export interface PagingDocument {
 
 export interface ListDocument {
   docs?: any[];
+  metadata?: object;
   totalDocs?: number;
 }
 

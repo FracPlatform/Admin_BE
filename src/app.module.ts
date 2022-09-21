@@ -14,6 +14,7 @@ import { FractorModule } from './modules/fractor/fractor.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { IaoRequestModule } from './modules/iao-request/iao-request.module';
 import { AssetModule } from './modules/asset/asset.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AssetModule } from './modules/asset/asset.module';
     WorkerModule,
     S3Module,
     AuthModule,
+    AdminModule,
     AssetTypeModule,
     FractorModule,
     IaoRequestModule,

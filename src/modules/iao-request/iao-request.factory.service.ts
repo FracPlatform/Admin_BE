@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { IAORequest } from 'src/datalayer/model';
+import {
+  ApprovedBy,
+  IAORequest,
+  IAO_REQUEST_STATUS,
+} from 'src/datalayer/model';
+import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 
 @Injectable()
 export class IaoRequestBuilderService {
@@ -27,5 +32,23 @@ export class IaoRequestBuilderService {
     delete iaos[0]['_secondReviewer'];
 
     return iaos[0];
+  }
+
+  createFirstReview(dto: ApproveIaoRequestDTO, user: any): ApprovedBy {
+    return {
+      adminId: user.adminId,
+      status: IAO_REQUEST_STATUS.APPROVED_A,
+      comment: dto.comment,
+      createdAt: new Date(),
+    };
+  }
+
+  createSecondReview(dto: ApproveIaoRequestDTO, user: any): ApprovedBy {
+    return {
+      adminId: user.adminId,
+      status: IAO_REQUEST_STATUS.APPROVED_B,
+      comment: dto.comment,
+      createdAt: new Date(),
+    };
   }
 }

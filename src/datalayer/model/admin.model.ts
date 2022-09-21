@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 import { PREFIX_ID } from 'src/common/constants';
 import { Role } from '../../modules/auth/role.enum';
 const paginate = require('mongoose-paginate-v2');
@@ -38,10 +37,10 @@ export class Admin {
   @Prop({ type: String })
   referral: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
+  @Prop({ type: String })
   createBy: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
+  @Prop({ type: String })
   lastUpdateBy: string;
 
   @Prop({ type: String, default: PREFIX_ID.ADMIN })
@@ -54,3 +53,4 @@ export class Admin {
 export const AdminSchema = SchemaFactory.createForClass(Admin);
 AdminSchema.plugin(paginate);
 AdminSchema.plugin(aggregatePaginate);
+AdminSchema.index({ adminId: 1 });

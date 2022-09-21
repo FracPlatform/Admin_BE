@@ -4,8 +4,8 @@ export type IAORequestDocument = IAORequest & Document;
 
 export class ApprovedBy {
   adminId: string;
-  status: string;
-  comment:string;
+  status: number;
+  comment: string;
   createdAt: Date;
 }
 
@@ -14,6 +14,7 @@ export enum IAO_REQUEST_TYPE {
   NON_VAULT = 2,
 }
 
+export const MAX_IAO_REQUEST_COMMENT = 1000;
 export const MAX_IAO_REQUEST_NOTE = 3000;
 export const MAX_LENGTH_PHONE = 16;
 export const MAX_IAO_REQUEST_ADDRESS = 512;
@@ -103,3 +104,4 @@ export class IAORequest {
 }
 
 export const IAORequestSchema = SchemaFactory.createForClass(IAORequest);
+IAORequestSchema.index({ iaoId: 1 });
