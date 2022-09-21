@@ -40,13 +40,6 @@ export class AssetController {
     return new ApiSuccessResponse().success(data, '');
   }
 
-  @Get('more')
-  @ApiOperation({ summary: 'More from this fractor' })
-  async getMoreFromThisFractor(@Query() filter: FilterMoreUserAssetDto) {
-    const data = await this.assetService.getMoreFromThisFractor(filter);
-    return new ApiSuccessResponse().success(data, '');
-  }
-
   @Get(':id')
   @ApiOperation({ summary: 'Get detail Asset' })
   async getDetail(@Param('id') assetId: string) {
@@ -88,13 +81,13 @@ export class AssetController {
     return new ApiSuccessResponse().success(data, '');
   }
 
-  @Delete(':id')
+  @Put('display/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   // @Roles(Role.User)
   @ApiOperation({ summary: 'Delete Asset' })
-  async remove(@GetUser() user, @Param('id') assetId: string) {
-    const data = await this.assetService.remove(user, assetId);
+  async editDisplay(@Param('id') assetId: string) {
+    const data = await this.assetService.editDisplay(assetId);
     return new ApiSuccessResponse().success(data, '');
   }
 

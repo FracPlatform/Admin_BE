@@ -1,25 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { get, isEqual } from 'lodash';
-import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { ListDocument } from 'src/common/common-type';
 import { ErrorCode, PREFIX_ID } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
-import {
-  ASSET_STATUS,
-  MEDIA_TYPE,
-  OWNERSHIP_PRIVACY,
-} from 'src/datalayer/model/asset.model';
+import { ASSET_STATUS, MEDIA_TYPE } from 'src/datalayer/model/asset.model';
 import { MAX_FILE_SIZE } from 'src/datalayer/model/document-item.model';
 import { AssetBuilderService } from './asset.factory.service';
 import {
   CreateDocumentItemDto,
   UpdateDocumentItemDto,
 } from './dto/documentItem.dto';
-import { FilterAssetDto, FilterMoreUserAssetDto } from './dto/filter-asset.dto';
+import { FilterAssetDto } from './dto/filter-asset.dto';
 
 const ufs = require('url-file-size');
 
@@ -192,61 +187,12 @@ export class AssetService {
     return response;
   }
 
-  async getMoreFromThisFractor(filter: FilterMoreUserAssetDto) {
-    const query: any = {
-      collectionId: new ObjectId(filter.collectionId),
-      ownershipPrivacy: OWNERSHIP_PRIVACY.PUBLIC,
-      status: { $ne: ASSET_STATUS.IN_REVIEW },
-      _id: { $ne: new ObjectId(filter.assetId) },
-      deleted: false,
-    };
-
-    const agg = [];
-
-    agg.push(
-      {
-        $match: query,
-      },
-      {
-        $project: { specifications: 0, documents: 0 },
-      },
-    );
-
-    const dataReturnFilter = [
-      { $sort: { createdAt: -1 } },
-      { $skip: filter.offset || 0 },
-      { $limit: filter.limit || 10 },
-    ];
-    agg.push({
-      $facet: {
-        count: [{ $count: 'count' }],
-        data: dataReturnFilter,
-      },
-    });
-
-    const dataQuery = await this.dataServices.asset.aggregate(agg, {
-      collation: { locale: 'en' },
-    });
-
-    const data = get(dataQuery, [0, 'data']);
-    const response = this.assetBuilderService.convertAssets(data);
-    const count = get(dataQuery, [0, 'count', 0, 'count']) || 0;
-
-    return {
-      totalDocs: count,
-      docs: response || [],
-    } as ListDocument;
-  }
-
-  async remove(user: any, assetId: string) {
+  async editDisplay(assetId: string) {
     await this.dataServices.asset.findOneAndUpdate(
       {
         _id: assetId,
-        ownerId: user.fractorId,
-        deleted: false,
       },
-      { $set: { deleted: true } },
-      {},
+      [{ $set: { deleted: { $not: '$deleted' } } }],
     );
 
     return { success: true };
