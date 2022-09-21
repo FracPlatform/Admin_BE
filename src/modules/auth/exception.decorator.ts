@@ -11,3 +11,15 @@ export class DeactiveAccountException extends HttpException {
     );
   }
 }
+
+export class WorkerUnauthorizedException extends HttpException {
+  constructor() {
+    super(
+      {
+        code: '',
+        message: "Worker Unauthorized Exception.",
+      },
+      HttpStatus.UNAUTHORIZED,
+    );
+  }
+}
