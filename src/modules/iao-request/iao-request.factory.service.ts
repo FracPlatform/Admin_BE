@@ -42,4 +42,23 @@ export class IaoRequestBuilderService {
       createdAt: new Date(),
     };
   }
+
+  createSecondReview(dto: ApproveIaoRequestDTO, user: any): ApprovedBy {
+    return {
+      adminId: user.adminId,
+      status: IAO_REQUEST_STATUS.APPROVED_B,
+      comment: dto.comment,
+      createdAt: new Date(),
+    };
+  }
+
+  createReject(dto: ApproveIaoRequestDTO, user: any) {
+    return {
+      adminId: user.adminId,
+      status: IAO_REQUEST_STATUS.REJECTED,
+      comment: dto.comment,
+      createdAt: new Date(),
+    };
+  }
+
 }
