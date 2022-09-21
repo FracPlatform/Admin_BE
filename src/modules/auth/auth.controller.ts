@@ -1,20 +1,14 @@
 import {
   Body,
   Controller,
-  Get,
-  HttpStatus,
   Post,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
-import { AdminDocument } from 'src/datalayer/model';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { GetUser } from './get-user.decorator';
 import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { AuthBuilderService } from './auth-factory.service';
 import { ProfileAdmin } from 'src/entity';

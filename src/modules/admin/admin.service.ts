@@ -1,9 +1,8 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode, PREFIX_ID } from 'src/common/constants';
+import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
 import { ObjectId } from 'mongodb';
-import { Utils } from 'src/common/utils';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CreateAdminDto, FilterAdminDto } from './dto/admin.dto';
