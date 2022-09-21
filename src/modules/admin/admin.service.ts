@@ -9,7 +9,7 @@ import { CreateAdminDto, FilterAdminDto } from './dto/admin.dto';
 import { ListDocument } from 'src/common/common-type';
 import { AdminBuilderService } from './admin.factory.service';
 import { ApiError } from 'src/common/api';
-import * as randomize from 'randomatic';
+import * as randomatic from 'randomatic';
 import { Role } from '../auth/role.enum';
 
 @Injectable()
@@ -126,7 +126,7 @@ export class AdminService {
   }
 
   async randomReferal() {
-    const referral = randomize('Aa0', Math.floor(Math.random() * 3) + 7);
+    const referral = randomatic('Aa0', Math.floor(Math.random() * 3) + 7);
     const userExisted = await this.dataServices.admin.findOne({ referral });
     if (!userExisted) return referral;
 
