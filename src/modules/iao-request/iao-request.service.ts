@@ -456,6 +456,7 @@ export class IaoRequestService {
       {
         iaoId: approveIaoRequestDTO.requestId,
         status: IAO_REQUEST_STATUS.IN_REVIEW,
+        updatedAt: iaoRequest['updatedAt'],
       },
       {
         $set: {
