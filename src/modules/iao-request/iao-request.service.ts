@@ -3,8 +3,16 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
-import { AssetType, IAORequest, Asset, Fractor } from 'src/datalayer/model';
+import {
+  AssetType,
+  IAORequest,
+  Asset,
+  Fractor,
+  IAO_REQUEST_STATUS,
+} from 'src/datalayer/model';
 import { IaoRequestBuilderService } from './iao-request.factory.service';
+import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
+import { Role } from '../auth/role.enum';
 
 export interface ListDocument {
   docs?: any[];
@@ -424,7 +432,39 @@ export class IaoRequestService {
     return iao;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} iaoRequest`;
+  async firstApproveIaoRequest(
+    approveIaoRequestDTO: ApproveIaoRequestDTO,
+    user: any,
+  ) {
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: approveIaoRequestDTO.requestId,
+      status: IAO_REQUEST_STATUS.IN_REVIEW,
+    });
+    if (!iaoRequest) throw 'No data exists';
+
+    const firstApproveRole = [Role.OWNER, Role.SuperAdmin, Role.OperationAdmin];
+
+    if (!firstApproveRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    if (iaoRequest.firstReviewer) throw 'This IAO request is approved';
+    const firstReview = this.iaoRequestBuilderService.createFirstReview(
+      approveIaoRequestDTO,
+      user,
+    );
+    await this.dataService.iaoRequest.updateOne(
+      {
+        iaoId: approveIaoRequestDTO.requestId,
+        status: IAO_REQUEST_STATUS.IN_REVIEW,
+        updatedAt: iaoRequest['updatedAt'],
+      },
+      {
+        $set: {
+          firstReviewer: { ...firstReview },
+          status: IAO_REQUEST_STATUS.APPROVED_A,
+        },
+      },
+    );
+    return approveIaoRequestDTO.requestId;
   }
 }
