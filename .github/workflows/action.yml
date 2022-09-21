@@ -29,7 +29,6 @@ jobs:
       - name: deploy
         run: | # run with multiple script
           cd /home/ekoios/source/Admin_BE
-          git reset --h
           git pull origin develop
           npm install
           npm run build

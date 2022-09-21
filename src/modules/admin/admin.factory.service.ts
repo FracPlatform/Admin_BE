@@ -1,0 +1,60 @@
+import { Injectable } from '@nestjs/common';
+import { Utils } from 'src/common/utils';
+import { IDataServices } from 'src/core/abstracts/data-services.abstract';
+import { PREFIX_ID } from 'src/common/constants';
+import { AdminEntity, ListAdminEntity } from 'src/entity';
+import { ADMIN_STATUS } from 'src/datalayer/model';
+import { CreateAdminDto } from './dto/admin.dto';
+
+@Injectable()
+export class AdminBuilderService {
+  constructor(private readonly dataServices: IDataServices) { }
+
+  async createAdmin(
+    data: CreateAdminDto,
+    currentAdminId,
+    referral,
+    session,
+  ): Promise<AdminEntity> {
+    const asset: AdminEntity = {
+      email: data.email,
+      fullname: data.name,
+      description: data.description,
+      walletAddress: data.walletAddress,
+      role: data.role,
+      status: ADMIN_STATUS.INACTIVE,
+      referral,
+      createBy: currentAdminId,
+      lastUpdateBy: currentAdminId,
+      deleted: false,
+      adminId: await Utils.getNextPrefixId(
+        this.dataServices.counterId,
+        PREFIX_ID.ADMIN,
+        session,
+      ),
+    };
+    return asset;
+  }
+
+  convertAdmins(data) {
+    return data.map((e) => {
+      const admin: ListAdminEntity = {
+        _id: e._id,
+        email: e.email,
+        fullname: e.fullname,
+        description: e.description,
+        walletAddress: e.walletAddress,
+        role: e.role,
+        status: e.status,
+        referral: e.referral,
+        createBy: e.createBy,
+        lastUpdateBy: e.lastUpdateBy,
+        deleted: e.deleted,
+        adminId: e.deleted,
+        createdAt: e.createdAt,
+        updatedAt: e.updatedAt,
+      };
+      return admin;
+    });
+  }
+}

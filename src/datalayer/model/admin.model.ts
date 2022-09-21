@@ -38,10 +38,10 @@ export class Admin {
   @Prop({ type: String })
   referral: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
+  @Prop({ type: String })
   createBy: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, default: null })
+  @Prop({ type: String })
   lastUpdateBy: string;
 
   @Prop({ type: String, default: PREFIX_ID.ADMIN })
