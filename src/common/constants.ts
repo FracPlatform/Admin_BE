@@ -73,3 +73,7 @@ export enum PREFIX_ID {
   IAO_REQUEST = 'IAO-REQUEST',
   ASSET_TYPE = 'ATYPE',
 }
+
+export const CONTRACT_EVENTS = {
+  SET_ADMIN: 'SetAdminEvent',
+};
