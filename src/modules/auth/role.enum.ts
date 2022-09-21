@@ -1,4 +1,5 @@
 export enum Role {
+  Deactive = 0,
   SuperAdmin = 1,
   OperationAdmin = 2,
   HeadOfBD = 3,

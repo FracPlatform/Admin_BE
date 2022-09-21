@@ -1,4 +1,5 @@
 import { Controller, Post, Body, HttpCode, UseGuards } from '@nestjs/common';
+import { ApiSuccessResponse } from '../../common/response/api-success';
 import { WorkerDataDto } from './dto/worker-data.dto';
 import { WorkerGuard } from './worker.guard';
 import { WorkerService } from './worker.service';
@@ -10,13 +11,15 @@ export class WorkerController {
   @Post('/token')
   @HttpCode(200)
   generateToken() {
-    return this.workerService.generateToken();
+    const token = this.workerService.generateToken();
+    return new ApiSuccessResponse().success(token, '');
   }
 
   @Post()
   @HttpCode(200)
   @UseGuards(WorkerGuard)
-  receivedData(@Body() requestData: WorkerDataDto) {
-    return this.workerService.receivedData(requestData);
+  async receivedData(@Body() requestData: WorkerDataDto) {
+    await this.workerService.receivedData(requestData);
+    return new ApiSuccessResponse().success('', '');
   }
 }
