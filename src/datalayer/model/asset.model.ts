@@ -18,9 +18,12 @@ export enum OWNERSHIP_PRIVACY {
 export enum ASSET_STATUS {
   OPEN = 1,
   IN_REVIEW = 2,
-  IAO = 3,
-  EXCHANGE = 4,
-  SOLD_OUT = 5,
+  IAO_APPROVED = 3,
+  CONVERTED_TO_NFT = 4,
+  FRACTIONALIZED = 5,
+  IAO_EVENT = 6,
+  EXCHANGE = 7,
+  REDEEMED = 8,
 }
 
 export enum NETWORK {
