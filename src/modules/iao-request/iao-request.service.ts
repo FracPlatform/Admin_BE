@@ -467,4 +467,40 @@ export class IaoRequestService {
     );
     return approveIaoRequestDTO.requestId;
   }
+
+  async secondApproveIaoRequest(
+    approveIaoRequestDTO: ApproveIaoRequestDTO,
+    user: any,
+  ) {
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: approveIaoRequestDTO.requestId,
+      status: IAO_REQUEST_STATUS.APPROVED_A,
+    });
+    if (!iaoRequest) throw 'No data exists';
+
+    const firstApproveRole = [Role.OWNER, Role.SuperAdmin];
+
+    if (!firstApproveRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
+    const secondReview = this.iaoRequestBuilderService.createSecondReview(
+      approveIaoRequestDTO,
+      user,
+    );
+    await this.dataService.iaoRequest.updateOne(
+      {
+        iaoId: approveIaoRequestDTO.requestId,
+        status: IAO_REQUEST_STATUS.APPROVED_A,
+        updatedAt: iaoRequest['updatedAt'],
+      },
+      {
+        $set: {
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.APPROVED_B,
+        },
+      },
+    );
+    return approveIaoRequestDTO.requestId;
+  }
 }
