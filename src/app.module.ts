@@ -13,6 +13,7 @@ import { AssetTypeModule } from './modules/asset-type/asset-type.module';
 import { FractorModule } from './modules/fractor/fractor.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { IaoRequestModule } from './modules/iao-request/iao-request.module';
+import { AssetModule } from './modules/asset/asset.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { IaoRequestModule } from './modules/iao-request/iao-request.module';
     AssetTypeModule,
     FractorModule,
     IaoRequestModule,
+    AssetModule,
   ],
   controllers: [AppController],
 })
