@@ -9,10 +9,13 @@ import {
   Asset,
   Fractor,
   IAO_REQUEST_STATUS,
+  ASSET_STATUS,
 } from 'src/datalayer/model';
 import { IaoRequestBuilderService } from './iao-request.factory.service';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 import { Role } from '../auth/role.enum';
+import { InjectConnection } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 
 export interface ListDocument {
   docs?: any[];
@@ -24,6 +27,7 @@ export class IaoRequestService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly iaoRequestBuilderService: IaoRequestBuilderService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
   async findAll(filter: FilterIAORequestDto) {
     const query = {};
@@ -466,5 +470,80 @@ export class IaoRequestService {
       },
     );
     return approveIaoRequestDTO.requestId;
+  }
+
+  async secondApproveIaoRequest(
+    approveIaoRequestDTO: ApproveIaoRequestDTO,
+    user: any,
+  ) {
+    const secondApproveRole = [Role.OWNER, Role.SuperAdmin];
+
+    if (!secondApproveRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: approveIaoRequestDTO.requestId,
+      status: IAO_REQUEST_STATUS.APPROVED_A,
+    });
+    if (!iaoRequest) throw 'No data exists';
+
+    if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
+
+    if (
+      iaoRequest.firstReviewer &&
+      iaoRequest.firstReviewer.adminId === user.adminId
+    )
+      throw 'Admin overlaps with first reviewer';
+
+    const secondReview = this.iaoRequestBuilderService.createSecondReview(
+      approveIaoRequestDTO,
+      user,
+    );
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      await this.dataService.iaoRequest.updateOne(
+        {
+          iaoId: approveIaoRequestDTO.requestId,
+          status: IAO_REQUEST_STATUS.APPROVED_A,
+          updatedAt: iaoRequest['updatedAt'],
+        },
+        {
+          $set: {
+            secondReviewer: { ...secondReview },
+            status: IAO_REQUEST_STATUS.APPROVED_B,
+          },
+        },
+        { session },
+      );
+
+      // update asset status
+      const updateItems = iaoRequest.items.map((item) => {
+        return {
+          itemId: item,
+        };
+      });
+      await this.dataService.asset.updateMany(
+        {
+          $or: updateItems,
+          ownerId: iaoRequest.ownerId,
+          status: ASSET_STATUS.IN_REVIEW,
+          deleted: false,
+        },
+        {
+          $set: { status: ASSET_STATUS.IAO_APPROVED },
+        },
+        { session },
+      );
+      await session.commitTransaction();
+      return approveIaoRequestDTO.requestId;
+    } catch (error) {
+      await session.abortTransaction();
+      throw 'Cannot approve this iao request';
+    } finally {
+      session.endSession();
+    }
   }
 }

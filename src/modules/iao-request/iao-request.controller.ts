@@ -58,4 +58,23 @@ export class IaoRequestController {
       throw ApiError('', error);
     }
   }
+
+  @Post('second-approve')
+  @ApiOperation({ summary: 'Second approve IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async secondApproveIaoRequest(
+    @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
+    @Req() req: Request,
+  ) {
+    try {
+      const requestId = await this.iaoRequestService.secondApproveIaoRequest(
+        approveIaoRequestDTO,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(requestId, '');
+    } catch (error) {
+      throw ApiError('', error);
+    }
+  }
 }
