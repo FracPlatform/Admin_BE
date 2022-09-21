@@ -127,7 +127,7 @@ export class AdminService {
   }
 
   async randomReferal() {
-    let referral = randomize('Aa0', Math.floor(Math.random() * 3) + 7);
+    const referral = randomize('Aa0', Math.floor(Math.random() * 3) + 7);
     const userExisted = await this.dataServices.admin.findOne({ referral });
     if (!userExisted) return referral;
 
