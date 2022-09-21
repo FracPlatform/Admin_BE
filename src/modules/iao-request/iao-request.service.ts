@@ -663,7 +663,7 @@ export class IaoRequestService {
     if (!iaoRequest) throw 'No data exists';
     if (!iaoRequest.firstReviewer) throw 'The first review not exists';
     if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
-    user.adminId = 'A-5';
+
     if (
       iaoRequest.firstReviewer &&
       iaoRequest.firstReviewer.adminId === user.adminId
