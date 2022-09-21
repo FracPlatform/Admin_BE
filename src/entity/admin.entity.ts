@@ -17,6 +17,7 @@ export class AdminEntity {
   referral: string;
   createBy: string;
   lastUpdateBy: string;
+  deactivateBy: string;
   adminId?: string;
   deleted: boolean;
 }
@@ -32,6 +33,24 @@ export class ListAdminEntity {
   referral: string;
   createBy: string;
   lastUpdateBy: string;
+  adminId?: string;
+  deleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export class AdminDetailEntity {
+  _id: string;
+  email: string;
+  fullname: string;
+  description: string;
+  walletAddress: string;
+  role: Role;
+  status: number;
+  referral: string;
+  adminCreated: object;
+  adminUpdated: object;
+  adminDeactivated: object;
   adminId?: string;
   deleted: boolean;
   createdAt: Date;

@@ -73,3 +73,32 @@ export class CreateAdminDto {
   @IsEnum([1,2,3,4,5])
   role: number;
 }
+
+export class UpdateAdminDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  name: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(256)
+  email: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(3000)
+  description: string;
+}
+
+export class UpdateStatusAdminDto {
+  @ApiProperty({ required: false, description: 'ACTIVE = 1, INACTIVE = 2' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @IsEnum([1,2])
+  status: number;
+}

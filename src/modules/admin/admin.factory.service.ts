@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
-import { AdminEntity, ListAdminEntity } from 'src/entity';
+import { AdminDetailEntity, AdminEntity, ListAdminEntity } from 'src/entity';
 import { ADMIN_STATUS } from 'src/datalayer/model';
-import { CreateAdminDto } from './dto/admin.dto';
+import { CreateAdminDto, UpdateAdminDto, UpdateStatusAdminDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminBuilderService {
@@ -26,6 +26,7 @@ export class AdminBuilderService {
       referral,
       createBy: currentAdminId,
       lastUpdateBy: currentAdminId,
+      deactivateBy: null,
       deleted: false,
       adminId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
@@ -34,6 +35,24 @@ export class AdminBuilderService {
       ),
     };
     return asset;
+  }
+
+  updateAddmin(data: UpdateAdminDto, currentAdminId) {
+    const dataUpdate = {
+      email: data.email,
+      fullname: data.name,
+      description: data.description,
+      lastUpdateBy: currentAdminId,
+    };
+    return dataUpdate;
+  }
+
+  updateStatusAddmin(data: UpdateStatusAdminDto, currentAdminId) {
+    const dataUpdate = {
+      status: data.status == ADMIN_STATUS.ACTIVE ? ADMIN_STATUS.ACTIVE : ADMIN_STATUS.INACTIVE,
+      deactivateBy: currentAdminId,
+    };
+    return dataUpdate;
   }
 
   convertAdmins(data) {
@@ -56,5 +75,26 @@ export class AdminBuilderService {
       };
       return admin;
     });
+  }
+
+  convertAdminDetail(data, relatedAdminList: any) {
+    const admin: AdminDetailEntity = {
+      _id: data._id,
+      email: data.email,
+      fullname: data.fullname,
+      description: data.description,
+      walletAddress: data.walletAddress,
+      role: data.role,
+      status: data.status,
+      referral: data.referral,
+      adminCreated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.createBy),
+      adminUpdated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.lastUpdateBy),
+      adminDeactivated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.deactivateBy),
+      adminId: data.adminId,
+      deleted: data.deleted,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+    return admin;
   }
 }
