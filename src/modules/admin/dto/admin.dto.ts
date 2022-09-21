@@ -1,7 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsString, IsNotEmpty, IsMongoId, IsOptional, IsNumber, MaxLength, IsEnum, IsEmail } from 'class-validator';
-import { Role } from "src/modules/auth/role.enum";
+import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsEnum, IsEmail } from 'class-validator';
 
 export class FilterAdminDto {
   @ApiProperty({ required: false })

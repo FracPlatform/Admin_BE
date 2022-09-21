@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
 import { PREFIX_ID } from 'src/common/constants';
 import { Role } from '../../modules/auth/role.enum';
 const paginate = require('mongoose-paginate-v2');
