@@ -458,7 +458,10 @@ export class IaoRequestService {
         status: IAO_REQUEST_STATUS.IN_REVIEW,
       },
       {
-        $set: { firstReviewer: { ...firstReview } },
+        $set: {
+          firstReviewer: { ...firstReview },
+          status: IAO_REQUEST_STATUS.APPROVED_A,
+        },
       },
     );
     return approveIaoRequestDTO.requestId;
