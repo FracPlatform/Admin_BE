@@ -476,18 +476,25 @@ export class IaoRequestService {
     approveIaoRequestDTO: ApproveIaoRequestDTO,
     user: any,
   ) {
+    const secondApproveRole = [Role.OWNER, Role.SuperAdmin];
+
+    if (!secondApproveRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
     const iaoRequest = await this.dataService.iaoRequest.findOne({
       iaoId: approveIaoRequestDTO.requestId,
       status: IAO_REQUEST_STATUS.APPROVED_A,
     });
     if (!iaoRequest) throw 'No data exists';
 
-    const firstApproveRole = [Role.OWNER, Role.SuperAdmin];
-
-    if (!firstApproveRole.includes(user.role))
-      throw 'You do not have permission for this action';
-
     if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
+
+    if (
+      iaoRequest.firstReviewer &&
+      iaoRequest.firstReviewer.adminId === user.adminId
+    )
+      throw 'Admin overlaps with first reviewer';
+
     const secondReview = this.iaoRequestBuilderService.createSecondReview(
       approveIaoRequestDTO,
       user,
