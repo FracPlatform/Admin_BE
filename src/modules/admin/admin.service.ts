@@ -91,8 +91,8 @@ export class AdminService {
     } as ListDocument;
   }
 
-  async createAdmin(user: any, data: CreateAdminDto) {    
-    if (data.role == Role.SuperAdmin && ![Role.OWNER, Role.SuperAdmin].includes(user.role))
+  async createAdmin(user: any, data: CreateAdminDto) {
+    if (data.role == Role.SuperAdmin && user.role !== Role.OWNER)
       throw new ForbiddenException('Forbidden');
 
     const session = await this.connection.startSession();
@@ -107,9 +107,7 @@ export class AdminService {
       if (admin) throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
 
       // create referral
-      let referral = randomize('Aa0', Math.floor(Math.random() * 3) + 7);
-      const userExisted = await this.dataServices.admin.findOne({ referral });
-      if (userExisted) referral = randomize('Aa0', Math.floor(Math.random() * 3) + 7);
+      const referral = await this.randomReferal();
 
       const adminObj = await this.adminBuilderService.createAdmin(
         data,
@@ -128,4 +126,11 @@ export class AdminService {
     }
   }
 
+  async randomReferal() {
+    let referral = randomize('Aa0', Math.floor(Math.random() * 3) + 7);
+    const userExisted = await this.dataServices.admin.findOne({ referral });
+    if (!userExisted) return referral;
+
+    return await this.randomReferal();
+  }
 }
