@@ -103,5 +103,8 @@ export class Fractor {
 export const FractorSchema = SchemaFactory.createForClass(Fractor);
 FractorSchema.plugin(paginate);
 FractorSchema.plugin(aggregatePaginate);
-FractorSchema.index({ email: 1 });
 FractorSchema.index({ fractorId: 1 });
+FractorSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { houseName: { $type: 'string' } } },
+);

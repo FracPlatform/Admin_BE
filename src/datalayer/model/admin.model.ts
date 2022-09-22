@@ -54,3 +54,4 @@ export const AdminSchema = SchemaFactory.createForClass(Admin);
 AdminSchema.plugin(paginate);
 AdminSchema.plugin(aggregatePaginate);
 AdminSchema.index({ adminId: 1 });
+AdminSchema.index({ email: 1 }, { unique: true });

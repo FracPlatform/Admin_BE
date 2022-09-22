@@ -77,4 +77,61 @@ export class IaoRequestController {
       throw ApiError('', error);
     }
   }
+
+  @Post('first-reject')
+  @ApiOperation({ summary: 'First reject IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async firstRejectIaoRequest(
+    @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
+    @Req() req: Request,
+  ) {
+    try {
+      const requestId = await this.iaoRequestService.firstRejectIaoRequest(
+        approveIaoRequestDTO,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(requestId, '');
+    } catch (error) {
+      throw ApiError('', error);
+    }
+  }
+
+  @Post('second-reject')
+  @ApiOperation({ summary: 'Second reject IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async secondRejectIaoRequest(
+    @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
+    @Req() req: Request,
+  ) {
+    try {
+      const requestId = await this.iaoRequestService.secondRejectIaoRequest(
+        approveIaoRequestDTO,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(requestId, '');
+    } catch (error) {
+      throw ApiError('', error);
+    }
+  }
+
+  @Post('change-to-draft')
+  @ApiOperation({ summary: 'Change to draft IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async changeToDraftIaoRequest(
+    @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
+    @Req() req: Request,
+  ) {
+    try {
+      const requestId = await this.iaoRequestService.changeToDraftIaoRequest(
+        approveIaoRequestDTO,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(requestId, '');
+    } catch (error) {
+      throw ApiError('', error);
+    }
+  }
 }

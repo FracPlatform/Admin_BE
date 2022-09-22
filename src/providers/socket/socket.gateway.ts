@@ -10,6 +10,8 @@ import { Socket, Server } from 'socket.io';
 
 @WebSocketGateway({
   cors: true,
+  namespace: 'admin-socket.io',
+  path: '/admin-socket.io',
 })
 export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect

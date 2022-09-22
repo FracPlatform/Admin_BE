@@ -10,6 +10,7 @@ export const ErrorCode = {
   NO_DATA_EXISTS: 'E14',
   ALREADY_COMPLETED: 'already completed',
   MIN_PHOTOS: 'E14',
+  MAX_FILE_SIZE: 'E12',
 };
 export const Contract = {
   EVENT: {
@@ -74,3 +75,7 @@ export enum PREFIX_ID {
   IAO_REQUEST = 'IAO-REQUEST',
   ASSET_TYPE = 'ATYPE',
 }
+
+export const CONTRACT_EVENTS = {
+  SET_ADMIN: 'SetAdminEvent',
+};

@@ -10,6 +10,7 @@ import {
   Fractor,
   IAO_REQUEST_STATUS,
   ASSET_STATUS,
+  Admin,
 } from 'src/datalayer/model';
 import { IaoRequestBuilderService } from './iao-request.factory.service';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
@@ -444,19 +445,14 @@ export class IaoRequestService {
       iaoId: approveIaoRequestDTO.requestId,
       status: IAO_REQUEST_STATUS.IN_REVIEW,
     });
-    if (!iaoRequest) throw 'No data exists';
 
-    const firstApproveRole = [Role.OWNER, Role.SuperAdmin, Role.OperationAdmin];
+    this._validateFirstReviewer(iaoRequest, user);
 
-    if (!firstApproveRole.includes(user.role))
-      throw 'You do not have permission for this action';
-
-    if (iaoRequest.firstReviewer) throw 'This IAO request is approved';
     const firstReview = this.iaoRequestBuilderService.createFirstReview(
       approveIaoRequestDTO,
       user,
     );
-    await this.dataService.iaoRequest.updateOne(
+    const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
       {
         iaoId: approveIaoRequestDTO.requestId,
         status: IAO_REQUEST_STATUS.IN_REVIEW,
@@ -469,6 +465,8 @@ export class IaoRequestService {
         },
       },
     );
+    if (updateIaoRequest.modifiedCount === 0)
+      throw 'Cannot approve IAO request';
     return approveIaoRequestDTO.requestId;
   }
 
@@ -476,24 +474,12 @@ export class IaoRequestService {
     approveIaoRequestDTO: ApproveIaoRequestDTO,
     user: any,
   ) {
-    const secondApproveRole = [Role.OWNER, Role.SuperAdmin];
-
-    if (!secondApproveRole.includes(user.role))
-      throw 'You do not have permission for this action';
-
     const iaoRequest = await this.dataService.iaoRequest.findOne({
       iaoId: approveIaoRequestDTO.requestId,
       status: IAO_REQUEST_STATUS.APPROVED_A,
     });
-    if (!iaoRequest) throw 'No data exists';
 
-    if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
-
-    if (
-      iaoRequest.firstReviewer &&
-      iaoRequest.firstReviewer.adminId === user.adminId
-    )
-      throw 'Admin overlaps with first reviewer';
+    this._validateSecondReviewer(iaoRequest, user);
 
     const secondReview = this.iaoRequestBuilderService.createSecondReview(
       approveIaoRequestDTO,
@@ -504,7 +490,7 @@ export class IaoRequestService {
     session.startTransaction();
 
     try {
-      await this.dataService.iaoRequest.updateOne(
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
         {
           iaoId: approveIaoRequestDTO.requestId,
           status: IAO_REQUEST_STATUS.APPROVED_A,
@@ -518,6 +504,8 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot approve IAO request';
 
       // update asset status
       const updateItems = iaoRequest.items.map((item) => {
@@ -525,7 +513,7 @@ export class IaoRequestService {
           itemId: item,
         };
       });
-      await this.dataService.asset.updateMany(
+      const updateAsset = await this.dataService.asset.updateMany(
         {
           $or: updateItems,
           ownerId: iaoRequest.ownerId,
@@ -537,11 +525,234 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateAsset.modifiedCount > 0) throw 'Cannot update asset status';
+
       await session.commitTransaction();
       return approveIaoRequestDTO.requestId;
     } catch (error) {
       await session.abortTransaction();
-      throw 'Cannot approve this iao request';
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  async firstRejectIaoRequest(
+    approveIaoRequestDTO: ApproveIaoRequestDTO,
+    user: any,
+  ) {
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: approveIaoRequestDTO.requestId,
+      status: IAO_REQUEST_STATUS.IN_REVIEW,
+    });
+
+    this._validateFirstReviewer(iaoRequest, user);
+
+    const firstReview = this.iaoRequestBuilderService.createReject(
+      approveIaoRequestDTO,
+      user,
+    );
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
+        {
+          iaoId: approveIaoRequestDTO.requestId,
+          status: IAO_REQUEST_STATUS.IN_REVIEW,
+          updatedAt: iaoRequest['updatedAt'],
+        },
+        {
+          $set: {
+            firstReviewer: { ...firstReview },
+            status: IAO_REQUEST_STATUS.REJECTED,
+          },
+        },
+        { session },
+      );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot reject this IAO request';
+
+      // update asset status
+      const updateItems = iaoRequest.items.map((item) => {
+        return {
+          itemId: item,
+        };
+      });
+      const updateAsset = await this.dataService.asset.updateMany(
+        {
+          $or: updateItems,
+          ownerId: iaoRequest.ownerId,
+          status: ASSET_STATUS.IN_REVIEW,
+          deleted: false,
+        },
+        {
+          $set: { status: ASSET_STATUS.OPEN },
+        },
+        { session },
+      );
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
+
+      await session.commitTransaction();
+      return approveIaoRequestDTO.requestId;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  async secondRejectIaoRequest(
+    approveIaoRequestDTO: ApproveIaoRequestDTO,
+    user: any,
+  ) {
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: approveIaoRequestDTO.requestId,
+      status: IAO_REQUEST_STATUS.APPROVED_A,
+    });
+
+    this._validateSecondReviewer(iaoRequest, user);
+
+    const secondReview = this.iaoRequestBuilderService.createReject(
+      approveIaoRequestDTO,
+      user,
+    );
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
+        {
+          iaoId: approveIaoRequestDTO.requestId,
+          status: IAO_REQUEST_STATUS.APPROVED_A,
+          updatedAt: iaoRequest['updatedAt'],
+        },
+        {
+          $set: {
+            secondReviewer: { ...secondReview },
+            status: IAO_REQUEST_STATUS.REJECTED,
+          },
+        },
+        { session },
+      );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot reject this IAO request';
+
+      // update asset status
+      const updateItems = iaoRequest.items.map((item) => {
+        return {
+          itemId: item,
+        };
+      });
+      const updateAsset = await this.dataService.asset.updateMany(
+        {
+          $or: updateItems,
+          ownerId: iaoRequest.ownerId,
+          status: ASSET_STATUS.IN_REVIEW,
+          deleted: false,
+        },
+        {
+          $set: { status: ASSET_STATUS.OPEN },
+        },
+        { session },
+      );
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
+
+      await session.commitTransaction();
+      return approveIaoRequestDTO.requestId;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  _validateSecondReviewer(iaoRequest: IAORequest, user: any) {
+    const rejectRole = [Role.OWNER, Role.SuperAdmin];
+
+    if (!rejectRole.includes(user.role))
+      throw 'You do not have permission for this action';
+    if (!iaoRequest) throw 'No data exists';
+    if (!iaoRequest.firstReviewer) throw 'The first review not exists';
+    if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
+
+    if (
+      iaoRequest.firstReviewer &&
+      iaoRequest.firstReviewer.adminId === user.adminId
+    )
+      throw 'Admin overlaps with first reviewer';
+  }
+
+  _validateFirstReviewer(iaoRequest: IAORequest, user: any) {
+    if (!iaoRequest) throw 'No data exists';
+
+    const firstApproveRole = [Role.OWNER, Role.SuperAdmin, Role.OperationAdmin];
+
+    if (!firstApproveRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    if (iaoRequest.firstReviewer) throw 'This IAO request is approved';
+  }
+
+  async changeToDraftIaoRequest(dto: ApproveIaoRequestDTO, user: any) {
+    const changeToDraftRole = [
+      Role.OWNER,
+      Role.SuperAdmin,
+      Role.OperationAdmin,
+    ];
+    if (!changeToDraftRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: dto.requestId,
+      status: IAO_REQUEST_STATUS.IN_REVIEW,
+    });
+    if (!iaoRequest) throw 'No data exists';
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
+        {
+          iaoId: iaoRequest.iaoId,
+          ownerId: iaoRequest.ownerId,
+          status: IAO_REQUEST_STATUS.IN_REVIEW,
+        },
+        { $set: { status: IAO_REQUEST_STATUS.DRAFT } },
+        { session },
+      );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot change to draft this IAO request';
+
+      // update asset status
+      const updateItems = iaoRequest.items.map((item) => {
+        return {
+          itemId: item,
+        };
+      });
+      const updateAsset = await this.dataService.asset.updateMany(
+        {
+          $or: updateItems,
+          ownerId: iaoRequest.ownerId,
+          status: ASSET_STATUS.IN_REVIEW,
+          inDraft: false,
+          deleted: false,
+        },
+        {
+          $set: { status: ASSET_STATUS.OPEN, inDraft: true },
+        },
+        { session },
+      );
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
+
+      await session.commitTransaction();
+      return iaoRequest.iaoId;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
     } finally {
       session.endSession();
     }

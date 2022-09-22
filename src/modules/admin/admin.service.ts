@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
@@ -15,11 +15,13 @@ import { ADMIN_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     private readonly dataServices: IDataServices,
     private readonly adminBuilderService: AdminBuilderService,
     @InjectConnection() private readonly connection: Connection,
-  ) { }
+  ) {}
 
   async getListAdmin(user: any, filter: FilterAdminDto) {
     const query: any = {
@@ -29,8 +31,8 @@ export class AdminService {
 
     if (filter.name) {
       query['$or'] = [
-        { fullname: { '$regex': filter.name.trim(), '$options': 'i' } },
-        { walletAddress: { '$regex': filter.name.trim(), '$options': 'i' } },
+        { fullname: { $regex: filter.name.trim(), $options: 'i' } },
+        { walletAddress: { $regex: filter.name.trim(), $options: 'i' } },
       ];
     }
 
@@ -53,7 +55,14 @@ export class AdminService {
         $match: query,
       },
       {
-        $project: { adminId: 1, fullname: 1, role: 1, walletAddress: 1, status: 1, createdAt: 1 },
+        $project: {
+          adminId: 1,
+          fullname: 1,
+          role: 1,
+          walletAddress: 1,
+          status: 1,
+          createdAt: 1,
+        },
       },
     );
 
@@ -67,7 +76,7 @@ export class AdminService {
     const dataReturnFilter = [
       sort,
       { $skip: filter.offset || DEFAULT_OFFET },
-      { $limit: filter.limit || DEFAULT_LIMIT }
+      { $limit: filter.limit || DEFAULT_LIMIT },
     ];
 
     agg.push({
@@ -102,9 +111,10 @@ export class AdminService {
       const admin = await this.dataServices.admin.findOne({
         email: data.email,
         walletAddress: data.walletAddress,
-        deleted: false
+        deleted: false,
       });
-      if (admin) throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
+      if (admin)
+        throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
 
       // create referral
       const referral = await this.randomReferal();
@@ -115,11 +125,14 @@ export class AdminService {
         referral,
         session,
       );
-      const newAdmin = await this.dataServices.admin.create(adminObj, { session });
+      const newAdmin = await this.dataServices.admin.create(adminObj, {
+        session,
+      });
       await session.commitTransaction();
       return newAdmin;
     } catch (error) {
       await session.abortTransaction();
+      this.logger.debug(error.message);
       throw ApiError('', 'Cannot create admin');
     } finally {
       session.endSession();

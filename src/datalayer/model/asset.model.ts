@@ -26,6 +26,19 @@ export enum ASSET_STATUS {
   REDEEMED = 8,
 }
 
+export enum CUSTODIANSHIP_STATUS {
+  FRACTOR = 0,
+  FRACTOR_TO_FRAC_OR_IN_REVIEW = 1,
+  FRAC = 2,
+  AVAILABLE_FOR_FRACTOR_TO_REDEEM = 3,
+  FRACTOR_REDEEMS = 4,
+  FRAC_TO_FRACTOR = 5,
+  AVAILABLE_FOR_USER_TO_REDEEM = 6,
+  USER_REDEEMS = 7,
+  FRAC_TO_USER = 8,
+  USER = 9,
+}
+
 export enum NETWORK {
   ETH = 'eth',
   BSC = 'bsc',
@@ -104,6 +117,9 @@ export class Asset {
 
   @Prop({ type: Boolean, default: false })
   inDraft?: boolean;
+
+  @Prop({ type: Number, default: CUSTODIANSHIP_STATUS.FRACTOR })
+  custodianshipStatus?: CUSTODIANSHIP_STATUS;
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
