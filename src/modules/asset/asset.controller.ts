@@ -19,6 +19,8 @@ import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
 import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { Role } from '../auth/role.enum';
+import { Roles } from '../auth/roles.decorator';
 // import { Role } from '../auth/role.enum';
 // import { Roles } from '../auth/roles.decorator';
 import { AssetService } from './asset.service';
@@ -38,13 +40,20 @@ export class AssetController {
 
   @Get()
   @ApiOperation({ summary: 'Filter Assets' })
-  async findAll(@Query() filter: FilterAssetDto) {
-    const data = await this.assetService.getListAsset(filter);
+  async findAll(@Query() filter: FilterAssetDto, @GetUser() user) {
+    const data = await this.assetService.getListAsset(filter, user);
     return new ApiSuccessResponse().success(data, '');
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get detail Asset' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
   async getDetail(@Param('id') assetId: string) {
     const data = await this.assetService.getDetail(assetId);
     return new ApiSuccessResponse().success(data, '');
@@ -100,7 +109,6 @@ export class AssetController {
   }
 
   @Put('display/:id')
-  // @Roles(Role.User)
   @ApiOperation({ summary: 'Delete Asset' })
   async editDisplay(@Param('id') assetId: string) {
     const data = await this.assetService.editDisplay(assetId);

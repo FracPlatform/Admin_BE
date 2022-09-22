@@ -66,7 +66,7 @@ export class AssetService {
     return true;
   }
 
-  async getListAsset(filter: FilterAssetDto) {
+  async getListAsset(filter: FilterAssetDto, user: any) {
     const query: any = {
       deleted: false,
     };
