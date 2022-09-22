@@ -16,6 +16,7 @@ import {
   UpdateDocumentItemDto,
 } from './dto/documentItem.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
+import { DISPLAY_STATUS, FilterDocumentDto } from './dto/filter-document.dto';
 
 const ufs = require('url-file-size');
 
@@ -160,15 +161,68 @@ export class AssetService {
   }
 
   async getDetail(assetId: string) {
-    const currentAssetDocument = await this.dataServices.asset.aggregate([
+    const currentAssetDocument = await this.searchDocument(assetId, {});
+
+    const currentAsset = await this.dataServices.asset.findOne({
+      itemId: assetId,
+    });
+    if (!currentAsset)
+      throw ApiError(ErrorCode.NO_DATA_EXISTS, 'no data exists');
+
+    const currentUser = await this.dataServices.fractor.findOne({
+      fractorId: currentAsset.ownerId,
+    });
+
+    if (!currentUser) throw ApiError(ErrorCode.DEFAULT_ERROR, 'DEFAULT_ERROR');
+
+    const currentAssetType = await this.dataServices.assetTypes.getById(
+      currentAsset.typeId,
+    );
+    if (!currentAssetType)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'DEFAULT_ERROR');
+
+    const response = this.assetBuilderService.convertAssetDetail(
+      currentAsset,
+      currentUser,
+      currentAssetType?.name,
+      currentAssetDocument,
+    );
+    return response;
+  }
+
+  async editDisplay(assetId: string) {
+    await this.dataServices.asset.findOneAndUpdate(
+      {
+        _id: assetId,
+      },
+      [{ $set: { deleted: { $not: '$deleted' } } }],
+    );
+
+    return { success: true };
+  }
+
+  async searchDocument(assetId: string, filter: FilterDocumentDto) {
+    const query = {};
+    if (filter.keyword)
+      query['$or'] = [
+        { 'documents.name': { $regex: filter.keyword, $options: 'i' } },
+        { 'documents.description': { $regex: filter.keyword, $options: 'i' } },
+        { 'documents.uploadBy': { $regex: filter.keyword, $options: 'i' } },
+      ];
+    if (filter.display === DISPLAY_STATUS.DISPLAY)
+      query['documents.display'] = true;
+    if (filter.display === DISPLAY_STATUS.NOT_DISPLAY)
+      query['documents.display'] = false;
+    const documents = await this.dataServices.asset.aggregate([
       {
         $match: {
           itemId: assetId,
         },
       },
       {
-        $unwind: { path: '$documents', preserveNullAndEmptyArrays: true },
+        $unwind: { path: '$documents' },
       },
+      { $match: query },
       {
         $lookup: {
           from: 'Fractor',
@@ -223,43 +277,7 @@ export class AssetService {
         $project: { _id: 0 },
       },
     ]);
-
-    const currentAsset = await this.dataServices.asset.findOne({
-      itemId: assetId,
-    });
-    if (!currentAsset)
-      throw ApiError(ErrorCode.NO_DATA_EXISTS, 'no data exists');
-
-    const currentUser = await this.dataServices.fractor.findOne({
-      fractorId: currentAsset.ownerId,
-    });
-
-    if (!currentUser) throw ApiError(ErrorCode.DEFAULT_ERROR, 'DEFAULT_ERROR');
-
-    const currentAssetType = await this.dataServices.assetTypes.getById(
-      currentAsset.typeId,
-    );
-    if (!currentAssetType)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'DEFAULT_ERROR');
-
-    const response = this.assetBuilderService.convertAssetDetail(
-      currentAsset,
-      currentUser,
-      currentAssetType?.name,
-      currentAsset.documents.length ? currentAssetDocument[0].documents : [],
-    );
-    return response;
-  }
-
-  async editDisplay(assetId: string) {
-    await this.dataServices.asset.findOneAndUpdate(
-      {
-        _id: assetId,
-      },
-      [{ $set: { deleted: { $not: '$deleted' } } }],
-    );
-
-    return { success: true };
+    return documents.length ? documents[0].documents : documents;
   }
 
   async addDocumentItem(

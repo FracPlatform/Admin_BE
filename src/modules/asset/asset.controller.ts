@@ -11,7 +11,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, response } from 'express';
+import { ApiError } from 'src/common/api';
+import { ErrorCode } from 'src/common/constants';
 // import { ListDocument } from 'src/common/common-type';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
@@ -25,15 +27,16 @@ import {
   UpdateDocumentItemDto,
 } from './dto/documentItem.dto';
 import { FilterAssetDto, FilterMoreUserAssetDto } from './dto/filter-asset.dto';
+import { FilterDocumentDto } from './dto/filter-document.dto';
 
 @Controller('asset')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @ApiTags('Asset Management')
 export class AssetController {
   constructor(private readonly assetService: AssetService) {}
 
   @Get()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter Assets' })
   async findAll(@Query() filter: FilterAssetDto) {
     const data = await this.assetService.getListAsset(filter);
@@ -47,9 +50,24 @@ export class AssetController {
     return new ApiSuccessResponse().success(data, '');
   }
 
+  @Get('search-document-items/:id')
+  @ApiOperation({ summary: 'Search documents in asset' })
+  async searchDocument(
+    @Param('id') assetId: string,
+    @Query() filterDocument: FilterDocumentDto,
+  ) {
+    try {
+      const responseData = await this.assetService.searchDocument(
+        assetId,
+        filterDocument,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
   @Post('add-document-items/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create documentItem for Asset' })
   async addDocumentItem(
     @Body() createDocumentItemDto: CreateDocumentItemDto,
@@ -65,8 +83,6 @@ export class AssetController {
   }
 
   @Put('edit-document-items/:assetId/:docId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Edit documentItem for Asset' })
   async editDocumentItem(
     @Param('assetId', ParseObjectIdPipe) assetId: string,
@@ -84,8 +100,6 @@ export class AssetController {
   }
 
   @Put('display/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   // @Roles(Role.User)
   @ApiOperation({ summary: 'Delete Asset' })
   async editDisplay(@Param('id') assetId: string) {
@@ -94,8 +108,6 @@ export class AssetController {
   }
 
   @Delete('delete-document-items/:assetId/:docId')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete documentItem for Asset' })
   async removeDocumentItem(
     @Param('assetId', ParseObjectIdPipe) assetId: string,
