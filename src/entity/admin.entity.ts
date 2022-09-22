@@ -37,3 +37,20 @@ export class ListAdminEntity {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export class AdminDetailEntity {
+  _id: string;
+  email: string;
+  fullname: string;
+  description: string;
+  walletAddress: string;
+  role: Role;
+  status: number;
+  referral: string;
+  adminCreated: object;
+  adminUpdated: object;
+  adminId?: string;
+  deleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}

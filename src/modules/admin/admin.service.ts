@@ -5,12 +5,13 @@ import { get } from 'lodash';
 import { ObjectId } from 'mongodb';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { CreateAdminDto, FilterAdminDto } from './dto/admin.dto';
+import { CreateAdminDto, FilterAdminDto, UpdateAdminDto } from './dto/admin.dto';
 import { ListDocument } from 'src/common/common-type';
 import { AdminBuilderService } from './admin.factory.service';
 import { ApiError } from 'src/common/api';
 import * as randomatic from 'randomatic';
 import { Role } from '../auth/role.enum';
+import { ADMIN_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class AdminService {
@@ -133,6 +134,46 @@ export class AdminService {
     } finally {
       session.endSession();
     }
+  }
+
+  async update(id: string, user: any, data: UpdateAdminDto) {
+    const filter = {
+      _id: id,
+      status: ADMIN_STATUS.ACTIVE,
+      deleted: false,
+    };
+
+    const currentAdmin = await this.dataServices.admin.findOne(filter);
+    if (!currentAdmin) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    const isEmail = await this.dataServices.admin.findOne({ email: data.email });
+    if (isEmail) throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
+
+    const updateAdminObj = await this.adminBuilderService.updateAddmin(
+      data,
+      user.adminId,
+    );
+
+    return await this.dataServices.admin.findOneAndUpdate(filter, updateAdminObj, { new: true });
+  }
+
+  async getDetail(id: string, user: any) {
+    const filter = {
+      _id: id,
+      deleted: false,
+    };
+
+    const currentAdmin = await this.dataServices.admin.findOne(filter);
+    if (!currentAdmin) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    // create adminIds
+    let adminIds = [currentAdmin.createBy, currentAdmin.lastUpdateBy];
+    adminIds = [...new Set(adminIds)];
+
+    const relatedAdminList = await this.dataServices.admin.findMany({ adminId: { $in: adminIds } }, { adminId: 1, fullname: 1 });
+    if (!relatedAdminList.length) throw ApiError(ErrorCode.DEFAULT_ERROR, 'related Admin List not already exists');
+
+    return await this.adminBuilderService.convertAdminDetail(currentAdmin, relatedAdminList);
   }
 
   async randomReferal() {
