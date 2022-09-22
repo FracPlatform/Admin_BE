@@ -46,11 +46,11 @@ export class AdminController {
   @Roles(Role.SuperAdmin, Role.OWNER, Role.HeadOfBD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get information admin by admin Id' })
-  async getInfoAdmin(
+  async getInforAdmin(
     @Param('id', ParseObjectIdPipe) id: string,
     @GetUser() user,
   ) {
-    const data = await this.adminService.getInfoAdmin(id);
+    const data = await this.adminService.getInforAdmin(id);
     return new ApiSuccessResponse().success(data, '');
   }
 

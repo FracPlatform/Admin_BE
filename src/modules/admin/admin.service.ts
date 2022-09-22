@@ -182,7 +182,7 @@ export class AdminService {
     return await this.adminBuilderService.convertAdminDetail(currentAdmin, relatedAdminList);
   }
 
-  async getInfoAdmin(id: string) {
+  async getInforAdmin(id: string) {
     const filter = {
       _id: id,
       status: ADMIN_STATUS.ACTIVE,
