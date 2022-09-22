@@ -47,22 +47,24 @@ export class AssetController {
     return new ApiSuccessResponse().success(data, '');
   }
 
-  @Post('add-document-iems')
+  @Post('add-document-items/:id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create documentItem for Asset' })
   async addDocumentItem(
     @Body() createDocumentItemDto: CreateDocumentItemDto,
-    @Req() req: Request,
+    @GetUser() user,
+    @Param('id') assetId: string,
   ) {
     const data = await this.assetService.addDocumentItem(
-      req.user,
+      user,
       createDocumentItemDto,
+      assetId,
     );
     return new ApiSuccessResponse().success(data, '');
   }
 
-  @Put('edit-document-iems/:assetId/:docId')
+  @Put('edit-document-items/:assetId/:docId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Edit documentItem for Asset' })
@@ -91,7 +93,7 @@ export class AssetController {
     return new ApiSuccessResponse().success(data, '');
   }
 
-  @Delete('delete-document-iems/:assetId/:docId')
+  @Delete('delete-document-items/:assetId/:docId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete documentItem for Asset' })
