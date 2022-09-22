@@ -85,13 +85,13 @@ export class AssetController {
   @Put('edit-document-items/:assetId/:docId')
   @ApiOperation({ summary: 'Edit documentItem for Asset' })
   async editDocumentItem(
-    @Param('assetId', ParseObjectIdPipe) assetId: string,
+    @Param('assetId') assetId: string,
     @Param('docId', ParseObjectIdPipe) docId: string,
     @Body() updateDocumentItemDto: UpdateDocumentItemDto,
-    @Req() req: Request,
+    @GetUser() user,
   ) {
     const data = await this.assetService.editDocumentItem(
-      req.user,
+      user,
       assetId,
       docId,
       updateDocumentItemDto,
@@ -109,13 +109,13 @@ export class AssetController {
 
   @Delete('delete-document-items/:assetId/:docId')
   @ApiOperation({ summary: 'Delete documentItem for Asset' })
-  async removeDocumentItem(
-    @Param('assetId', ParseObjectIdPipe) assetId: string,
+  async deleteDocumentItem(
+    @Param('assetId') assetId: string,
     @Param('docId', ParseObjectIdPipe) docId: string,
-    @Req() req: Request,
+    @GetUser() user,
   ) {
-    const data = await this.assetService.removeDocumentItem(
-      req.user,
+    const data = await this.assetService.deleteDocumentItem(
+      user,
       assetId,
       docId,
     );
