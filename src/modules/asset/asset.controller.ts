@@ -19,6 +19,7 @@ import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
 import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
 // import { Role } from '../auth/role.enum';
@@ -33,6 +34,7 @@ import { FilterDocumentDto } from './dto/filter-document.dto';
 
 @Controller('asset')
 @UseGuards(JwtAuthGuard)
+@UseGuards(RolesGuard)
 @ApiBearerAuth()
 @ApiTags('Asset Management')
 export class AssetController {
@@ -40,6 +42,13 @@ export class AssetController {
 
   @Get()
   @ApiOperation({ summary: 'Filter Assets' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
   async findAll(@Query() filter: FilterAssetDto, @GetUser() user) {
     const data = await this.assetService.getListAsset(filter, user);
     return new ApiSuccessResponse().success(data, '');
@@ -61,6 +70,13 @@ export class AssetController {
 
   @Get('search-document-items/:id')
   @ApiOperation({ summary: 'Search documents in asset' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
   async searchDocument(
     @Param('id') assetId: string,
     @Query() filterDocument: FilterDocumentDto,
@@ -78,6 +94,13 @@ export class AssetController {
 
   @Post('add-document-items/:id')
   @ApiOperation({ summary: 'Create documentItem for Asset' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
   async addDocumentItem(
     @Body() createDocumentItemDto: CreateDocumentItemDto,
     @GetUser() user,
@@ -93,6 +116,13 @@ export class AssetController {
 
   @Put('edit-document-items/:assetId/:docId')
   @ApiOperation({ summary: 'Edit documentItem for Asset' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
   async editDocumentItem(
     @Param('assetId') assetId: string,
     @Param('docId', ParseObjectIdPipe) docId: string,
@@ -110,6 +140,7 @@ export class AssetController {
 
   @Put('display/:id')
   @ApiOperation({ summary: 'Delete Asset' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async editDisplay(@Param('id') assetId: string) {
     const data = await this.assetService.editDisplay(assetId);
     return new ApiSuccessResponse().success(data, '');
@@ -117,6 +148,7 @@ export class AssetController {
 
   @Delete('delete-document-items/:assetId/:docId')
   @ApiOperation({ summary: 'Delete documentItem for Asset' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async deleteDocumentItem(
     @Param('assetId') assetId: string,
     @Param('docId', ParseObjectIdPipe) docId: string,
