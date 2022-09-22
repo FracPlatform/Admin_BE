@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
@@ -15,6 +15,8 @@ import { ADMIN_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class AdminService {
+  private readonly logger = new Logger(AdminService.name);
+
   constructor(
     private readonly dataServices: IDataServices,
     private readonly adminBuilderService: AdminBuilderService,
@@ -130,6 +132,7 @@ export class AdminService {
       return newAdmin;
     } catch (error) {
       await session.abortTransaction();
+      this.logger.debug(error.message);
       throw ApiError('', 'Cannot create admin');
     } finally {
       session.endSession();
