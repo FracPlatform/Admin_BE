@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsMongoId, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsMongoId,
+  IsOptional,
+  IsBoolean,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateDocumentItemDto {
   @ApiProperty({ required: true })
@@ -19,8 +26,14 @@ export class CreateDocumentItemDto {
 }
 
 export class UpdateDocumentItemDto {
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
+  @ApiProperty({ required: false, type: String })
   @IsString()
+  @IsOptional()
+  @MaxLength(256)
   description: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty({ type: Boolean, required: false })
+  display: boolean;
 }

@@ -327,85 +327,49 @@ export class AssetService {
     data: UpdateDocumentItemDto,
   ) {
     const filter = {
-      _id: assetId,
-      'documents._id': docId,
-      ownerId: user.fractorId,
-      status: ASSET_STATUS.OPEN,
-      deleted: false,
+      itemId: assetId,
     };
 
     const asset = await this.dataServices.asset.findOne(filter);
     if (!asset) throw ApiError('', `Id of Asset is invalid`);
-
-    const updatedDoc = await this.deleteDocumentItem(
-      asset.documents,
-      docId,
-      filter,
-    );
-
-    // update description
-    updatedDoc.description = data.description;
-
     const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
-      { _id: assetId },
       {
-        $push: {
-          documents: {
-            $each: [updatedDoc],
-            $position: 0,
-          },
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'documents._id': docId,
+      },
+      {
+        $set: {
+          'documents.$.description': data.description,
+          'documents.$.display': data.display,
         },
       },
-      { new: true },
     );
-
-    return updatedAsset.documents[0];
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit document');
+    return { success: true };
   }
 
-  async deleteDocumentItem(documentItems: any, docId: string, filter: any) {
-    let currentDocumentItem;
-    for (let i = 0; i < documentItems.length; i++) {
-      if (documentItems[i]._id.toString() === docId.toString()) {
-        const uploadBy = documentItems[i].uploadBy.split('-')[0];
-        if (uploadBy == PREFIX_ID.ADMIN)
-          throw ApiError('', 'You are not admin');
-
-        // get currentDocumentItem
-        currentDocumentItem = documentItems[i];
-
-        //delete documentItem
-        await this.dataServices.asset.updateOne(filter, {
-          $pull: { documents: { _id: documentItems[i]._id } },
-        });
-
-        break;
-      }
-    }
-
-    return currentDocumentItem;
-  }
-
-  async removeDocumentItem(user: any, assetId: string, docId: string) {
+  async deleteDocumentItem(user, assetId: string, docId: string) {
     const filter = {
-      _id: assetId,
-      'documents._id': docId,
-      ownerId: user.fractorId,
-      status: ASSET_STATUS.OPEN,
-      deleted: false,
+      itemId: assetId,
     };
 
     const asset = await this.dataServices.asset.findOne(filter);
     if (!asset) throw ApiError('', `Id of Asset is invalid`);
 
-    const newDocumentItems = await this.deleteDocumentItem(
-      asset.documents,
-      docId,
-      filter,
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'documents._id': docId,
+      },
+      {
+        $pull: { documents: { _id: docId } },
+      },
     );
-
-    if (!newDocumentItems)
-      throw ApiError(ErrorCode.NO_DATA_EXISTS, 'no data exists');
-
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete document');
     return { success: true };
   }
 }
