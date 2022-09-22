@@ -452,7 +452,7 @@ export class IaoRequestService {
       approveIaoRequestDTO,
       user,
     );
-    await this.dataService.iaoRequest.updateOne(
+    const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
       {
         iaoId: approveIaoRequestDTO.requestId,
         status: IAO_REQUEST_STATUS.IN_REVIEW,
@@ -465,6 +465,8 @@ export class IaoRequestService {
         },
       },
     );
+    if (updateIaoRequest.modifiedCount === 0)
+      throw 'Cannot approve IAO request';
     return approveIaoRequestDTO.requestId;
   }
 
@@ -488,7 +490,7 @@ export class IaoRequestService {
     session.startTransaction();
 
     try {
-      await this.dataService.iaoRequest.updateOne(
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
         {
           iaoId: approveIaoRequestDTO.requestId,
           status: IAO_REQUEST_STATUS.APPROVED_A,
@@ -502,6 +504,8 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot approve IAO request';
 
       // update asset status
       const updateItems = iaoRequest.items.map((item) => {
@@ -509,7 +513,7 @@ export class IaoRequestService {
           itemId: item,
         };
       });
-      await this.dataService.asset.updateMany(
+      const updateAsset = await this.dataService.asset.updateMany(
         {
           $or: updateItems,
           ownerId: iaoRequest.ownerId,
@@ -521,11 +525,13 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateAsset.modifiedCount > 0) throw 'Cannot update asset status';
+
       await session.commitTransaction();
       return approveIaoRequestDTO.requestId;
     } catch (error) {
       await session.abortTransaction();
-      throw 'Cannot approve this iao request';
+      throw error;
     } finally {
       session.endSession();
     }
@@ -550,7 +556,7 @@ export class IaoRequestService {
     session.startTransaction();
 
     try {
-      await this.dataService.iaoRequest.updateOne(
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
         {
           iaoId: approveIaoRequestDTO.requestId,
           status: IAO_REQUEST_STATUS.IN_REVIEW,
@@ -564,6 +570,8 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot reject this IAO request';
 
       // update asset status
       const updateItems = iaoRequest.items.map((item) => {
@@ -571,7 +579,7 @@ export class IaoRequestService {
           itemId: item,
         };
       });
-      await this.dataService.asset.updateMany(
+      const updateAsset = await this.dataService.asset.updateMany(
         {
           $or: updateItems,
           ownerId: iaoRequest.ownerId,
@@ -583,11 +591,13 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
+
       await session.commitTransaction();
       return approveIaoRequestDTO.requestId;
     } catch (error) {
       await session.abortTransaction();
-      throw 'Cannot reject this iao request';
+      throw error;
     } finally {
       session.endSession();
     }
@@ -612,7 +622,7 @@ export class IaoRequestService {
     session.startTransaction();
 
     try {
-      await this.dataService.iaoRequest.updateOne(
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
         {
           iaoId: approveIaoRequestDTO.requestId,
           status: IAO_REQUEST_STATUS.APPROVED_A,
@@ -626,6 +636,8 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot reject this IAO request';
 
       // update asset status
       const updateItems = iaoRequest.items.map((item) => {
@@ -633,7 +645,7 @@ export class IaoRequestService {
           itemId: item,
         };
       });
-      await this.dataService.asset.updateMany(
+      const updateAsset = await this.dataService.asset.updateMany(
         {
           $or: updateItems,
           ownerId: iaoRequest.ownerId,
@@ -645,11 +657,13 @@ export class IaoRequestService {
         },
         { session },
       );
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
+
       await session.commitTransaction();
       return approveIaoRequestDTO.requestId;
     } catch (error) {
       await session.abortTransaction();
-      throw 'Cannot reject this iao request';
+      throw error;
     } finally {
       session.endSession();
     }
@@ -680,5 +694,67 @@ export class IaoRequestService {
       throw 'You do not have permission for this action';
 
     if (iaoRequest.firstReviewer) throw 'This IAO request is approved';
+  }
+
+  async changeToDraftIaoRequest(dto: ApproveIaoRequestDTO, user: any) {
+    const changeToDraftRole = [
+      Role.OWNER,
+      Role.SuperAdmin,
+      Role.OperationAdmin,
+    ];
+    if (!changeToDraftRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: dto.requestId,
+      status: IAO_REQUEST_STATUS.IN_REVIEW,
+    });
+    if (!iaoRequest) throw 'No data exists';
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
+        {
+          iaoId: iaoRequest.iaoId,
+          ownerId: iaoRequest.ownerId,
+          status: IAO_REQUEST_STATUS.IN_REVIEW,
+        },
+        { $set: { status: IAO_REQUEST_STATUS.DRAFT } },
+        { session },
+      );
+      if (updateIaoRequest.modifiedCount === 0)
+        throw 'Cannot change to draft this IAO request';
+
+      // update asset status
+      const updateItems = iaoRequest.items.map((item) => {
+        return {
+          itemId: item,
+        };
+      });
+      const updateAsset = await this.dataService.asset.updateMany(
+        {
+          $or: updateItems,
+          ownerId: iaoRequest.ownerId,
+          status: ASSET_STATUS.IN_REVIEW,
+          inDraft: false,
+          deleted: false,
+        },
+        {
+          $set: { status: ASSET_STATUS.OPEN, inDraft: true },
+        },
+        { session },
+      );
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
+
+      await session.commitTransaction();
+      return iaoRequest.iaoId;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }
