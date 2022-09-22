@@ -66,18 +66,24 @@ export class FractorService {
         {
           $lookup: {
             from: 'Admin',
-            localField: 'assignedBD',
-            foreignField: 'adminId',
-            pipeline: [{ $project: { _id: 1, fullname: 1, adminId: 1 } }],
-            as: 'assignedBDInfor',
+            let: { assignedBD: '$assignedBD' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$adminId', '$$assignedBD'] },
+                },
+              },
+              { $project: { adminId: 1, fullname: 1 } },
+            ],
+            as: 'assignedBD',
           },
         },
+        { $unwind: '$assignedBD' },
         {
           $project: {
             password: 0,
             verificationCode: 0,
             verificationCodeExpireTime: 0,
-            assignedBDInfor: { $arrayElemAt: ['$assignedBDInfor', 0] },
           },
         },
       ],
@@ -137,6 +143,27 @@ export class FractorService {
     agg.push(
       {
         $match: match,
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { assignedBD: '$assignedBD' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$adminId', '$$assignedBD'] },
+              },
+            },
+            { $project: { adminId: 1, fullname: 1 } },
+          ],
+          as: 'assignedBD',
+        },
+      },
+      {
+        $unwind: {
+          path: '$assignedBD',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $project: {
