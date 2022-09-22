@@ -19,7 +19,7 @@ export class AuthService {
     const user = await this._validateUser(data.walletAddress, data.signData);
     if (!user)
       throw ApiError(
-        ErrorCode.INVALID_EMAIL_OR_PASSWORD,
+        ErrorCode.INVALID_ADDRESS_OR_SIGNDATA,
         'Invalid address or signData',
       );
 
@@ -56,7 +56,7 @@ export class AuthService {
       status: ADMIN_STATUS.ACTIVE,
     });
     if (!user)
-      throw ApiError(ErrorCode.INVALID_EMAIL_OR_PASSWORD, 'Address not exists');
+      throw ApiError(ErrorCode.INVALID_ADDRESS_OR_SIGNDATA, 'Address not exists');
     return user;
   }
 

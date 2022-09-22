@@ -144,7 +144,10 @@ export class AdminService {
       user.adminId,
     );
 
-    return await this.dataServices.admin.findOneAndUpdate(filter, updateAdminObj, { new: true });
+    return await this.dataServices.admin.findOneAndUpdate({
+      ...filter,
+      updatedAt: currentAdmin['updatedAt'],
+    }, updateAdminObj, { new: true });
   }
 
   async getDetail(id: string, user: any) {
@@ -164,6 +167,19 @@ export class AdminService {
     if (!relatedAdminList.length) throw ApiError(ErrorCode.DEFAULT_ERROR, 'related Admin List not already exists');
 
     return await this.adminBuilderService.convertAdminDetail(currentAdmin, relatedAdminList);
+  }
+
+  async getInfoAdmin(id: string) {
+    const filter = {
+      _id: id,
+      status: ADMIN_STATUS.ACTIVE,
+      deleted: false,
+    };
+
+    const currentAdmin = await this.dataServices.admin.findOne(filter);
+    if (!currentAdmin) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    return await this.adminBuilderService.createInformationAdmin(currentAdmin);
   }
 
   async randomReferal() {

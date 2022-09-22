@@ -41,6 +41,19 @@ export class AdminController {
     return new ApiSuccessResponse().success(data, '');
   }
 
+  @Get('info/:id')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.SuperAdmin, Role.OWNER, Role.HeadOfBD)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'get information admin by admin Id' })
+  async getInfoAdmin(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @GetUser() user,
+  ) {
+    const data = await this.adminService.getInfoAdmin(id);
+    return new ApiSuccessResponse().success(data, '');
+  }
+
   @Post()
   @UseGuards(JwtAuthGuard)
   @Roles(Role.SuperAdmin, Role.OWNER)
