@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
-import { AdminDetailEntity, AdminEntity, ListAdminEntity } from 'src/entity';
+import { AdminDetailEntity, AdminEntity, InformationAdmin, ListAdminEntity } from 'src/entity';
 import { ADMIN_STATUS } from 'src/datalayer/model';
 import { CreateAdminDto, UpdateAdminDto } from './dto/admin.dto';
 
@@ -86,5 +86,15 @@ export class AdminBuilderService {
       updatedAt: data.updatedAt,
     };
     return admin;
+  }
+
+  createInformationAdmin(data) {
+    const information: InformationAdmin = {
+      email: data.email,
+      fullname: data.fullname,
+      description: data.description,
+      adminId: data.adminId,
+    };
+    return information;
   }
 }

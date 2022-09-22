@@ -54,3 +54,10 @@ export class AdminDetailEntity {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export class InformationAdmin {
+  email: string;
+  fullname: string;
+  description: string;
+  adminId: string;
+}

@@ -218,8 +218,6 @@ export class FractorService {
         isBlocked: true,
         lastUpdatedBy: admin.adminId,
         deactivationComment: data.deactivationComment,
-        deactivatedBy: admin.adminId,
-        deactivetedOn: new Date(),
       },
     );
     if (!updateStatus) {

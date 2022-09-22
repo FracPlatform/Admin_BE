@@ -91,12 +91,6 @@ export class Fractor {
   lastUpdatedBy: string;
 
   @Prop({ type: String })
-  deactivatedBy: string;
-
-  @Prop({ type: Date, default: null })
-  deactivetedOn: Date;
-
-  @Prop({ type: String })
   deactivationComment: string;
 }
 
