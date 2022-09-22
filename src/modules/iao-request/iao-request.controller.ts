@@ -117,7 +117,7 @@ export class IaoRequestController {
   }
 
   @Post('change-to-draft')
-  @ApiOperation({ summary: 'Second reject IAO request' })
+  @ApiOperation({ summary: 'Change to draft IAO request' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async changeToDraftIaoRequest(
