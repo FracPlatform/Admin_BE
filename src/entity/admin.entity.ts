@@ -17,7 +17,6 @@ export class AdminEntity {
   referral: string;
   createBy: string;
   lastUpdateBy: string;
-  deactivateBy: string;
   adminId?: string;
   deleted: boolean;
 }
@@ -50,7 +49,6 @@ export class AdminDetailEntity {
   referral: string;
   adminCreated: object;
   adminUpdated: object;
-  adminDeactivated: object;
   adminId?: string;
   deleted: boolean;
   createdAt: Date;

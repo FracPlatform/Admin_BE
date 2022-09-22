@@ -93,12 +93,3 @@ export class UpdateAdminDto {
   @MaxLength(3000)
   description: string;
 }
-
-export class UpdateStatusAdminDto {
-  @ApiProperty({ required: false, description: 'ACTIVE = 1, INACTIVE = 2' })
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @IsEnum([1,2])
-  status: number;
-}

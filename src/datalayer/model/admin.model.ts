@@ -43,9 +43,6 @@ export class Admin {
   @Prop({ type: String })
   lastUpdateBy: string;
 
-  @Prop({ type: String })
-  deactivateBy: string;
-
   @Prop({ type: String, default: PREFIX_ID.ADMIN })
   adminId?: string;
 

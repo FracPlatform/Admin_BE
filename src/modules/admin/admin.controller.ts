@@ -6,7 +6,7 @@ import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { AdminService } from './admin.service';
-import { CreateAdminDto, FilterAdminDto, UpdateAdminDto, UpdateStatusAdminDto } from './dto/admin.dto';
+import { CreateAdminDto, FilterAdminDto, UpdateAdminDto } from './dto/admin.dto';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
 @Controller('admin')
@@ -68,24 +68,6 @@ export class AdminController {
       id,
       user,
       updateAdminDto,
-    );
-    return new ApiSuccessResponse().success(response, '');
-  }
-
-  @Put('change-status/:id')
-  @UseGuards(JwtAuthGuard)
-  @Roles(Role.SuperAdmin, Role.OWNER)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Change Status Admin' })
-  async updateStatus(
-    @Param('id', ParseObjectIdPipe) id: string,
-    @Body() updateStatusAdminDto: UpdateStatusAdminDto,
-    @GetUser() user,
-  ) {
-    const response = await this.adminService.updateStatus(
-      id,
-      user,
-      updateStatusAdminDto,
     );
     return new ApiSuccessResponse().success(response, '');
   }

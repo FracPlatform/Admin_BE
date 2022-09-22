@@ -4,7 +4,7 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
 import { AdminDetailEntity, AdminEntity, ListAdminEntity } from 'src/entity';
 import { ADMIN_STATUS } from 'src/datalayer/model';
-import { CreateAdminDto, UpdateAdminDto, UpdateStatusAdminDto } from './dto/admin.dto';
+import { CreateAdminDto, UpdateAdminDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminBuilderService {
@@ -26,7 +26,6 @@ export class AdminBuilderService {
       referral,
       createBy: currentAdminId,
       lastUpdateBy: currentAdminId,
-      deactivateBy: null,
       deleted: false,
       adminId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
@@ -43,14 +42,6 @@ export class AdminBuilderService {
       fullname: data.name,
       description: data.description,
       lastUpdateBy: currentAdminId,
-    };
-    return dataUpdate;
-  }
-
-  updateStatusAddmin(data: UpdateStatusAdminDto, currentAdminId) {
-    const dataUpdate = {
-      status: data.status == ADMIN_STATUS.ACTIVE ? ADMIN_STATUS.ACTIVE : ADMIN_STATUS.INACTIVE,
-      deactivateBy: currentAdminId,
     };
     return dataUpdate;
   }
@@ -89,7 +80,6 @@ export class AdminBuilderService {
       referral: data.referral,
       adminCreated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.createBy),
       adminUpdated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.lastUpdateBy),
-      adminDeactivated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.deactivateBy),
       adminId: data.adminId,
       deleted: data.deleted,
       createdAt: data.createdAt,
