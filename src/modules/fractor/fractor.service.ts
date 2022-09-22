@@ -43,8 +43,8 @@ export class FractorService {
       }
     }
 
-    await this.dataServices.fractor.updateOne(
-      { fractorId: fractorId },
+    await this.dataServices.fractor.findOneAndUpdate(
+      { fractorId: fractorId, updatedAt: fractor['updatedAt'] },
       {
         $set: updateFractorData,
       },
