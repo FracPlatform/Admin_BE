@@ -115,4 +115,23 @@ export class IaoRequestController {
       throw ApiError('', error);
     }
   }
+
+  @Post('change-to-draft')
+  @ApiOperation({ summary: 'Second reject IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async changeToDraftIaoRequest(
+    @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
+    @Req() req: Request,
+  ) {
+    try {
+      const requestId = await this.iaoRequestService.changeToDraftIaoRequest(
+        approveIaoRequestDTO,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(requestId, '');
+    } catch (error) {
+      throw ApiError('', error);
+    }
+  }
 }
