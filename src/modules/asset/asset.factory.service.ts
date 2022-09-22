@@ -50,7 +50,12 @@ export class AssetBuilderService {
     });
   }
 
-  convertAssetDetail(data: any, user: any, assetTypeName: string) {
+  convertAssetDetail(
+    data: any,
+    user: any,
+    assetTypeName: string,
+    documents: any[],
+  ) {
     const asset: AssetForOwnerEntity = {
       _id: data._id,
       ownerId: data.ownerId,
@@ -63,7 +68,7 @@ export class AssetBuilderService {
       ownershipPrivacy: data.ownershipPrivacy,
       description: data.description,
       specifications: data.specifications,
-      documents: data.documents,
+      documents: documents,
       status: data.status,
       media: data.media,
       previewUrl: data.previewUrl,

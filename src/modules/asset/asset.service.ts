@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
+import ObjectID from 'bson-objectid';
 import { get, isEqual } from 'lodash';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
@@ -159,9 +160,72 @@ export class AssetService {
   }
 
   async getDetail(assetId: string) {
+    const currentAssetDocument = await this.dataServices.asset.aggregate([
+      {
+        $match: {
+          itemId: assetId,
+        },
+      },
+      {
+        $unwind: { path: '$documents', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'Fractor',
+          let: { id: '$documents.uploadBy' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$fractorId', '$$id'] } } },
+            {
+              $project: {
+                email: 1,
+                fullname: 1,
+              },
+            },
+          ],
+          as: 'documents.uploaderFractor',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { id: '$documents.uploadBy' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$adminId', '$$id'] } } },
+            {
+              $project: {
+                email: 1,
+                fullname: 1,
+              },
+            },
+          ],
+          as: 'documents.uploaderAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$documents.uploaderFractor',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: {
+          path: '$documents.uploaderAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          documents: { $push: '$documents' },
+        },
+      },
+      {
+        $project: { _id: 0 },
+      },
+    ]);
+
     const currentAsset = await this.dataServices.asset.findOne({
-      _id: assetId,
-      deleted: false,
+      itemId: assetId,
     });
     if (!currentAsset)
       throw ApiError(ErrorCode.NO_DATA_EXISTS, 'no data exists');
@@ -169,6 +233,7 @@ export class AssetService {
     const currentUser = await this.dataServices.fractor.findOne({
       fractorId: currentAsset.ownerId,
     });
+
     if (!currentUser) throw ApiError(ErrorCode.DEFAULT_ERROR, 'DEFAULT_ERROR');
 
     const currentAssetType = await this.dataServices.assetTypes.getById(
@@ -181,6 +246,7 @@ export class AssetService {
       currentAsset,
       currentUser,
       currentAssetType?.name,
+      currentAsset.documents.length ? currentAssetDocument[0].documents : [],
     );
     return response;
   }
@@ -196,11 +262,13 @@ export class AssetService {
     return { success: true };
   }
 
-  async addDocumentItem(user: any, data: CreateDocumentItemDto) {
+  async addDocumentItem(
+    user: any,
+    data: CreateDocumentItemDto,
+    assetId: string,
+  ) {
     const filter = {
-      _id: data.assetId,
-      ownerId: user.fractorId,
-      status: ASSET_STATUS.OPEN,
+      _id: assetId,
       deleted: false,
     };
 
@@ -215,7 +283,7 @@ export class AssetService {
     const newDoc = await this.assetBuilderService.createDocumentItem(
       data,
       fileSize,
-      user.fractorId,
+      user.adminId,
     );
 
     const newAsset = await this.dataServices.asset.findOneAndUpdate(
