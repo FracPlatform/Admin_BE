@@ -43,12 +43,15 @@ export class FractorService {
       }
     }
 
-    await this.dataServices.fractor.findOneAndUpdate(
+    const updateStatus = await this.dataServices.fractor.findOneAndUpdate(
       { fractorId: fractorId, updatedAt: fractor['updatedAt'] },
       {
         $set: updateFractorData,
       },
     );
+    if (!updateStatus) {
+      throw ApiError('', "Can't update fractor");
+    }
     return { success: true };
   }
 
