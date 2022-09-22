@@ -32,7 +32,7 @@ export class AssetTypeService {
     sortField,
     sortType,
   }: GetListAssetTypeDto) {
-    const where = { isActive: true };
+    const where = {};
     const sort = { $sort: {} };
     const dataPagination: any[] = [{ $skip: offset }];
     if (category) where['category'] = category;
