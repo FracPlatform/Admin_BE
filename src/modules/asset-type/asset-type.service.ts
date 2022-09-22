@@ -40,7 +40,7 @@ export class AssetTypeService {
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
-    else sort['$sort']['name.en'] = 1;
+    else sort['$sort']['createdAt'] = -1;
     if (limit !== -1) dataPagination.push({ $limit: limit });
     const listAssetTypesAggregate = await this.dataService.assetTypes.aggregate(
       [
