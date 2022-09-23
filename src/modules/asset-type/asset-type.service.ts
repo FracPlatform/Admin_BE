@@ -15,6 +15,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
+import { SearchSpecificationsDto } from './dto/search-specifications.dto';
 
 @Injectable()
 export class AssetTypeService {
@@ -36,7 +37,11 @@ export class AssetTypeService {
     const sort = { $sort: {} };
     const dataPagination: any[] = [{ $skip: offset }];
     if (category) where['category'] = category;
-    if (keyword) where['name.en'] = { $regex: keyword, $options: 'i' };
+    if (keyword)
+      where['name.en'] = {
+        $regex: Utils.escapeRegex(keyword.trim()),
+        $options: 'i',
+      };
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
@@ -96,6 +101,45 @@ export class AssetTypeService {
     } finally {
       session.endSession();
     }
+  }
+
+  async searchSpecifications(
+    params: GetAssetTypeByIdDto,
+    filter: SearchSpecificationsDto,
+  ) {
+    const query = {};
+    if (filter.keyword)
+      query['$or'] = [
+        {
+          'specifications.label.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'specifications.description.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    const res = await this.dataService.assetTypes.aggregate([
+      { $match: { assetTypeId: params.id } },
+      { $unwind: { path: '$specifications' } },
+      {
+        $match: query,
+      },
+      {
+        $group: {
+          _id: '$_id',
+          specifications: { $push: '$specifications' },
+        },
+      },
+      {
+        $project: { _id: 0 },
+      },
+    ]);
+    return res.length ? res[0].specifications : res;
   }
 
   async updateAssetType(

@@ -25,6 +25,7 @@ import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
 import { GetListAssetTypeDto } from './dto/get-list-asset-type.dto';
+import { SearchSpecificationsDto } from './dto/search-specifications.dto';
 
 @Controller('asset-type')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -56,6 +57,24 @@ export class AssetTypeController {
     try {
       const responseData = await this.assetTypeService.getAssetTypeById(params);
       return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
+  @Get('search-specifications/:id')
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Get specifications of Asset Type' })
+  async searchSpecifications(
+    @Param() params: GetAssetTypeByIdDto,
+    @Query() filter: SearchSpecificationsDto,
+  ) {
+    try {
+      const responseData = await this.assetTypeService.searchSpecifications(
+        params,
+        filter,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
     } catch (error) {
       throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
     }

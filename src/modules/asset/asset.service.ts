@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import ObjectID from 'bson-objectid';
 import { get, isEqual } from 'lodash';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { ListDocument } from 'src/common/common-type';
-import { ErrorCode, PREFIX_ID } from 'src/common/constants';
+import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
-import { ASSET_STATUS, MEDIA_TYPE } from 'src/datalayer/model/asset.model';
+import { MEDIA_TYPE } from 'src/datalayer/model/asset.model';
 import { MAX_FILE_SIZE } from 'src/datalayer/model/document-item.model';
 import { AssetBuilderService } from './asset.factory.service';
 import {
@@ -17,7 +16,8 @@ import {
 } from './dto/documentItem.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
 import { DISPLAY_STATUS, FilterDocumentDto } from './dto/filter-document.dto';
-
+import { Role } from 'src/modules/auth/role.enum';
+import { Utils } from 'src/common/utils';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -77,11 +77,29 @@ export class AssetService {
       query['custodianshipStatus'] = filter.custodianshipStatus;
     if (filter.keyword) {
       query['$or'] = [
-        { name: { $regex: filter.keyword.trim(), $options: 'i' } },
-        { itemId: { $regex: filter.keyword.trim(), $options: 'i' } },
-        { category: { $regex: filter.keyword.trim(), $options: 'i' } },
         {
-          'assetTypeName.en': { $regex: filter.keyword.trim(), $options: 'i' },
+          name: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          itemId: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          category: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'assetTypeName.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
         },
       ];
     }
@@ -146,9 +164,85 @@ export class AssetService {
       },
     });
 
-    const dataQuery = await this.dataServices.asset.aggregate(agg, {
-      collation: { locale: 'en' },
-    });
+    let dataQuery;
+
+    if (user.role === Role.FractorBD) {
+      dataQuery = await this.dataServices.fractor.aggregate(
+        [
+          {
+            $match: {
+              assignedBD: user.adminId,
+            },
+          },
+          {
+            $unwind: { path: '$collections' },
+          },
+
+          {
+            $lookup: {
+              from: 'Asset',
+              localField: 'collections._id',
+              foreignField: 'collectionId',
+              as: 'asset',
+            },
+          },
+          { $unwind: { path: '$asset' } },
+          {
+            $lookup: {
+              from: 'AssetType',
+              localField: 'typeId',
+              foreignField: '_id',
+              as: 'AssetType',
+            },
+          },
+
+          {
+            $project: {
+              _id: '$asset._id',
+              name: '$asset.name',
+              category: '$asset.category',
+              isMintNFT: '$asset.isMintNFT',
+              ownershipPrivacy: '$asset.ownershipPrivacy',
+              description: '$asset.description',
+              status: '$asset.status',
+              media: '$asset.media',
+              typeId: '$asset.typeId',
+              ownerId: '$asset.ownerId',
+              collectionId: '$asset.collectionId',
+              documents: '$asset.documents',
+              deleted: '$asset.deleted',
+              inDraft: '$asset.inDraft',
+              assetTypeName: { $arrayElemAt: ['$AssetType.name', 0] },
+              Fractor: [
+                {
+                  fullname: '$fullname',
+                  email: '$email',
+                  kycStatus: '$kycStatus',
+                  avatar: '$avatar',
+                  _id: '$_id',
+                },
+              ],
+            },
+          },
+          {
+            $match: query,
+          },
+          {
+            $facet: {
+              count: [{ $count: 'count' }],
+              data: dataReturnFilter,
+            },
+          },
+        ],
+        {
+          collation: { locale: 'en' },
+        },
+      );
+    } else {
+      dataQuery = await this.dataServices.asset.aggregate(agg, {
+        collation: { locale: 'en' },
+      });
+    }
 
     const data = get(dataQuery, [0, 'data']);
     const response = this.assetBuilderService.convertAssets(data);
@@ -205,9 +299,24 @@ export class AssetService {
     const query = {};
     if (filter.keyword)
       query['$or'] = [
-        { 'documents.name': { $regex: filter.keyword, $options: 'i' } },
-        { 'documents.description': { $regex: filter.keyword, $options: 'i' } },
-        { 'documents.uploadBy': { $regex: filter.keyword, $options: 'i' } },
+        {
+          'documents.name': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'documents.description': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'documents.uploadBy': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
       ];
     if (filter.display === DISPLAY_STATUS.DISPLAY)
       query['documents.display'] = true;
