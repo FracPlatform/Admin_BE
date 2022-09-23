@@ -78,7 +78,12 @@ export class FractorService {
             as: 'assignedBD',
           },
         },
-        { $unwind: '$assignedBD' },
+        {
+          $unwind: {
+            path: '$assignedBD',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
         {
           $project: {
             password: 0,
