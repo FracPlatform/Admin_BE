@@ -4,8 +4,6 @@ export enum SOCKET_ROOM {
 }
 
 export enum SOCKET_EVENT {
-  NOTIFICATION = 'notification',
-  REMOVE_FROM_SALE = 'removeFromSale',
-  ADMIN_MINT = 'adminMint',
-  BUY_NFT = 'buyNFT',
+  ACTIVE_ADMIN_EVENT = 'active-admin-event',
+  DEACTIVE_ADMIN_EVENT = 'deactive-admin-event',
 }
