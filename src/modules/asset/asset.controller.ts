@@ -33,8 +33,7 @@ import { FilterAssetDto, FilterMoreUserAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 
 @Controller('asset')
-@UseGuards(JwtAuthGuard)
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('Asset Management')
 export class AssetController {
