@@ -37,7 +37,11 @@ export class AssetTypeService {
     const sort = { $sort: {} };
     const dataPagination: any[] = [{ $skip: offset }];
     if (category) where['category'] = category;
-    if (keyword) where['name.en'] = { $regex: keyword, $options: 'i' };
+    if (keyword)
+      where['name.en'] = {
+        $regex: Utils.escapeRegex(keyword.trim()),
+        $options: 'i',
+      };
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
@@ -107,11 +111,14 @@ export class AssetTypeService {
     if (filter.keyword)
       query['$or'] = [
         {
-          'specifications.label.en': { $regex: filter.keyword, $options: 'i' },
+          'specifications.label.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
         },
         {
           'specifications.description.en': {
-            $regex: filter.keyword,
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
             $options: 'i',
           },
         },

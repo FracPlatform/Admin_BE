@@ -186,11 +186,9 @@ export class FractorService {
       sort = { $sort: { createdAt: -1 } };
     }
 
-    const dataReturnFilter = [
-      sort,
-      { $skip: filter.offset || 0 },
-      { $limit: filter.limit || 10 },
-    ];
+    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || 10 });
     agg.push({
       $facet: {
         count: [{ $count: 'count' }],

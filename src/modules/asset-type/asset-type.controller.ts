@@ -63,6 +63,8 @@ export class AssetTypeController {
   }
 
   @Get('search-specifications/:id')
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Get specifications of Asset Type' })
   async searchSpecifications(
     @Param() params: GetAssetTypeByIdDto,
     @Query() filter: SearchSpecificationsDto,
