@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import ObjectID from 'bson-objectid';
 import { get, isEqual } from 'lodash';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { ListDocument } from 'src/common/common-type';
-import { ErrorCode, PREFIX_ID } from 'src/common/constants';
+import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
-import { ASSET_STATUS, MEDIA_TYPE } from 'src/datalayer/model/asset.model';
+import { MEDIA_TYPE } from 'src/datalayer/model/asset.model';
 import { MAX_FILE_SIZE } from 'src/datalayer/model/document-item.model';
 import { AssetBuilderService } from './asset.factory.service';
 import {
@@ -17,7 +16,7 @@ import {
 } from './dto/documentItem.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
 import { DISPLAY_STATUS, FilterDocumentDto } from './dto/filter-document.dto';
-
+import { Role } from 'src/modules/auth/role.enum';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -97,6 +96,51 @@ export class AssetService {
       });
     }
     const agg = [];
+    // if (user.role === Role.FractorBD) {
+    //   agg.push(
+    //     {
+    //       $match: {
+    //         assignedBD: user.adminId,
+    //       },
+    //     },
+    //     {
+    //       $unwind: { path: '$collections' },
+    //     },
+
+    //     {
+    //       $lookup: {
+    //         from: 'Asset',
+    //         localField: 'collections._id',
+    //         foreignField: 'collectionId',
+    //         as: 'asset',
+    //       },
+    //     },
+    //     { $unwind: { path: '$asset' } },
+    //     {
+    //       $project: {
+    //         _id: '$asset._id',
+    //         name: '$asset.name',
+    //         category: '$asset.category',
+    //         isMintNFT: '$asset.isMintNFT',
+    //         ownershipPrivacy: '$asset.ownershipPrivacy',
+    //         description: '$asset.description',
+    //         specifications: '$asset.specifications',
+    //         status: '$asset.status',
+    //         media: '$asset.media',
+    //         typeId: '$asset.typeId',
+    //         ownerId: '$asset.ownerId',
+    //         collectionId: '$asset.collectionId',
+    //         documents: '$asset.documents',
+    //         deleted: '$asset.deleted',
+    //         inDraft: '$asset.inDraft',
+    //       },
+    //     },
+    //   );
+    // }
+    // const data = await this.dataServices.fractor.aggregate(agg, {
+    //   collation: { locale: 'en' },
+    // });
+    // return data;
     agg.push(
       {
         $lookup: {

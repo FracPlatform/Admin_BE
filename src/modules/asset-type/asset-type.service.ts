@@ -15,6 +15,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
+import { SearchSpecificationsDto } from './dto/search-specifications.dto';
 
 @Injectable()
 export class AssetTypeService {
@@ -96,6 +97,42 @@ export class AssetTypeService {
     } finally {
       session.endSession();
     }
+  }
+
+  async searchSpecifications(
+    params: GetAssetTypeByIdDto,
+    filter: SearchSpecificationsDto,
+  ) {
+    const query = {};
+    if (filter.keyword)
+      query['$or'] = [
+        {
+          'specifications.label.en': { $regex: filter.keyword, $options: 'i' },
+        },
+        {
+          'specifications.description.en': {
+            $regex: filter.keyword,
+            $options: 'i',
+          },
+        },
+      ];
+    const res = await this.dataService.assetTypes.aggregate([
+      { $match: { assetTypeId: params.id } },
+      { $unwind: { path: '$specifications' } },
+      {
+        $match: query,
+      },
+      {
+        $group: {
+          _id: '$_id',
+          specifications: { $push: '$specifications' },
+        },
+      },
+      {
+        $project: { _id: 0 },
+      },
+    ]);
+    return res.length ? res[0].specifications : res;
   }
 
   async updateAssetType(
