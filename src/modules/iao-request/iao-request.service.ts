@@ -17,6 +17,7 @@ import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 import { Role } from '../auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { EditReviewComment } from './dto/edit-review-comment.dto';
 
 export interface ListDocument {
   docs?: any[];
@@ -756,5 +757,41 @@ export class IaoRequestService {
     } finally {
       session.endSession();
     }
+  }
+
+  async EditReviewComment(dto: EditReviewComment, user: any) {
+    const editCommentRole = [Role.OWNER, Role.SuperAdmin];
+    if (!editCommentRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: dto.requestId,
+    });
+    if (!iaoRequest) throw 'This IAO request is invalid';
+    if (!iaoRequest.firstReviewer) throw 'First review is not exists';
+    if (dto.secondComment && !iaoRequest.secondReviewer)
+      throw 'Second review is not exists';
+
+    let update = {
+      $set: {
+        firstReviewer: {
+          ...iaoRequest.firstReviewer,
+          comment: dto.firstComment,
+        },
+      },
+    };
+
+    if (dto.secondComment && iaoRequest.secondReviewer) {
+      update['$set']['secondReviewer'] = {
+        ...iaoRequest.secondReviewer,
+        comment: dto.secondComment,
+      };
+    }
+
+    await this.dataService.iaoRequest.updateOne(
+      { iaoId: iaoRequest.iaoId },
+      { ...update },
+    );
+    return iaoRequest.iaoId;
   }
 }

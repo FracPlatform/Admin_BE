@@ -16,6 +16,7 @@ import { ApiError } from 'src/common/api';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Request } from 'express';
+import { EditReviewComment } from './dto/edit-review-comment.dto';
 
 @Controller('iao-request')
 @ApiTags('IAO Request')
@@ -24,6 +25,8 @@ export class IaoRequestController {
 
   @Get()
   @ApiOperation({ summary: 'List IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async findAll(@Query() filter: FilterIAORequestDto) {
     const data = await this.iaoRequestService.findAll(filter);
     return new ApiSuccessResponse().success(data, '');
@@ -31,6 +34,8 @@ export class IaoRequestController {
 
   @Get(':requestId')
   @ApiOperation({ summary: 'IAO request detail' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   async findOne(@Param('requestId') requestId: string) {
     try {
       const data = await this.iaoRequestService.findOne(requestId);
@@ -127,6 +132,25 @@ export class IaoRequestController {
     try {
       const requestId = await this.iaoRequestService.changeToDraftIaoRequest(
         approveIaoRequestDTO,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(requestId, '');
+    } catch (error) {
+      throw ApiError('', error);
+    }
+  }
+
+  @Post('edit-review-comment')
+  @ApiOperation({ summary: 'Edit review comment IAO request' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async EditReviewComment(
+    @Body() editReviewComment: EditReviewComment,
+    @Req() req: Request,
+  ) {
+    try {
+      const requestId = await this.iaoRequestService.EditReviewComment(
+        editReviewComment,
         req.user,
       );
       return new ApiSuccessResponse().success(requestId, '');
