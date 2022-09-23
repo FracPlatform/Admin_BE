@@ -27,8 +27,8 @@ export class IaoRequestController {
   @ApiOperation({ summary: 'List IAO request' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async findAll(@Query() filter: FilterIAORequestDto) {
-    const data = await this.iaoRequestService.findAll(filter);
+  async findAll(@Query() filter: FilterIAORequestDto, @Req() req: Request) {
+    const data = await this.iaoRequestService.findAll(filter, req.user);
     return new ApiSuccessResponse().success(data, '');
   }
 
@@ -36,9 +36,9 @@ export class IaoRequestController {
   @ApiOperation({ summary: 'IAO request detail' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async findOne(@Param('requestId') requestId: string) {
+  async findOne(@Param('requestId') requestId: string, @Req() req: Request) {
     try {
-      const data = await this.iaoRequestService.findOne(requestId);
+      const data = await this.iaoRequestService.findOne(requestId, req.user);
       return new ApiSuccessResponse().success(data, '');
     } catch (error) {
       throw ApiError('', 'Get iao request detail error');

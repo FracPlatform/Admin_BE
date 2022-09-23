@@ -4,7 +4,6 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  ValidateIf,
 } from 'class-validator';
 import { MAX_IAO_REQUEST_COMMENT } from 'src/datalayer/model';
 
