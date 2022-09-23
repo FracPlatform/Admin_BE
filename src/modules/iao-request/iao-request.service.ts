@@ -10,13 +10,14 @@ import {
   Fractor,
   IAO_REQUEST_STATUS,
   ASSET_STATUS,
-  Admin,
 } from 'src/datalayer/model';
 import { IaoRequestBuilderService } from './iao-request.factory.service';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 import { Role } from '../auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { EditReviewComment } from './dto/edit-review-comment.dto';
+import { DEFAULT_LIMIT, DEFAULT_OFFET } from 'src/common/constants';
 
 export interface ListDocument {
   docs?: any[];
@@ -30,7 +31,17 @@ export class IaoRequestService {
     private readonly iaoRequestBuilderService: IaoRequestBuilderService,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
-  async findAll(filter: FilterIAORequestDto) {
+  async findAll(filter: FilterIAORequestDto, user: any) {
+    const iaoRequestRole = [
+      Role.FractorBD,
+      Role.HeadOfBD,
+      Role.OperationAdmin,
+      Role.SuperAdmin,
+      Role.OWNER,
+    ];
+    if (!iaoRequestRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
     const query = {};
 
     if (filter.keyword) {
@@ -221,8 +232,8 @@ export class IaoRequestService {
 
     const dataReturnFilter = [
       sort,
-      { $skip: filter.offset || 0 },
-      { $limit: filter.limit || 10 },
+      { $skip: filter.offset || DEFAULT_OFFET },
+      { $limit: filter.limit || DEFAULT_LIMIT },
     ];
     agg.push({
       $facet: {
@@ -244,7 +255,16 @@ export class IaoRequestService {
     } as ListDocument;
   }
 
-  async findOne(id: string): Promise<IAORequest> {
+  async findOne(id: string, user: any): Promise<IAORequest> {
+    const iaoRequestRole = [
+      Role.FractorBD,
+      Role.HeadOfBD,
+      Role.OperationAdmin,
+      Role.SuperAdmin,
+      Role.OWNER,
+    ];
+    if (!iaoRequestRole.includes(user.role))
+      throw 'You do not have permission for this action';
     const iaos = await this.dataService.iaoRequest.aggregate([
       {
         $match: {
@@ -756,5 +776,41 @@ export class IaoRequestService {
     } finally {
       session.endSession();
     }
+  }
+
+  async EditReviewComment(dto: EditReviewComment, user: any) {
+    const editCommentRole = [Role.OWNER, Role.SuperAdmin];
+    if (!editCommentRole.includes(user.role))
+      throw 'You do not have permission for this action';
+
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: dto.requestId,
+    });
+    if (!iaoRequest) throw 'This IAO request is invalid';
+    if (!iaoRequest.firstReviewer) throw 'First review is not exists';
+    if (dto.secondComment && !iaoRequest.secondReviewer)
+      throw 'Second review is not exists';
+
+    const update = {
+      $set: {
+        firstReviewer: {
+          ...iaoRequest.firstReviewer,
+          comment: dto.firstComment,
+        },
+      },
+    };
+
+    if (dto.secondComment && iaoRequest.secondReviewer) {
+      update['$set']['secondReviewer'] = {
+        ...iaoRequest.secondReviewer,
+        comment: dto.secondComment,
+      };
+    }
+
+    await this.dataService.iaoRequest.updateOne(
+      { iaoId: iaoRequest.iaoId },
+      { ...update },
+    );
+    return iaoRequest.iaoId;
   }
 }
