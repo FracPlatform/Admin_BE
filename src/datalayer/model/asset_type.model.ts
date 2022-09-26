@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 const paginate = require('mongoose-paginate-v2');
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
@@ -11,8 +13,16 @@ export enum CategoryType {
 }
 
 export class LanguageVariants {
+  @IsString()
+  @ApiProperty({ type: String })
   en: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
   ja: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
   cn: string;
 }
 
