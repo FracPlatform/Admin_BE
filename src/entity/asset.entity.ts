@@ -1,4 +1,4 @@
-import { Media } from '../datalayer/model/asset.model';
+import { Media, CUSTODIANSHIP_STATUS } from '../datalayer/model/asset.model';
 import { Specifications } from 'src/datalayer/model';
 import { DocumentItem } from 'src/datalayer/model/document-item.model';
 export class AssetEntity {
@@ -17,6 +17,7 @@ export class AssetEntity {
   documents: DocumentItem[];
   deleted: boolean;
   itemId?: string;
+  custodianshipStatus: CUSTODIANSHIP_STATUS;
 }
 
 export class DocumentItemEntity {
@@ -46,6 +47,7 @@ export class AssetForOwnerEntity {
   itemId: string;
   assetTypeName: string;
   documents: DocumentItem[];
+  custodianshipStatus: CUSTODIANSHIP_STATUS;
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;

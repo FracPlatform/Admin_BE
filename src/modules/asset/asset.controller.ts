@@ -138,7 +138,7 @@ export class AssetController {
   }
 
   @Put('display/:id')
-  @ApiOperation({ summary: 'Delete Asset' })
+  @ApiOperation({ summary: 'Hide/unhide Asset' })
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async editDisplay(@Param('id') assetId: string) {
     const data = await this.assetService.editDisplay(assetId);
