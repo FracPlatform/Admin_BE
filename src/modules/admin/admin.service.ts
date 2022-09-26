@@ -184,7 +184,7 @@ export class AdminService {
 
   async getInforAdmin(id: string) {
     const filter = {
-      _id: id,
+      adminId: id,
       status: ADMIN_STATUS.ACTIVE,
       deleted: false,
     };
