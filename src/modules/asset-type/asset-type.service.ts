@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_LIMIT, DEFAULT_OFFET, PREFIX_ID } from 'src/common/constants';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFET,
+  ErrorCode,
+  PREFIX_ID,
+} from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
@@ -16,6 +21,9 @@ import { Connection } from 'mongoose';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { SearchSpecificationsDto } from './dto/search-specifications.dto';
+import { CheckDuplicateNameDto } from './dto/check-duplicate-name.dto';
+import { query } from 'express';
+import { ApiError } from 'src/common/api';
 
 @Injectable()
 export class AssetTypeService {
@@ -101,6 +109,27 @@ export class AssetTypeService {
     } finally {
       session.endSession();
     }
+  }
+
+  async checkDuplicateName(filter: CheckDuplicateNameDto) {
+    const property = `name.${filter.lang}`;
+    const query = { [property]: filter.name.toUpperCase() };
+
+    const asseetType = await this.dataService.assetTypes.aggregate([
+      {
+        $project: {
+          'name.en': { $toUpper: '$name.en' },
+          'name.ja': { $toUpper: '$name.ja' },
+          'name.cn': { $toUpper: '$name.cn' },
+        },
+      },
+      {
+        $match: query,
+      },
+    ]);
+    if (asseetType.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'name existed');
+    return { isDuplicate: false };
   }
 
   async searchSpecifications(
