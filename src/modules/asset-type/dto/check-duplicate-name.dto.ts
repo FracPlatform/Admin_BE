@@ -20,17 +20,3 @@ export class CheckDuplicateNameDto {
   @ApiProperty({ type: String })
   name: string;
 }
-
-export class CheckDuplicateSpecificationDto {
-  @IsEnum(LANGUAGE)
-  @ApiProperty({
-    type: String,
-    enum: LANGUAGE,
-    description: 'en => English, ja => Japanese, cn => Chinese',
-  })
-  lang: LANGUAGE;
-
-  @IsString()
-  @ApiProperty({ type: String })
-  label: string;
-}
