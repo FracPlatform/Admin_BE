@@ -105,7 +105,7 @@ export class AssetTypeController {
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
-      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+      throw error;
     }
   }
 
