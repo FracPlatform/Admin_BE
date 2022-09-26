@@ -29,6 +29,8 @@ export class FractorEntity {
   iaoFeeRate: number;
   tradingFeeProfit: number
   lastUpdatedBy: string;
+  deactivatedBy: string;
+  deactivetedOn: Date;
   deactivationComment: string;
 }
 
