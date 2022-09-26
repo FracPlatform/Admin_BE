@@ -91,7 +91,11 @@ export class AssetBuilderService {
       assetTypeName,
       custodianshipStatus: data.custodianshipStatus,
       deleted: data.deleted,
-      lastUpdatedBy: data.lastUpdatedBy,
+      lastUpdatedBy: {
+        id: data.lastUpdatedBy,
+        fullname:
+          data.updatedBy?.fractor?.fullname || data.updatedBy?.admin?.fullname,
+      },
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

@@ -270,9 +270,52 @@ export class AssetService {
   async getDetail(assetId: string) {
     const currentAssetDocument = await this.searchDocument(assetId, {});
 
-    const currentAsset = await this.dataServices.asset.findOne({
-      itemId: assetId,
-    });
+    const [currentAsset] = await this.dataServices.asset.aggregate([
+      {
+        $match: {
+          itemId: assetId,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fractor',
+          let: { id: '$lastUpdatedBy' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$fractorId', '$$id'] } } },
+            {
+              $project: {
+                fullname: 1,
+              },
+            },
+          ],
+          as: 'updatedBy.fractor',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { id: '$lastUpdatedBy' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$adminId', '$$id'] } } },
+            {
+              $project: {
+                fullname: 1,
+              },
+            },
+          ],
+          as: 'updatedBy.admin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$updatedBy.fractor',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $unwind: { path: '$updatedBy.admin', preserveNullAndEmptyArrays: true },
+      },
+    ]);
     if (!currentAsset)
       throw ApiError(ErrorCode.NO_DATA_EXISTS, 'no data exists');
 
