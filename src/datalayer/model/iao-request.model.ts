@@ -81,6 +81,9 @@ export class IAORequest {
   @Prop({ type: String })
   note: string;
 
+  @Prop({ type: String })
+  address: string;
+  
   @Prop({ type: Number })
   status: number;
 
