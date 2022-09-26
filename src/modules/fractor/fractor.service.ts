@@ -221,6 +221,8 @@ export class FractorService {
         isBlocked: true,
         lastUpdatedBy: admin.adminId,
         deactivationComment: data.deactivationComment,
+        deactivatedBy: admin.adminId,
+        deactivetedOn: new Date(),
       },
     );
     if (!updateStatus) {
@@ -311,9 +313,6 @@ export class FractorService {
   }
 
   private _validateRoleEditFractor(role: number, data: UpdateFractorDto) {
-    if (Object.keys(data).includes('assignedBD') && role !== Role.HeadOfBD) {
-      throw ApiError('', 'Only head of BD can edit assignedBD');
-    }
     if (
       (Object.keys(data).includes('iaoFeeRate') ||
         Object.keys(data).includes('tradingFeeProfit') ||
