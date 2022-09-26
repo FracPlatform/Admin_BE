@@ -47,10 +47,10 @@ export class AdminController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get information admin by admin Id' })
   async getInforAdmin(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id') id: string,
     @GetUser() user,
   ) {
-    const data = await this.adminService.getInforAdmin(id);
+    const data = await this.adminService.getInforAdmin(id.trim());
     return new ApiSuccessResponse().success(data, '');
   }
 
