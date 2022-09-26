@@ -109,10 +109,22 @@ export class AssetService {
     if (filter.fromDate) {
       query['$and'] = [{ createdAt: { $gte: new Date(filter.fromDate) } }];
     }
+
     if (filter.toDate) {
-      query['$and'] = (query['$and'] || []).push({
-        $lte: new Date(filter.toDate),
-      });
+      if (query['$and'])
+        query['$and'].push({
+          createdAt: {
+            $lte: new Date(filter.toDate),
+          },
+        });
+      else
+        query['$and'] = [
+          {
+            createdAt: {
+              $lte: new Date(filter.toDate),
+            },
+          },
+        ];
     }
     const agg = [];
     agg.push(
@@ -212,6 +224,7 @@ export class AssetService {
               documents: '$asset.documents',
               deleted: '$asset.deleted',
               inDraft: '$asset.inDraft',
+              custodianshipStatus: '$custodianshipStatus',
               assetTypeName: { $arrayElemAt: ['$AssetType.name', 0] },
               Fractor: [
                 {

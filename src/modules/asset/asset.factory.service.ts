@@ -44,6 +44,7 @@ export class AssetBuilderService {
             : null,
         itemId: e.itemId,
         assetTypeName: e.assetTypeName,
+        custodianshipStatus: e.custodianshipStatus,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       };
@@ -86,6 +87,7 @@ export class AssetBuilderService {
           : null,
       itemId: data.itemId,
       assetTypeName,
+      custodianshipStatus: data.custodianshipStatus,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
