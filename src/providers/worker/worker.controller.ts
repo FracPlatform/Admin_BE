@@ -10,8 +10,8 @@ export class WorkerController {
 
   @Post('/token')
   @HttpCode(200)
-  generateToken() {
-    const token = this.workerService.generateToken();
+  async generateToken() {
+    const token = await this.workerService.generateToken();
     return new ApiSuccessResponse().success(token, '');
   }
 
