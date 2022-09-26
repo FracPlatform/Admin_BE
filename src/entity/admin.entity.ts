@@ -5,6 +5,9 @@ export class ProfileAdmin {
   fullname: string;
   description: string;
   referral: string;
+  walletAddress: string;
+  role: Role;
+  adminId?: string;
 }
 
 export class AdminEntity {
