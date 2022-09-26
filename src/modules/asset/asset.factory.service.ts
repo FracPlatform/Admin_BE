@@ -45,6 +45,7 @@ export class AssetBuilderService {
         itemId: e.itemId,
         assetTypeName: e.assetTypeName,
         deleted: e.deleted,
+        lastUpdatedBy: e.lastUpdatedBy,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       };
@@ -88,6 +89,7 @@ export class AssetBuilderService {
       itemId: data.itemId,
       assetTypeName,
       deleted: data.deleted,
+      lastUpdatedBy: data.lastUpdatedBy,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

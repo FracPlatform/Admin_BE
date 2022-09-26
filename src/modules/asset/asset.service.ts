@@ -284,12 +284,16 @@ export class AssetService {
     return response;
   }
 
-  async editDisplay(assetId: string) {
+  async editDisplay(assetId: string, user: any) {
     await this.dataServices.asset.findOneAndUpdate(
       {
         _id: assetId,
       },
-      [{ $set: { deleted: { $not: '$deleted' } } }],
+      [
+        {
+          $set: { deleted: { $not: '$deleted' }, lastUpdatedBy: user.adminId },
+        },
+      ],
     );
 
     return { success: true };
@@ -422,6 +426,9 @@ export class AssetService {
             $position: 0,
           },
         },
+        $set: {
+          lastUpdatedBy: user.adminId,
+        },
       },
       { new: true },
     );
@@ -451,6 +458,7 @@ export class AssetService {
         $set: {
           'documents.$.description': data.description,
           'documents.$.display': data.display,
+          lastUpdatedBy: user.adminId,
         },
       },
     );
@@ -475,6 +483,9 @@ export class AssetService {
       },
       {
         $pull: { documents: { _id: docId } },
+        $set: {
+          lastUpdatedBy: user.adminId,
+        },
       },
     );
     if (!updatedAsset)

@@ -120,6 +120,9 @@ export class Asset {
 
   @Prop({ type: Number, default: CUSTODIANSHIP_STATUS.FRACTOR })
   custodianshipStatus?: CUSTODIANSHIP_STATUS;
+
+  @Prop({ type: String })
+  lastUpdatedBy: string;
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
