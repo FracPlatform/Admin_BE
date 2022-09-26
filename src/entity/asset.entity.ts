@@ -49,6 +49,7 @@ export class AssetForOwnerEntity {
   documents: DocumentItem[];
   custodianshipStatus: CUSTODIANSHIP_STATUS;
   deleted: boolean;
+  lastUpdatedBy: string;
   createdAt: Date;
   updatedAt: Date;
 }
