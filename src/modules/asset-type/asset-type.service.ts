@@ -21,7 +21,10 @@ import { Connection } from 'mongoose';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { SearchSpecificationsDto } from './dto/search-specifications.dto';
-import { CheckDuplicateNameDto } from './dto/check-duplicate-name.dto';
+import {
+  CheckDuplicateNameDto,
+  LANGUAGE,
+} from './dto/check-duplicate-name.dto';
 import { query } from 'express';
 import { ApiError } from 'src/common/api';
 
@@ -86,6 +89,56 @@ export class AssetTypeService {
   }
 
   async createAssetType(createAssetTypeBody: CreateAssetTypeDto) {
+    if (createAssetTypeBody.name.en)
+      await this.checkDuplicateName({
+        lang: LANGUAGE.EN,
+        name: createAssetTypeBody.name.en,
+      });
+    if (createAssetTypeBody.name.ja)
+      await this.checkDuplicateName({
+        lang: LANGUAGE.JA,
+        name: createAssetTypeBody.name.ja,
+      });
+    if (createAssetTypeBody.name.cn)
+      await this.checkDuplicateName({
+        lang: LANGUAGE.CN,
+        name: createAssetTypeBody.name.cn,
+      });
+
+    const enSpecificationsLabelArr = createAssetTypeBody.specifications.reduce(
+      (prev, curr) => {
+        if (curr.label.en) prev.push(curr.label.en);
+        return prev;
+      },
+      [],
+    );
+    const jaSpecificationsLabelArr = createAssetTypeBody.specifications.reduce(
+      (prev, curr) => {
+        if (curr.label.ja) prev.push(curr.label.ja);
+        return prev;
+      },
+      [],
+    );
+    const cnSpecificationsLabelArr = createAssetTypeBody.specifications.reduce(
+      (prev, curr) => {
+        if (curr.label.cn) prev.push(curr.label.cn);
+        return prev;
+      },
+      [],
+    );
+
+    const enSpecificationsLabelSet = new Set(enSpecificationsLabelArr);
+    const jaSpecificationsLabelSet = new Set(jaSpecificationsLabelArr);
+    const cnSpecificationsLabelSet = new Set(cnSpecificationsLabelArr);
+
+    if (enSpecificationsLabelSet.size < enSpecificationsLabelArr.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'en label duplicate');
+
+    if (jaSpecificationsLabelSet.size < jaSpecificationsLabelArr.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'ja label duplicate');
+    if (cnSpecificationsLabelSet.size < cnSpecificationsLabelArr.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'cn label duplicate');
+
     const session = await this.connection.startSession();
     session.startTransaction();
     try {
