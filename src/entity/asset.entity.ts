@@ -46,6 +46,7 @@ export class AssetForOwnerEntity {
   itemId: string;
   assetTypeName: string;
   documents: DocumentItem[];
+  deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
