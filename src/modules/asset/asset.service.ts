@@ -489,7 +489,7 @@ export class AssetService {
       { new: true },
     );
 
-    return newAsset.documents[0];
+    return { ...newAsset.documents[0], uploaderAdmin: user.fullname };
   }
 
   async editDocumentItem(
