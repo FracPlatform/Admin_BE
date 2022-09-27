@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { PREFIX_ID } from 'src/common/constants';
-const paginate = require('mongoose-paginate-v2');
-const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type FnftDocument = Fnft & Document;
 
@@ -62,6 +60,4 @@ export class Fnft {
 }
 
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
-FnftSchema.plugin(paginate);
-FnftSchema.plugin(aggregatePaginate);
 FnftSchema.index({ fnftId: 1 });
