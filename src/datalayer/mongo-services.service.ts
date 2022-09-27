@@ -16,6 +16,8 @@ import {
   IAORequestDocument,
   CounterId,
   CounterIdDocument,
+  Fnft,
+  FnftDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -27,6 +29,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   admin: IGenericRepository<Admin>;
   iaoRequest: IGenericRepository<IAORequest>;
   counterId: IGenericRepository<CounterId>;
+  fnft: IGenericRepository<Fnft>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -41,13 +44,14 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private IAORequestRepository: Model<IAORequestDocument>,
     @InjectModel(CounterId.name)
     private CounterIdRepository: Model<CounterIdDocument>,
+    @InjectModel(Fnft.name)
+    private FnftRepository: Model<FnftDocument>,
   ) {}
 
   onApplicationBootstrap() {
     this.fractor = new MongoGenericRepository<FractorDocument>(
       this.FractorUserRepository,
     );
-
     this.assetTypes = new MongoGenericRepository<AssetTypeDocument>(
       this.AssetTypeRepository,
     );
@@ -62,6 +66,9 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     );
     this.counterId = new MongoGenericRepository<CounterIdDocument>(
       this.CounterIdRepository,
+    );
+    this.fnft = new MongoGenericRepository<FnftDocument>(
+      this.FnftRepository,
     );
   }
 }
