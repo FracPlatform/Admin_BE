@@ -124,7 +124,7 @@ export class FnftService {
   }
 
   async checkItems(iaoRequestId: string, items: any) {
-    let filter = {
+    const filter = {
       assetId: { $in: items },
       status: 'Minted',
     };
@@ -133,6 +133,6 @@ export class FnftService {
 
     }
 
-    const listNft = await this.dataServices.nft.findMany(filter, { _id: 1 });
+    const listNft = await this.dataServices.admin.findMany(filter, { _id: 1 });
   }
 }
