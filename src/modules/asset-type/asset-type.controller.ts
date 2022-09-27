@@ -19,7 +19,10 @@ import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
 import { AssetTypeService } from './asset-type.service';
 import { AddSpecificationDto } from './dto/add-specifications.dto';
-import { CheckDuplicateNameDto } from './dto/check-duplicate-name.dto';
+import {
+  CheckDuplicateNameDto,
+  CheckDuplicateSpecificationDto,
+} from './dto/check-duplicate-name.dto';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
@@ -103,6 +106,22 @@ export class AssetTypeController {
       const responseData = await this.assetTypeService.createAssetType(
         createAssetTypeBody,
       );
+      return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('check-duplicate-specification/:id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Check duplicate name' })
+  async checkDuplicateSpecification(
+    @Param() params: GetAssetTypeByIdDto,
+    @Query() filter: CheckDuplicateSpecificationDto,
+  ) {
+    try {
+      const responseData =
+        await this.assetTypeService.checkDuplicateSpecification(params, filter);
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
       throw error;
