@@ -123,7 +123,7 @@ export class FnftService {
 
   async checkItems(iaoRequestId: string, items: any) {
     const filter = {
-      assetId: { $in: items },
+      tokenId: { $in: items },
       status: NFT_STATUS.MINTED,
     };
 
