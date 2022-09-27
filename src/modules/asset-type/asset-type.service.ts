@@ -105,40 +105,6 @@ export class AssetTypeService {
         name: createAssetTypeBody.name.cn,
       });
 
-    const enSpecificationsLabelArr = createAssetTypeBody.specifications.reduce(
-      (prev, curr) => {
-        if (curr.label.en) prev.push(curr.label.en);
-        return prev;
-      },
-      [],
-    );
-    const jaSpecificationsLabelArr = createAssetTypeBody.specifications.reduce(
-      (prev, curr) => {
-        if (curr.label.ja) prev.push(curr.label.ja);
-        return prev;
-      },
-      [],
-    );
-    const cnSpecificationsLabelArr = createAssetTypeBody.specifications.reduce(
-      (prev, curr) => {
-        if (curr.label.cn) prev.push(curr.label.cn);
-        return prev;
-      },
-      [],
-    );
-
-    const enSpecificationsLabelSet = new Set(enSpecificationsLabelArr);
-    const jaSpecificationsLabelSet = new Set(jaSpecificationsLabelArr);
-    const cnSpecificationsLabelSet = new Set(cnSpecificationsLabelArr);
-
-    if (enSpecificationsLabelSet.size < enSpecificationsLabelArr.length)
-      throw ApiError(ErrorCode.FIELD_EXISTED, 'en label duplicate');
-
-    if (jaSpecificationsLabelSet.size < jaSpecificationsLabelArr.length)
-      throw ApiError(ErrorCode.FIELD_EXISTED, 'ja label duplicate');
-    if (cnSpecificationsLabelSet.size < cnSpecificationsLabelArr.length)
-      throw ApiError(ErrorCode.FIELD_EXISTED, 'cn label duplicate');
-
     const session = await this.connection.startSession();
     session.startTransaction();
     try {
@@ -241,9 +207,52 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     newSpecifications: AddSpecificationDto,
   ) {
+    const assetType = await this.dataService.assetTypes.findOne({
+      assetTypeId: params.id,
+    });
+    const allAssetTypeSpecifications = [
+      ...newSpecifications.specifications,
+      ...assetType.specifications,
+    ];
+
+    const enSpecificationsLabelArr = allAssetTypeSpecifications.reduce(
+      (prev, curr) => {
+        if (curr.label.en) prev.push(curr.label.en);
+        return prev;
+      },
+      [],
+    );
+    const jaSpecificationsLabelArr = allAssetTypeSpecifications.reduce(
+      (prev, curr) => {
+        if (curr.label.ja) prev.push(curr.label.ja);
+        return prev;
+      },
+      [],
+    );
+    const cnSpecificationsLabelArr = allAssetTypeSpecifications.reduce(
+      (prev, curr) => {
+        if (curr.label.cn) prev.push(curr.label.cn);
+        return prev;
+      },
+      [],
+    );
+
+    const enSpecificationsLabelSet = new Set(enSpecificationsLabelArr);
+    const jaSpecificationsLabelSet = new Set(jaSpecificationsLabelArr);
+    const cnSpecificationsLabelSet = new Set(cnSpecificationsLabelArr);
+
+    if (enSpecificationsLabelSet.size < enSpecificationsLabelArr.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'en label duplicate');
+
+    if (jaSpecificationsLabelSet.size < jaSpecificationsLabelArr.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'ja label duplicate');
+    if (cnSpecificationsLabelSet.size < cnSpecificationsLabelArr.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'cn label duplicate');
+
     await this.dataService.assetTypes.updateOne(
       {
         assetTypeId: params.id,
+        updatedAt: assetType['updatedAt'],
       },
       {
         $push: {
@@ -258,6 +267,74 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     editedSpecification: EditSpecificationDto,
   ) {
+    const assetType = await this.dataService.assetTypes.findOne({
+      assetTypeId: params.id,
+    });
+    const toEditSpecification = assetType.specifications.find(
+      (specification) => (specification['_id'] = editedSpecification.id),
+    );
+    const query = [
+      {
+        $match: {
+          assetTypeId: params.id,
+        },
+      },
+      {
+        $unwind: { path: '$specifications' },
+      },
+    ];
+    if (
+      editedSpecification.newSpecification.label.en &&
+      toEditSpecification.label.en.toUpperCase() !==
+        editedSpecification.newSpecification.label.en.toUpperCase()
+    ) {
+      const enDuplicateDocument = await this.dataService.assetTypes.aggregate([
+        ...query,
+        {
+          $match: {
+            'specifications.label.en':
+              editedSpecification.newSpecification.label.en,
+          },
+        },
+      ]);
+      if (enDuplicateDocument.length)
+        throw ApiError(ErrorCode.FIELD_EXISTED, 'en label duplicate');
+    }
+    if (
+      editedSpecification.newSpecification.label.ja &&
+      toEditSpecification.label.ja.toUpperCase() !==
+        editedSpecification.newSpecification.label.ja.toUpperCase()
+    ) {
+      const jaDuplicateDocument = await this.dataService.assetTypes.aggregate([
+        ...query,
+        {
+          $match: {
+            'specifications.label.ja':
+              editedSpecification.newSpecification.label.ja,
+          },
+        },
+      ]);
+      if (jaDuplicateDocument.length)
+        throw ApiError(ErrorCode.FIELD_EXISTED, 'ja label duplicate');
+    }
+    if (
+      editedSpecification.newSpecification.label.cn &&
+      toEditSpecification.label.cn.toUpperCase() !==
+        editedSpecification.newSpecification.label.cn.toUpperCase()
+    ) {
+      const cnDuplicateDocument = await this.dataService.assetTypes.aggregate([
+        ...query,
+        {
+          $match: {
+            'specifications.label.en':
+              editedSpecification.newSpecification.label.cn,
+          },
+        },
+      ]);
+      if (cnDuplicateDocument.length)
+        throw ApiError(ErrorCode.FIELD_EXISTED, 'cn label duplicate');
+    }
+
     await this.dataService.assetTypes.updateOne(
       {
         assetTypeId: params.id,
