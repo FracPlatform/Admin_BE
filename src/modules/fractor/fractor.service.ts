@@ -79,8 +79,50 @@ export class FractorService {
           },
         },
         {
+          $lookup: {
+            from: 'Admin',
+            let: { lastUpdatedBy: '$lastUpdatedBy' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$adminId', '$$lastUpdatedBy'] },
+                },
+              },
+              { $project: { adminId: 1, fullname: 1 } },
+            ],
+            as: 'lastUpdatedBy',
+          },
+        },
+        {
+          $lookup: {
+            from: 'Admin',
+            let: { deactivatedBy: '$deactivatedBy' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$adminId', '$$deactivatedBy'] },
+                },
+              },
+              { $project: { adminId: 1, fullname: 1 } },
+            ],
+            as: 'deactivatedBy',
+          },
+        },
+        {
           $unwind: {
             path: '$assignedBD',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$lastUpdatedBy',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$deactivatedBy',
             preserveNullAndEmptyArrays: true,
           },
         },
