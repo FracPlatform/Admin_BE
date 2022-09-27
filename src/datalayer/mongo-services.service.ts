@@ -18,9 +18,13 @@ import {
   CounterIdDocument,
   Fnft,
   FnftDocument,
+  IAOEvent,
+  Nft,
+  IAOEventDocument,
+  NftDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
-import { Nft, NftDocument } from './model/nft.model';
+
 
 @Injectable()
 export class MongoServices implements IDataServices, OnApplicationBootstrap {
@@ -31,6 +35,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   iaoRequest: IGenericRepository<IAORequest>;
   counterId: IGenericRepository<CounterId>;
   fnft: IGenericRepository<Fnft>;
+  iaoEvent: IGenericRepository<IAOEvent>;
   nft: IGenericRepository<Nft>;
 
   constructor(
@@ -48,6 +53,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private CounterIdRepository: Model<CounterIdDocument>,
     @InjectModel(Fnft.name)
     private FnftRepository: Model<FnftDocument>,
+    @InjectModel(IAOEvent.name)
+    private IAOEventRepository: Model<IAOEventDocument>,
     @InjectModel(Nft.name) private NftRepository: Model<NftDocument>,
   ) {}
 
@@ -71,6 +78,9 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
       this.CounterIdRepository,
     );
     this.fnft = new MongoGenericRepository<FnftDocument>(this.FnftRepository);
+    this.iaoEvent = new MongoGenericRepository<IAOEventDocument>(
+      this.IAOEventRepository,
+    );
     this.nft = new MongoGenericRepository<NftDocument>(this.NftRepository);
   }
 }
