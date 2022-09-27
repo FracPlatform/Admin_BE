@@ -23,6 +23,7 @@ import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { SearchSpecificationsDto } from './dto/search-specifications.dto';
 import {
   CheckDuplicateNameDto,
+  CheckDuplicateSpecificationDto,
   LANGUAGE,
 } from './dto/check-duplicate-name.dto';
 import { query } from 'express';
@@ -151,6 +152,35 @@ export class AssetTypeService {
     return { isDuplicate: false };
   }
 
+  async checkDuplicateSpecification(
+    params: GetAssetTypeByIdDto,
+    filter: CheckDuplicateSpecificationDto,
+  ) {
+    const property = `specifications.label.${filter.lang}`;
+    const query = { [property]: filter.label.toUpperCase() };
+    const asseetType = await this.dataService.assetTypes.aggregate([
+      {
+        $match: {
+          assetTypeId: params.id,
+        },
+      },
+      { $unwind: '$specifications' },
+      {
+        $project: {
+          'specifications.label.en': { $toUpper: '$specifications.label.en' },
+          'specifications.label.ja': { $toUpper: '$specifications.label.ja' },
+          'specifications.label.cn': { $toUpper: '$specifications.label.cn' },
+        },
+      },
+      {
+        $match: query,
+      },
+    ]);
+    if (asseetType.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'label existed');
+    return { isDuplicate: false };
+  }
+
   async searchSpecifications(
     params: GetAssetTypeByIdDto,
     filter: SearchSpecificationsDto,
@@ -207,48 +237,24 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     newSpecifications: AddSpecificationDto,
   ) {
+    if (newSpecifications.specifications[0].label.en)
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.EN,
+        label: newSpecifications.specifications[0].label.en,
+      });
+    if (newSpecifications.specifications[0].label.ja)
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.JA,
+        label: newSpecifications.specifications[0].label.ja,
+      });
+    if (newSpecifications.specifications[0].label.cn)
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.CN,
+        label: newSpecifications.specifications[0].label.cn,
+      });
     const assetType = await this.dataService.assetTypes.findOne({
       assetTypeId: params.id,
     });
-    const allAssetTypeSpecifications = [
-      ...newSpecifications.specifications,
-      ...assetType.specifications,
-    ];
-
-    const enSpecificationsLabelArr = allAssetTypeSpecifications.reduce(
-      (prev, curr) => {
-        if (curr.label.en) prev.push(curr.label.en);
-        return prev;
-      },
-      [],
-    );
-    const jaSpecificationsLabelArr = allAssetTypeSpecifications.reduce(
-      (prev, curr) => {
-        if (curr.label.ja) prev.push(curr.label.ja);
-        return prev;
-      },
-      [],
-    );
-    const cnSpecificationsLabelArr = allAssetTypeSpecifications.reduce(
-      (prev, curr) => {
-        if (curr.label.cn) prev.push(curr.label.cn);
-        return prev;
-      },
-      [],
-    );
-
-    const enSpecificationsLabelSet = new Set(enSpecificationsLabelArr);
-    const jaSpecificationsLabelSet = new Set(jaSpecificationsLabelArr);
-    const cnSpecificationsLabelSet = new Set(cnSpecificationsLabelArr);
-
-    if (enSpecificationsLabelSet.size < enSpecificationsLabelArr.length)
-      throw ApiError(ErrorCode.FIELD_EXISTED, 'en label duplicate');
-
-    if (jaSpecificationsLabelSet.size < jaSpecificationsLabelArr.length)
-      throw ApiError(ErrorCode.FIELD_EXISTED, 'ja label duplicate');
-    if (cnSpecificationsLabelSet.size < cnSpecificationsLabelArr.length)
-      throw ApiError(ErrorCode.FIELD_EXISTED, 'cn label duplicate');
-
     await this.dataService.assetTypes.updateOne(
       {
         assetTypeId: params.id,
@@ -273,66 +279,35 @@ export class AssetTypeService {
     const toEditSpecification = assetType.specifications.find(
       (specification) => (specification['_id'] = editedSpecification.id),
     );
-    const query = [
-      {
-        $match: {
-          assetTypeId: params.id,
-        },
-      },
-      {
-        $unwind: { path: '$specifications' },
-      },
-    ];
     if (
       editedSpecification.newSpecification.label.en &&
       toEditSpecification.label.en.toUpperCase() !==
         editedSpecification.newSpecification.label.en.toUpperCase()
     ) {
-      const enDuplicateDocument = await this.dataService.assetTypes.aggregate([
-        ...query,
-        {
-          $match: {
-            'specifications.label.en':
-              editedSpecification.newSpecification.label.en,
-          },
-        },
-      ]);
-      if (enDuplicateDocument.length)
-        throw ApiError(ErrorCode.FIELD_EXISTED, 'en label duplicate');
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.EN,
+        label: editedSpecification.newSpecification.label.en,
+      });
     }
     if (
       editedSpecification.newSpecification.label.ja &&
       toEditSpecification.label.ja.toUpperCase() !==
         editedSpecification.newSpecification.label.ja.toUpperCase()
     ) {
-      const jaDuplicateDocument = await this.dataService.assetTypes.aggregate([
-        ...query,
-        {
-          $match: {
-            'specifications.label.ja':
-              editedSpecification.newSpecification.label.ja,
-          },
-        },
-      ]);
-      if (jaDuplicateDocument.length)
-        throw ApiError(ErrorCode.FIELD_EXISTED, 'ja label duplicate');
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.JA,
+        label: editedSpecification.newSpecification.label.ja,
+      });
     }
     if (
       editedSpecification.newSpecification.label.cn &&
       toEditSpecification.label.cn.toUpperCase() !==
         editedSpecification.newSpecification.label.cn.toUpperCase()
     ) {
-      const cnDuplicateDocument = await this.dataService.assetTypes.aggregate([
-        ...query,
-        {
-          $match: {
-            'specifications.label.en':
-              editedSpecification.newSpecification.label.cn,
-          },
-        },
-      ]);
-      if (cnDuplicateDocument.length)
-        throw ApiError(ErrorCode.FIELD_EXISTED, 'cn label duplicate');
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.CN,
+        label: editedSpecification.newSpecification.label.cn,
+      });
     }
 
     await this.dataService.assetTypes.updateOne(
