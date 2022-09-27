@@ -16,7 +16,7 @@ export class Fnft {
 	@Prop({ type: String })
 	tokenSymbol: string;
 
-	@Prop({ type: String, default: null })
+	@Prop({ type: String })
 	tokenName: string;
 
 	@Prop({ type: Number })
@@ -28,16 +28,16 @@ export class Fnft {
 	@Prop({ type: Number })
   chainId: number;
 
-	@Prop({ type: String, default: null })
+	@Prop({ type: String })
 	contractAddress: string;
 
 	@Prop([{ type: String }])
   items: string[];
 
-  @Prop({ type: String, default: null })
+  @Prop({ type: String })
 	iaoRequestId: string;
 
-  @Prop({ type: String, default: null })
+  @Prop({ type: String })
 	txhash: string;
 
 	@Prop({ type: Number, default: F_NFT_STATUS.ACTIVE })
@@ -60,4 +60,4 @@ export class Fnft {
 }
 
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
-FnftSchema.index({ fnftId: 1 });
+FnftSchema.index({ fnftId: 1, contractAddress: 1 });

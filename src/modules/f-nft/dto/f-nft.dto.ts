@@ -1,0 +1,77 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { Transform, Type } from "class-transformer";
+import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsEnum, IsArray, Max, Min } from 'class-validator';
+
+export class CreateFnftDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(16)
+  tokenSymbol: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(64)
+  tokenName: string;
+
+  @ApiProperty({ required: true })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(999999999999)
+  totalSupply: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  tokenLogo: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  iaoRequestId: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
+  items: string[];
+}
+
+export class FilterFnftDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+  @MaxLength(256)
+  name: string;
+
+  @ApiProperty({ required: false, description: '0- Inactive, 1- Active' })
+  @IsOptional()
+  @IsString()
+  status: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  offset: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({ message: 'E0' })
+  sortField: string;
+
+  @ApiProperty({ required: false, description: '-1 => DESC, 1 => ASC' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  sortType: number;
+}
