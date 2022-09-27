@@ -33,4 +33,9 @@ export class SocketGateway
     console.log(client);
     console.log(args);
   }
+
+  sendMessage(event: any, data: any) {
+    this.server.emit(event, data);
+    this.logger.log(`Send event=${event}, data=${JSON.stringify(data)}`);
+  }
 }

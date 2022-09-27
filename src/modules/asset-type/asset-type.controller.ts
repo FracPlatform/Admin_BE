@@ -19,12 +19,17 @@ import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
 import { AssetTypeService } from './asset-type.service';
 import { AddSpecificationDto } from './dto/add-specifications.dto';
+import {
+  CheckDuplicateNameDto,
+  CheckDuplicateSpecificationDto,
+} from './dto/check-duplicate-name.dto';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
 import { EditAssetTypeDto } from './dto/edit-asset-type.dto';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
 import { GetListAssetTypeDto } from './dto/get-list-asset-type.dto';
+import { SearchSpecificationsDto } from './dto/search-specifications.dto';
 
 @Controller('asset-type')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -49,6 +54,20 @@ export class AssetTypeController {
     }
   }
 
+  @Get('check-duplicate-name')
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Check duplicate name' })
+  async checkDuplicateName(@Query() filter: CheckDuplicateNameDto) {
+    try {
+      const responseData = await this.assetTypeService.checkDuplicateName(
+        filter,
+      );
+      return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Get(':id')
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Get Asset type by assetTypeId' })
@@ -56,6 +75,24 @@ export class AssetTypeController {
     try {
       const responseData = await this.assetTypeService.getAssetTypeById(params);
       return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
+  @Get('search-specifications/:id')
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Get specifications of Asset Type' })
+  async searchSpecifications(
+    @Param() params: GetAssetTypeByIdDto,
+    @Query() filter: SearchSpecificationsDto,
+  ) {
+    try {
+      const responseData = await this.assetTypeService.searchSpecifications(
+        params,
+        filter,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
     } catch (error) {
       throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
     }
@@ -71,7 +108,23 @@ export class AssetTypeController {
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
-      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+      throw error;
+    }
+  }
+
+  @Get('check-duplicate-specification/:id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Check duplicate name' })
+  async checkDuplicateSpecification(
+    @Param() params: GetAssetTypeByIdDto,
+    @Query() filter: CheckDuplicateSpecificationDto,
+  ) {
+    try {
+      const responseData =
+        await this.assetTypeService.checkDuplicateSpecification(params, filter);
+      return new ApiSuccessResponse().success({ data: responseData });
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -107,7 +160,7 @@ export class AssetTypeController {
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
-      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+      throw error;
     }
   }
 
@@ -125,7 +178,7 @@ export class AssetTypeController {
       );
       return new ApiSuccessResponse().success({ data: responseData });
     } catch (error) {
-      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+      throw error;
     }
   }
 

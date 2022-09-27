@@ -11,6 +11,9 @@ export class AuthBuilderService {
       fullname: user.fullname,
       description: user.description,
       referral: user.referral,
+      walletAddress: user.walletAddress,
+      role: user.role,
+      adminId: user.adminId,
     };
     return profile;
   }

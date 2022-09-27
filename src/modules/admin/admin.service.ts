@@ -133,7 +133,7 @@ export class AdminService {
     } catch (error) {
       await session.abortTransaction();
       this.logger.debug(error.message);
-      throw ApiError('', 'Cannot create admin');
+      throw ApiError('', error.message);
     } finally {
       session.endSession();
     }

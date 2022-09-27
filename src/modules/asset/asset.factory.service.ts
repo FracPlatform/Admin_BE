@@ -39,10 +39,14 @@ export class AssetBuilderService {
                 kycStatus: e.Fractor[0]['kycStatus'],
                 fullname: e.Fractor[0]['fullname'],
                 avatar: e.Fractor[0]['avatar'],
+                _id: e.Fractor[0]['_id'],
               }
             : null,
         itemId: e.itemId,
         assetTypeName: e.assetTypeName,
+        custodianshipStatus: e.custodianshipStatus,
+        deleted: e.deleted,
+        lastUpdatedBy: e.lastUpdatedBy,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       };
@@ -80,10 +84,18 @@ export class AssetBuilderService {
               kycStatus: user.kycStatus,
               fullname: user.fullname,
               avatar: user.avatar,
+              _id: user._id,
             }
           : null,
       itemId: data.itemId,
       assetTypeName,
+      custodianshipStatus: data.custodianshipStatus,
+      deleted: data.deleted,
+      lastUpdatedBy: {
+        id: data.lastUpdatedBy,
+        fullname:
+          data.updatedBy?.fractor?.fullname || data.updatedBy?.admin?.fullname,
+      },
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
@@ -97,6 +109,26 @@ export class AssetBuilderService {
       fileUrl: data.fileUrl,
       size,
       uploadBy,
+    };
+    return documentItem;
+  }
+
+  async convertDocumentItem(data: any, user: any) {
+    const documentItem: DocumentItemEntity = {
+      name: data.name,
+      description: data.description,
+      fileUrl: data.fileUrl,
+      size: data.size,
+      uploadBy: data.uploadBy,
+      display: data.display,
+      _id: data._id,
+      updatedAt: data.updatedAt,
+      createdAt: data.createdAt,
+      uploaderAdmin: {
+        _id: user._id,
+        email: user.email,
+        fullname: user.fullname,
+      },
     };
     return documentItem;
   }

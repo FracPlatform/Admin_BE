@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DEFAULT_LIMIT, DEFAULT_OFFET, PREFIX_ID } from 'src/common/constants';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFET,
+  ErrorCode,
+  PREFIX_ID,
+} from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { CreateAssetTypeDto } from './dto/create-asset-type.dto';
 import { GetAssetTypeByIdDto } from './dto/get-asset-type-by-id.dto';
@@ -15,6 +20,14 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { EditSpecificationDto } from './dto/edit-specification.dto';
 import { DeleteSpecificationDto } from './dto/delete-specification.dto';
+import { SearchSpecificationsDto } from './dto/search-specifications.dto';
+import {
+  CheckDuplicateNameDto,
+  CheckDuplicateSpecificationDto,
+  LANGUAGE,
+} from './dto/check-duplicate-name.dto';
+import { query } from 'express';
+import { ApiError } from 'src/common/api';
 
 @Injectable()
 export class AssetTypeService {
@@ -36,7 +49,11 @@ export class AssetTypeService {
     const sort = { $sort: {} };
     const dataPagination: any[] = [{ $skip: offset }];
     if (category) where['category'] = category;
-    if (keyword) where['name.en'] = { $regex: keyword, $options: 'i' };
+    if (keyword)
+      where['name.en'] = {
+        $regex: Utils.escapeRegex(keyword.trim()),
+        $options: 'i',
+      };
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
@@ -73,6 +90,22 @@ export class AssetTypeService {
   }
 
   async createAssetType(createAssetTypeBody: CreateAssetTypeDto) {
+    if (createAssetTypeBody.name.en)
+      await this.checkDuplicateName({
+        lang: LANGUAGE.EN,
+        name: createAssetTypeBody.name.en,
+      });
+    if (createAssetTypeBody.name.ja)
+      await this.checkDuplicateName({
+        lang: LANGUAGE.JA,
+        name: createAssetTypeBody.name.ja,
+      });
+    if (createAssetTypeBody.name.cn)
+      await this.checkDuplicateName({
+        lang: LANGUAGE.CN,
+        name: createAssetTypeBody.name.cn,
+      });
+
     const session = await this.connection.startSession();
     session.startTransaction();
     try {
@@ -98,6 +131,95 @@ export class AssetTypeService {
     }
   }
 
+  async checkDuplicateName(filter: CheckDuplicateNameDto) {
+    const property = `name.${filter.lang}`;
+    const query = { [property]: filter.name.toUpperCase() };
+
+    const asseetType = await this.dataService.assetTypes.aggregate([
+      {
+        $project: {
+          'name.en': { $toUpper: '$name.en' },
+          'name.ja': { $toUpper: '$name.ja' },
+          'name.cn': { $toUpper: '$name.cn' },
+        },
+      },
+      {
+        $match: query,
+      },
+    ]);
+    if (asseetType.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'name existed');
+    return { isDuplicate: false };
+  }
+
+  async checkDuplicateSpecification(
+    params: GetAssetTypeByIdDto,
+    filter: CheckDuplicateSpecificationDto,
+  ) {
+    const property = `specifications.label.${filter.lang}`;
+    const query = { [property]: filter.label.toUpperCase() };
+    const asseetType = await this.dataService.assetTypes.aggregate([
+      {
+        $match: {
+          assetTypeId: params.id,
+        },
+      },
+      { $unwind: '$specifications' },
+      {
+        $project: {
+          'specifications.label.en': { $toUpper: '$specifications.label.en' },
+          'specifications.label.ja': { $toUpper: '$specifications.label.ja' },
+          'specifications.label.cn': { $toUpper: '$specifications.label.cn' },
+        },
+      },
+      {
+        $match: query,
+      },
+    ]);
+    if (asseetType.length)
+      throw ApiError(ErrorCode.FIELD_EXISTED, 'label existed');
+    return { isDuplicate: false };
+  }
+
+  async searchSpecifications(
+    params: GetAssetTypeByIdDto,
+    filter: SearchSpecificationsDto,
+  ) {
+    const query = {};
+    if (filter.keyword)
+      query['$or'] = [
+        {
+          'specifications.label.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'specifications.description.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    const res = await this.dataService.assetTypes.aggregate([
+      { $match: { assetTypeId: params.id } },
+      { $unwind: { path: '$specifications' } },
+      {
+        $match: query,
+      },
+      {
+        $group: {
+          _id: '$_id',
+          specifications: { $push: '$specifications' },
+        },
+      },
+      {
+        $project: { _id: 0 },
+      },
+    ]);
+    return res.length ? res[0].specifications : res;
+  }
+
   async updateAssetType(
     params: GetAssetTypeByIdDto,
     newAssetTypeData: EditAssetTypeDto,
@@ -115,9 +237,28 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     newSpecifications: AddSpecificationDto,
   ) {
+    if (newSpecifications.specifications[0].label.en)
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.EN,
+        label: newSpecifications.specifications[0].label.en,
+      });
+    if (newSpecifications.specifications[0].label.ja)
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.JA,
+        label: newSpecifications.specifications[0].label.ja,
+      });
+    if (newSpecifications.specifications[0].label.cn)
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.CN,
+        label: newSpecifications.specifications[0].label.cn,
+      });
+    const assetType = await this.dataService.assetTypes.findOne({
+      assetTypeId: params.id,
+    });
     await this.dataService.assetTypes.updateOne(
       {
         assetTypeId: params.id,
+        updatedAt: assetType['updatedAt'],
       },
       {
         $push: {
@@ -132,6 +273,43 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     editedSpecification: EditSpecificationDto,
   ) {
+    const assetType = await this.dataService.assetTypes.findOne({
+      assetTypeId: params.id,
+    });
+    const toEditSpecification = assetType.specifications.find(
+      (specification) => (specification['_id'] = editedSpecification.id),
+    );
+    if (
+      editedSpecification.newSpecification.label.en &&
+      toEditSpecification.label.en.toUpperCase() !==
+        editedSpecification.newSpecification.label.en.toUpperCase()
+    ) {
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.EN,
+        label: editedSpecification.newSpecification.label.en,
+      });
+    }
+    if (
+      editedSpecification.newSpecification.label.ja &&
+      toEditSpecification.label.ja.toUpperCase() !==
+        editedSpecification.newSpecification.label.ja.toUpperCase()
+    ) {
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.JA,
+        label: editedSpecification.newSpecification.label.ja,
+      });
+    }
+    if (
+      editedSpecification.newSpecification.label.cn &&
+      toEditSpecification.label.cn.toUpperCase() !==
+        editedSpecification.newSpecification.label.cn.toUpperCase()
+    ) {
+      await this.checkDuplicateSpecification(params, {
+        lang: LANGUAGE.CN,
+        label: editedSpecification.newSpecification.label.cn,
+      });
+    }
+
     await this.dataService.assetTypes.updateOne(
       {
         assetTypeId: params.id,

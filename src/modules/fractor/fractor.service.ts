@@ -79,8 +79,50 @@ export class FractorService {
           },
         },
         {
+          $lookup: {
+            from: 'Admin',
+            let: { lastUpdatedBy: '$lastUpdatedBy' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$adminId', '$$lastUpdatedBy'] },
+                },
+              },
+              { $project: { adminId: 1, fullname: 1 } },
+            ],
+            as: 'lastUpdatedBy',
+          },
+        },
+        {
+          $lookup: {
+            from: 'Admin',
+            let: { deactivatedBy: '$deactivatedBy' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$adminId', '$$deactivatedBy'] },
+                },
+              },
+              { $project: { adminId: 1, fullname: 1 } },
+            ],
+            as: 'deactivatedBy',
+          },
+        },
+        {
           $unwind: {
             path: '$assignedBD',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$lastUpdatedBy',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $unwind: {
+            path: '$deactivatedBy',
             preserveNullAndEmptyArrays: true,
           },
         },
@@ -186,11 +228,9 @@ export class FractorService {
       sort = { $sort: { createdAt: -1 } };
     }
 
-    const dataReturnFilter = [
-      sort,
-      { $skip: filter.offset || 0 },
-      { $limit: filter.limit || 10 },
-    ];
+    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || 10 });
     agg.push({
       $facet: {
         count: [{ $count: 'count' }],
@@ -223,6 +263,8 @@ export class FractorService {
         isBlocked: true,
         lastUpdatedBy: admin.adminId,
         deactivationComment: data.deactivationComment,
+        deactivatedBy: admin.adminId,
+        deactivetedOn: new Date(),
       },
     );
     if (!updateStatus) {
@@ -313,9 +355,6 @@ export class FractorService {
   }
 
   private _validateRoleEditFractor(role: number, data: UpdateFractorDto) {
-    if (Object.keys(data).includes('assignedBD') && role !== Role.HeadOfBD) {
-      throw ApiError('', 'Only head of BD can edit assignedBD');
-    }
     if (
       (Object.keys(data).includes('iaoFeeRate') ||
         Object.keys(data).includes('tradingFeeProfit') ||

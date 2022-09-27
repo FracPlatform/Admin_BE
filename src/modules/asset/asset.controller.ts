@@ -33,8 +33,7 @@ import { FilterAssetDto, FilterMoreUserAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 
 @Controller('asset')
-@UseGuards(JwtAuthGuard)
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('Asset Management')
 export class AssetController {
@@ -139,10 +138,10 @@ export class AssetController {
   }
 
   @Put('display/:id')
-  @ApiOperation({ summary: 'Delete Asset' })
+  @ApiOperation({ summary: 'Hide/unhide Asset' })
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
-  async editDisplay(@Param('id') assetId: string) {
-    const data = await this.assetService.editDisplay(assetId);
+  async editDisplay(@Param('id') assetId: string, @GetUser() user) {
+    const data = await this.assetService.editDisplay(assetId, user);
     return new ApiSuccessResponse().success(data, '');
   }
 

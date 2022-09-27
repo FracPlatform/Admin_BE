@@ -92,6 +92,12 @@ export class Fractor {
 
   @Prop({ type: String })
   deactivationComment: string;
+
+  @Prop({ type: String })
+  deactivatedBy: string;
+
+  @Prop({ type: Date, default: null })
+  deactivetedOn: Date;
 }
 
 export const FractorSchema = SchemaFactory.createForClass(Fractor);

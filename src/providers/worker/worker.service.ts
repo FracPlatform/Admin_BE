@@ -4,6 +4,8 @@ import { CONTRACT_EVENTS } from '../../common/constants';
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
 import { ADMIN_STATUS } from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
+import { SOCKET_EVENT } from '../socket/socket.enum';
+import { SocketGateway } from '../socket/socket.gateway';
 import { WorkerDataDto } from './dto/worker-data.dto';
 const jwt = require('jsonwebtoken');
 
@@ -11,7 +13,10 @@ const jwt = require('jsonwebtoken');
 export class WorkerService {
   private readonly logger = new Logger(WorkerService.name);
 
-  constructor(private readonly dataServices: IDataServices) {}
+  constructor(
+    private readonly dataServices: IDataServices,
+    private readonly socketGateway: SocketGateway,
+  ) {}
 
   async generateToken() {
     const payload = { address: 'Worker', role: '' };
@@ -43,6 +48,7 @@ export class WorkerService {
           lastUpdateBy: requestData.metadata.setBy,
         },
       );
+      this.socketGateway.sendMessage(SOCKET_EVENT.DEACTIVE_ADMIN_EVENT, requestData);
     } else {
       // active
       await this.dataServices.admin.findOneAndUpdate(
@@ -52,6 +58,7 @@ export class WorkerService {
           lastUpdateBy: requestData.metadata.setBy,
         },
       );
+      this.socketGateway.sendMessage(SOCKET_EVENT.ACTIVE_ADMIN_EVENT, requestData);
     }
   }
 }
