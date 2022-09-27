@@ -16,22 +16,26 @@ import {
   CounterIdSchema,
   Fnft,
   FnftSchema,
+  IAOEvent,
+  IaoEventSchema,
+  Nft,
+  NftSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
-import { IAOEvent, IaoEventSchema } from './model/iao-event.model';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Fractor.name, schema: FractorSchema },
       { name: Asset.name, schema: AssetSchema },
-      { name: AssetType.name, schema: AssetTypeSchema},
+      { name: AssetType.name, schema: AssetTypeSchema },
       { name: Admin.name, schema: AdminSchema },
       { name: IAORequest.name, schema: IAORequestSchema },
       { name: CounterId.name, schema: CounterIdSchema },
       { name: Fnft.name, schema: FnftSchema },
       { name: IAOEvent.name, schema: IaoEventSchema },
+      { name: Nft.name, schema: NftSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
