@@ -19,17 +19,19 @@ import {
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
+import { Nft, NftSchema } from './model/nft.model';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Fractor.name, schema: FractorSchema },
       { name: Asset.name, schema: AssetSchema },
-      { name: AssetType.name, schema: AssetTypeSchema},
+      { name: AssetType.name, schema: AssetTypeSchema },
       { name: Admin.name, schema: AdminSchema },
       { name: IAORequest.name, schema: IAORequestSchema },
       { name: CounterId.name, schema: CounterIdSchema },
       { name: Fnft.name, schema: FnftSchema },
+      { name: Nft.name, schema: NftSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

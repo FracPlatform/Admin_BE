@@ -26,6 +26,11 @@ export class DocumentItemEntity {
   fileUrl: string;
   size: number;
   uploadBy: string;
+  display?: boolean;
+  _id?: string;
+  updatedAt?: string;
+  createdAt?: string;
+  uploaderAdmin?: object;
 }
 
 export class AssetForOwnerEntity {

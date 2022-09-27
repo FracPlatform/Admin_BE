@@ -112,4 +112,24 @@ export class AssetBuilderService {
     };
     return documentItem;
   }
+
+  async convertDocumentItem(data: any, user: any) {
+    const documentItem: DocumentItemEntity = {
+      name: data.name,
+      description: data.description,
+      fileUrl: data.fileUrl,
+      size: data.size,
+      uploadBy: data.uploadBy,
+      display: data.display,
+      _id: data._id,
+      updatedAt: data.updatedAt,
+      createdAt: data.createdAt,
+      uploaderAdmin: {
+        _id: user._id,
+        email: user.email,
+        fullname: user.fullname,
+      },
+    };
+    return documentItem;
+  }
 }
