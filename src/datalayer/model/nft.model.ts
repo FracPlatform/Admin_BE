@@ -25,18 +25,32 @@ export enum DISPLAY_TYPE {
   collection: 'Trait',
 })
 export class Trait {
+  @Prop({ type: String })
   trait_type: string;
-  value: string | number;
-  display_type: DISPLAY_TYPE;
+
+  @Prop({ type: String })
+  value: string;
+
+  @Prop({ type: String })
+  display_type?: DISPLAY_TYPE;
+
+  @Prop({ type: Number })
   max_value?: number;
 }
 
 export const TraitSchema = SchemaFactory.createForClass(Trait);
 
 export class NftMetadata {
+  @Prop({ type: [TraitSchema] })
   properties: Trait[];
+
+  @Prop({ type: [TraitSchema] })
   levels: Trait[];
+
+  @Prop({ type: [TraitSchema] })
   stats: Trait[];
+
+  @Prop({ type: [TraitSchema] })
   date: Trait[];
 }
 
@@ -81,7 +95,7 @@ export class Nft {
   @Prop({ type: String })
   previewUrl: string;
 
-  @Prop({ type: Map, of: [TraitSchema] })
+  @Prop({ type: NftMetadata })
   metadata: NftMetadata;
 
   @Prop({ type: String })

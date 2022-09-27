@@ -489,7 +489,10 @@ export class AssetService {
       { new: true },
     );
 
-    return { ...newAsset.documents[0], uploaderAdmin: user.fullname };
+    return this.assetBuilderService.convertDocumentItem(
+      newAsset.documents[0],
+      user,
+    );
   }
 
   async editDocumentItem(
