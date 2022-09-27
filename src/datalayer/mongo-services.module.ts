@@ -14,6 +14,8 @@ import {
   IAORequestSchema,
   CounterId,
   CounterIdSchema,
+  Fnft,
+  FnftSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -27,6 +29,7 @@ import 'dotenv/config';
       { name: Admin.name, schema: AdminSchema },
       { name: IAORequest.name, schema: IAORequestSchema },
       { name: CounterId.name, schema: CounterIdSchema },
+      { name: Fnft.name, schema: FnftSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
