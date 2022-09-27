@@ -1,4 +1,14 @@
-import { Fractor, Asset, AssetType, Admin, IAORequest, CounterId, Fnft, Nft } from '../../datalayer/model';
+import { IAOEvent } from 'src/datalayer/model/iao-event.model';
+import {
+  Fractor,
+  Asset,
+  AssetType,
+  Admin,
+  IAORequest,
+  CounterId,
+  Fnft,
+  Nft
+} from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
 export abstract class IDataServices {
@@ -10,4 +20,5 @@ export abstract class IDataServices {
   abstract counterId: IGenericRepository<CounterId>;
   abstract fnft: IGenericRepository<Fnft>;
   abstract nft: IGenericRepository<Nft>;
+  abstract iaoEvent: IGenericRepository<IAOEvent>;
 }
