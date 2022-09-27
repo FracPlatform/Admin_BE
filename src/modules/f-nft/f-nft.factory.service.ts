@@ -22,7 +22,7 @@ export class FnftBuilderService {
       tokenLogo: data.tokenLogo,
       chainId: 20,
       txhash: null,
-      contractAddress: user.walletAddress,
+      contractAddress: null,
       status: F_NFT_STATUS.INACTIVE,
       iaoRequestId: data.iaoRequestId || null,
       items: data.items,

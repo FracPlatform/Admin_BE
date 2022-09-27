@@ -5,3 +5,4 @@ export * from './admin.model';
 export * from './iao-request.model';
 export * from './counter-id.model';
 export * from './f-nft.model';
+export * from './nft.model';

@@ -11,6 +11,7 @@ export const ErrorCode = {
   NO_DATA_EXISTS: 'E14',
   ALREADY_COMPLETED: 'already completed',
   MIN_PHOTOS: 'E14',
+  INVALID_TOKENSYMBOL_OR_TOKENNAME: 'E11',
   MAX_FILE_SIZE: 'E12',
 };
 export const Contract = {

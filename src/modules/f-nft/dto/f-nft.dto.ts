@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsEnum, IsArray, Max, Min } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsArray, Max, Min } from 'class-validator';
 
 export class CreateFnftDto {
   @ApiProperty({ required: true })

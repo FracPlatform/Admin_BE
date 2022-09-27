@@ -9,6 +9,7 @@ import { ListDocument } from 'src/common/common-type';
 import { FnftBuilderService } from './f-nft.factory.service';
 import { ApiError } from 'src/common/api';
 import { CreateFnftDto, FilterFnftDto } from './dto/f-nft.dto';
+import { NFT_STATUS, NFT_TYPE } from 'src/datalayer/model/nft.model';
 
 @Injectable()
 export class FnftService {
@@ -24,10 +25,7 @@ export class FnftService {
     const query: any = { deleted: false };
 
     if (filter.name) {
-      query['$or'] = [
-        { fullname: { $regex: filter.name.trim(), $options: 'i' } },
-        { walletAddress: { $regex: filter.name.trim(), $options: 'i' } },
-      ];
+      // query['items'] = { $regex: filter.name.trim(), $options: 'i' }; //->??
     }
 
     if (filter.status) {
@@ -98,7 +96,8 @@ export class FnftService {
     session.startTransaction();
 
     try {
-
+      // check items
+      await this.checkItems(data.iaoRequestId, data.items);
 
       const fnft = await this.dataServices.fnft.findOne({
         tokenSymbol: data.tokenSymbol,
@@ -106,13 +105,12 @@ export class FnftService {
         deleted: false,
       });
       if (fnft)
-        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Fnft already exists'); //-> E11
+        throw ApiError(ErrorCode.INVALID_TOKENSYMBOL_OR_TOKENNAME, 'tokenSymbol or tokenName already exists');
 
       const fnftObj = await this.fnftBuilderService.createFnft(data, user, session);
-      const newFnft = await this.dataServices.fnft.create(fnftObj, {
-        session,
-      });
+      const newFnft = await this.dataServices.fnft.create(fnftObj, { session });
       await session.commitTransaction();
+
       return newFnft;
     } catch (error) {
       await session.abortTransaction();
@@ -126,13 +124,17 @@ export class FnftService {
   async checkItems(iaoRequestId: string, items: any) {
     const filter = {
       assetId: { $in: items },
-      status: 'Minted',
+      status: NFT_STATUS.MINTED,
     };
 
-    if (!iaoRequestId) {
+    if (iaoRequestId)
+      filter['nftType'] = NFT_TYPE.FRACTOR_ASSET;
+    else
+      filter['nftType'] = NFT_TYPE.FRAC_ASSET;
 
-    }
+    const listNft = await this.dataServices.nft.findMany(filter, { _id: 1 });
 
-    const listNft = await this.dataServices.admin.findMany(filter, { _id: 1 });
+    if (items.length !== listNft.length) return false;
+    return true;
   }
 }
