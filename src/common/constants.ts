@@ -75,6 +75,7 @@ export enum PREFIX_ID {
   ASSET = 'ITEM',
   IAO_REQUEST = 'IAO-REQUEST',
   ASSET_TYPE = 'ATYPE',
+  F_NFT = 'FNFT',
 }
 
 export const CONTRACT_EVENTS = {
