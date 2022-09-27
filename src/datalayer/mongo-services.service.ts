@@ -20,6 +20,7 @@ import {
   FnftDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
+import { IAOEvent, IAOEventDocument } from './model/iao-event.model';
 
 @Injectable()
 export class MongoServices implements IDataServices, OnApplicationBootstrap {
@@ -30,6 +31,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   iaoRequest: IGenericRepository<IAORequest>;
   counterId: IGenericRepository<CounterId>;
   fnft: IGenericRepository<Fnft>;
+  iaoEvent: IGenericRepository<IAOEvent>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -46,6 +48,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private CounterIdRepository: Model<CounterIdDocument>,
     @InjectModel(Fnft.name)
     private FnftRepository: Model<FnftDocument>,
+    @InjectModel(IAOEvent.name)
+    private IAOEventRepository: Model<IAOEventDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -67,8 +71,9 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     this.counterId = new MongoGenericRepository<CounterIdDocument>(
       this.CounterIdRepository,
     );
-    this.fnft = new MongoGenericRepository<FnftDocument>(
-      this.FnftRepository,
+    this.fnft = new MongoGenericRepository<FnftDocument>(this.FnftRepository);
+    this.iaoEvent = new MongoGenericRepository<IAOEventDocument>(
+      this.IAOEventRepository,
     );
   }
 }

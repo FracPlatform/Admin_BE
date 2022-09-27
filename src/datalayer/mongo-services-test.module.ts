@@ -11,6 +11,7 @@ import {
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
+import { IAOEvent, IaoEventSchema } from './model/iao-event.model';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import 'dotenv/config';
       { name: Fractor.name, schema: FractorSchema },
       { name: AssetType.name, schema: AssetTypeSchema },
       { name: Asset.name, schema: AssetSchema },
+      { name: IAOEvent.name, schema: IaoEventSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_TEST_URI),
   ],

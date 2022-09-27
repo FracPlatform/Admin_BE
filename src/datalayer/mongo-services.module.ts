@@ -19,6 +19,7 @@ import {
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
+import { IAOEvent, IaoEventSchema } from './model/iao-event.model';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import 'dotenv/config';
       { name: IAORequest.name, schema: IAORequestSchema },
       { name: CounterId.name, schema: CounterIdSchema },
       { name: Fnft.name, schema: FnftSchema },
+      { name: IAOEvent.name, schema: IaoEventSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
