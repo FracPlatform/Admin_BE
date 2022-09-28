@@ -26,11 +26,23 @@ export class FnftController {
   constructor(private readonly fnftService: FnftService) {}
 
   @Get()
-  @Roles(Role.SuperAdmin, Role.OWNER)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter f-nfts' })
   async findAll(@GetUser() user, @Query() filter: FilterFnftDto) {
     const data = await this.fnftService.getListFnft(user, filter);
+    return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Get(':id')
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'get Detail f-nft' })
+  async getDetail(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @GetUser() user,
+  ) {
+    const data = await this.fnftService.getDetail(id, user);
     return new ApiSuccessResponse().success(data, '');
   }
 

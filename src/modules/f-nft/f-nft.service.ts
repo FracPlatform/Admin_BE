@@ -146,6 +146,9 @@ export class FnftService {
       items = iaoRequest.items;
     }
 
+    if (!items.length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'items not data');
+
     await this.checkStatusOfAssets(items);
 
     await this.checkStatusOfNfts(iaoRequestId, items);
@@ -185,5 +188,51 @@ export class FnftService {
 
     if (items.length !== listNft.length)
       throw ApiError(ErrorCode.INVALID_ITEMS_NFT_STATUS, 'nft status invalid');
+  }
+
+  async getDetail(id: string, user: any) {
+    const filter = {
+      _id: id,
+      deleted: false,
+    };
+
+    const currentFnft = await this.dataServices.fnft.findOne(filter);
+    if (!currentFnft)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    const listNft = await this.dataServices.nft.findMany(
+      { assetId: { $in: currentFnft.items } },
+      {
+        _id: 1,
+        tokenId: 1,
+        previewUrl: 1,
+        mediaUrl: 1,
+        name: 1,
+        status: 1,
+        assetId: 1,
+      },
+    );
+    if (!listNft) throw ApiError(ErrorCode.NO_DATA_EXISTS, 'nft data exists');
+
+    // create adminIds
+    let adminIds = [currentFnft.fractionalizedBy, currentFnft.lastUpdateBy];
+    adminIds = [...new Set(adminIds)];
+
+    const relatedAdminList = await this.dataServices.admin.findMany(
+      { adminId: { $in: adminIds } },
+      { adminId: 1, fullname: 1 },
+    );
+    if (!relatedAdminList.length)
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'related Admin not already exists',
+      );
+
+    return await this.fnftBuilderService.convertFnftDetail(
+      currentFnft,
+      currentFnft.items,
+      listNft,
+      relatedAdminList,
+    );
   }
 }

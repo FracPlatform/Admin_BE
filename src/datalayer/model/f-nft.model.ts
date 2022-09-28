@@ -53,7 +53,7 @@ export class Fnft {
   iaoRequestId: string;
 
   @Prop({ type: Number })
-  fnftType: F_NFT_TYPE;
+  fnftType: number;
 
   @Prop({ type: String })
   txhash: string;

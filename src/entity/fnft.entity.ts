@@ -29,3 +29,26 @@ export class ListFnftEntity {
   fractionalizedOn: Date;
   fnftId?: string;
 }
+
+export class FnftDetailEntity {
+  _id: string;
+  tokenSymbol: string;
+  tokenName: string;
+  totalSupply: number;
+  tokenLogo: string;
+  chainId: number;
+  contractAddress: number;
+  items: any;
+  iaoRequestId: string;
+  fnftType: number;
+  txhash: string;
+  status: number;
+  mintedStatus: number;
+  adminFractionalized: object;
+  adminUpdated: object;
+  fnftId?: string;
+  deleted?: boolean;
+  fractionalizedOn?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
