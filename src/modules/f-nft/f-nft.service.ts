@@ -162,7 +162,7 @@ export class FnftService {
       },
       { _id: 1 },
     );
-    if (listAsset)
+    if (!listAsset.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'asset not already exists');
 
     if (items.length !== listAsset.length)
@@ -180,7 +180,7 @@ export class FnftService {
 
     const listNft = await this.dataServices.nft.findMany(filter, { _id: 1 });
 
-    if (listNft)
+    if (!listNft.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'nft not already exists');
 
     if (items.length !== listNft.length)
