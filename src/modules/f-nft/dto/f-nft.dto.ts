@@ -53,8 +53,8 @@ export class CreateFnftDto {
   @IsString()
   iaoRequestId: string;
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   items: string[];
