@@ -4,11 +4,11 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
 import { FnftEntity, ListFnftEntity } from 'src/entity';
 import { CreateFnftDto } from './dto/f-nft.dto';
-import { F_NFT_STATUS } from 'src/datalayer/model';
+import { F_NFT_STATUS, F_NFT_TYPE } from 'src/datalayer/model';
 
 @Injectable()
 export class FnftBuilderService {
-  constructor(private readonly dataServices: IDataServices) { }
+  constructor(private readonly dataServices: IDataServices) {}
 
   async createFnft(
     data: CreateFnftDto,
@@ -26,6 +26,7 @@ export class FnftBuilderService {
       status: F_NFT_STATUS.INACTIVE,
       iaoRequestId: data.iaoRequestId || null,
       items: data.items,
+      fnftType: data.iaoRequestId ? F_NFT_TYPE.AUTO_IMPORT : F_NFT_TYPE.SELECT_MANUALY,
       fractionalizedBy: user.adminId,
       fractionalizedOn: null,
       lastUpdateBy: null,

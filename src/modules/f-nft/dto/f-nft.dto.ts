@@ -1,6 +1,16 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Transform, Type } from "class-transformer";
-import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsArray, Max, Min } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  MaxLength,
+  IsArray,
+  Max,
+  Min,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateFnftDto {
   @ApiProperty({ required: true })
@@ -24,7 +34,10 @@ export class CreateFnftDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
+  @IsUrl({
+    require_protocol: true,
+    require_valid_protocol: true,
+  })
   tokenLogo: string;
 
   @ApiProperty({ required: false })

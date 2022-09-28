@@ -10,6 +10,7 @@ import { FnftBuilderService } from './f-nft.factory.service';
 import { ApiError } from 'src/common/api';
 import { CreateFnftDto, FilterFnftDto } from './dto/f-nft.dto';
 import { NFT_STATUS, NFT_TYPE } from 'src/datalayer/model/nft.model';
+import { ASSET_STATUS, IAO_REQUEST_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class FnftService {
@@ -19,13 +20,13 @@ export class FnftService {
     private readonly dataServices: IDataServices,
     private readonly fnftBuilderService: FnftBuilderService,
     @InjectConnection() private readonly connection: Connection,
-  ) { }
+  ) {}
 
   async getListFnft(user: any, filter: FilterFnftDto) {
     const query: any = { deleted: false };
 
     if (filter.name) {
-      // query['items'] = { $regex: filter.name.trim(), $options: 'i' }; //->??
+      query['items'] = { $regex: filter.name.trim(), $options: 'i' };
     }
 
     if (filter.status) {
@@ -77,7 +78,7 @@ export class FnftService {
       },
     });
 
-    const dataQuery = await this.dataServices.admin.aggregate(agg, {
+    const dataQuery = await this.dataServices.fnft.aggregate(agg, {
       collation: { locale: 'en' },
     });
 
@@ -105,9 +106,16 @@ export class FnftService {
         deleted: false,
       });
       if (fnft)
-        throw ApiError(ErrorCode.INVALID_TOKENSYMBOL_OR_TOKENNAME, 'tokenSymbol or tokenName already exists');
+        throw ApiError(
+          ErrorCode.INVALID_TOKENSYMBOL_OR_TOKENNAME,
+          'tokenSymbol or tokenName already exists',
+        );
 
-      const fnftObj = await this.fnftBuilderService.createFnft(data, user, session);
+      const fnftObj = await this.fnftBuilderService.createFnft(
+        data,
+        user,
+        session,
+      );
       const newFnft = await this.dataServices.fnft.create(fnftObj, { session });
       await session.commitTransaction();
 
@@ -121,20 +129,57 @@ export class FnftService {
     }
   }
 
-  async checkItems(iaoRequestId: string, items: any) {
+  async checkItems(iaoRequestId: string, items: string[]) {
+    if (iaoRequestId) {
+      const iaoRequest = await this.dataServices.iaoRequest.findOne({
+        iaoId: iaoRequestId,
+        status: IAO_REQUEST_STATUS.APPROVED_B,
+      });
+      if (iaoRequest)
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'IaoRequest not already exists',
+        );
+
+      items = iaoRequest.items;
+    }
+
+    await this.checkAssets(items);
+
+    await this.checkNfts(iaoRequestId, items);
+  }
+
+  async checkAssets(items: string[]) {
+    const listAsset = await this.dataServices.asset.findMany(
+      {
+        itemId: { $in: items },
+        status: ASSET_STATUS.CONVERTED_TO_NFT,
+        deleted: false,
+      },
+      { _id: 1 },
+    );
+    if (listAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'asset not already exists');
+
+    if (items.length !== listAsset.length)
+      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, '');
+  }
+
+  async checkNfts(iaoRequestId: string, items: string[]) {
     const filter = {
-      tokenId: { $in: items },
+      assetId: { $in: items },
       status: NFT_STATUS.MINTED,
     };
 
-    if (iaoRequestId)
-      filter['nftType'] = NFT_TYPE.FRACTOR_ASSET;
-    else
-      filter['nftType'] = NFT_TYPE.FRAC_ASSET;
+    if (iaoRequestId) filter['nftType'] = NFT_TYPE.FRACTOR_ASSET;
+    else filter['nftType'] = NFT_TYPE.FRAC_ASSET;
 
     const listNft = await this.dataServices.nft.findMany(filter, { _id: 1 });
 
-    if (items.length !== listNft.length) return false;
-    return true;
+    if (listNft)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'nft not already exists');
+
+    if (items.length !== listNft.length)
+      throw ApiError(ErrorCode.INVALID_ITEMS_NFT_STATUS, '');
   }
 }

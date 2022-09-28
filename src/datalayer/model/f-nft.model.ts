@@ -8,6 +8,11 @@ export enum F_NFT_STATUS {
 	ACTIVE = 1,
 }
 
+export enum F_NFT_TYPE {
+  AUTO_IMPORT = 1,
+  SELECT_MANUALY = 2,
+}
+
 @Schema({
 	timestamps: true,
 	collection: 'Fnft',
@@ -37,6 +42,9 @@ export class Fnft {
   @Prop({ type: String })
 	iaoRequestId: string;
 
+  @Prop({ type: Number })
+  fnftType: F_NFT_TYPE;
+
   @Prop({ type: String })
 	txhash: string;
 
@@ -60,4 +68,4 @@ export class Fnft {
 }
 
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
-FnftSchema.index({ fnftId: 1, contractAddress: 1 });
+FnftSchema.index({ fnftId: 1, contractAddress: 1, tokenSymbol: 1, tokenName: 1 });

@@ -13,6 +13,8 @@ export const ErrorCode = {
   MIN_PHOTOS: 'E14',
   INVALID_TOKENSYMBOL_OR_TOKENNAME: 'E11',
   MAX_FILE_SIZE: 'E12',
+  INVALID_ITEMS_STATUS: 'E19',
+  INVALID_ITEMS_NFT_STATUS: 'E20',
 };
 export const Contract = {
   EVENT: {

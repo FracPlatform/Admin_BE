@@ -1,4 +1,3 @@
-
 export class FnftEntity {
   tokenSymbol: string;
   tokenName: string;
@@ -8,6 +7,7 @@ export class FnftEntity {
   txhash: string;
   contractAddress: string;
   items: any;
+  fnftType: number;
   iaoRequestId: string;
   status: number;
   fractionalizedBy: string;

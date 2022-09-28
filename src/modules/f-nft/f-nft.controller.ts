@@ -1,4 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
@@ -10,19 +20,16 @@ import { FnftService } from './f-nft.service';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
 import { CreateFnftDto, FilterFnftDto } from './dto/f-nft.dto';
 @Controller('f-nft')
-@UseGuards(JwtAuthGuard, RolesGuard)
+// @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('F-nft')
 export class FnftController {
-  constructor(private readonly fnftService: FnftService) { }
+  constructor(private readonly fnftService: FnftService) {}
 
   @Get()
-  @Roles(Role.SuperAdmin, Role.OWNER)
+  // @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter f-nfts' })
-  async findAll(
-    @GetUser() user,
-    @Query() filter: FilterFnftDto
-  ) {
+  async findAll(@GetUser() user, @Query() filter: FilterFnftDto) {
     const data = await this.fnftService.getListFnft(user, filter);
     return new ApiSuccessResponse().success(data, '');
   }
@@ -31,11 +38,8 @@ export class FnftController {
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create f-nft' })
-  async createFnft(
-    @Body() createFnftDto: CreateFnftDto,
-    @GetUser() user,
-  ) {
+  async createFnft(@Body() createFnftDto: CreateFnftDto, @GetUser() user) {
     const data = await this.fnftService.createFnft(user, createFnftDto);
-    return new ApiSuccessResponse().success(data, '')
+    return new ApiSuccessResponse().success(data, '');
   }
 }
