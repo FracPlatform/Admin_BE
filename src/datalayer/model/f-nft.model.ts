@@ -8,6 +8,10 @@ export enum F_NFT_STATUS {
 	ACTIVE = 1,
 }
 
+export enum F_NFT_TYPE {
+	AUTO_IMPORT = 1,
+	SELECT_MANUALY = 2,
+  }
 @Schema({
 	timestamps: true,
 	collection: 'Fnft',
