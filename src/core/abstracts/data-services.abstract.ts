@@ -1,4 +1,5 @@
 import { Nft } from 'src/datalayer/model/nft.model';
+import { IAOEvent } from 'src/datalayer/model/iao-event.model';
 import {
   Fractor,
   Asset,
@@ -19,4 +20,5 @@ export abstract class IDataServices {
   abstract counterId: IGenericRepository<CounterId>;
   abstract fnft: IGenericRepository<Fnft>;
   abstract nft: IGenericRepository<Nft>;
+  abstract iaoEvent: IGenericRepository<IAOEvent>;
 }

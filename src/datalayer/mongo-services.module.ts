@@ -16,10 +16,13 @@ import {
   CounterIdSchema,
   Fnft,
   FnftSchema,
+  IAOEvent,
+  IaoEventSchema,
+  Nft,
+  NftSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
-import { Nft, NftSchema } from './model/nft.model';
 
 @Module({
   imports: [
@@ -31,6 +34,7 @@ import { Nft, NftSchema } from './model/nft.model';
       { name: IAORequest.name, schema: IAORequestSchema },
       { name: CounterId.name, schema: CounterIdSchema },
       { name: Fnft.name, schema: FnftSchema },
+      { name: IAOEvent.name, schema: IaoEventSchema },
       { name: Nft.name, schema: NftSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
