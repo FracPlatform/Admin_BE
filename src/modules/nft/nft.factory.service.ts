@@ -24,11 +24,13 @@ export class NftBuilderService {
     contractAddress = await this.commonService.getCache(
       CacheKeyName.NFT_ADDRESS.NAME,
     );
-    if (!contractAddress) contractAddress = await Utils.getNftContractAddress();
-    await this.commonService.setCache(
-      CacheKeyName.NFT_ADDRESS.NAME,
-      contractAddress,
-    );
+    if (!contractAddress) {
+      contractAddress = await Utils.getNftContractAddress();
+      await this.commonService.setCache(
+        CacheKeyName.NFT_ADDRESS.NAME,
+        contractAddress,
+      );
+    }
     const newNft: NftEntity = {
       nftType: body.nftType,
       assetId: body.assetId,
