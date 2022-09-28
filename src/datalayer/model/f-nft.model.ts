@@ -83,3 +83,7 @@ export class Fnft {
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
 FnftSchema.index({ fnftId: 1, contractAddress: 1 });
 FnftSchema.index({ tokenSymbol: 1, tokenName: 1 }, { unique: true });
+FnftSchema.index(
+  { iaoRequestId: 1 },
+  { unique: true, partialFilterExpression: { houseName: { $type: 'string' } } },
+);
