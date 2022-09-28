@@ -60,6 +60,10 @@ export const CacheKeyName = {
     NAME: 'get-full-config',
     TTL: 300,
   },
+  NFT_ADDRESS: {
+    NAME: 'nft-address',
+    TTL: 300,
+  },
 };
 
 export const STRONG_PASSWORD_REGEX =
@@ -76,6 +80,7 @@ export enum PREFIX_ID {
   IAO_REQUEST = 'IAO-REQUEST',
   ASSET_TYPE = 'ATYPE',
   F_NFT = 'FNFT',
+  NFT = 'NFT',
 }
 
 export const CONTRACT_EVENTS = {

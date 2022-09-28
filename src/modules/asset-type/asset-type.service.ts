@@ -26,7 +26,6 @@ import {
   CheckDuplicateSpecificationDto,
   LANGUAGE,
 } from './dto/check-duplicate-name.dto';
-import { query } from 'express';
 import { ApiError } from 'src/common/api';
 
 @Injectable()
