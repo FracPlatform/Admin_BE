@@ -55,3 +55,4 @@ AdminSchema.plugin(paginate);
 AdminSchema.plugin(aggregatePaginate);
 AdminSchema.index({ adminId: 1 });
 AdminSchema.index({ email: 1 }, { unique: true });
+AdminSchema.index({ walletAddress: 1 }, { unique: true });
