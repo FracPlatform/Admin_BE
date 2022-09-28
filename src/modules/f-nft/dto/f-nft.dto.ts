@@ -10,6 +10,7 @@ import {
   Max,
   Min,
   IsUrl,
+  IsEnum,
 } from 'class-validator';
 
 export class CreateFnftDto {
@@ -31,6 +32,12 @@ export class CreateFnftDto {
   @Min(1)
   @Max(999999999999)
   totalSupply: number;
+
+  @ApiProperty({ required: true, description: '56- mainnet, 97- testnet' })
+  @Type(() => Number)
+  @IsNumber()
+  @IsEnum([56, 97])
+  chainId: number;
 
   @ApiProperty({ required: false })
   @IsOptional()

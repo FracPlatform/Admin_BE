@@ -20,13 +20,13 @@ import { FnftService } from './f-nft.service';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
 import { CreateFnftDto, FilterFnftDto } from './dto/f-nft.dto';
 @Controller('f-nft')
-// @UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('F-nft')
 export class FnftController {
   constructor(private readonly fnftService: FnftService) {}
 
   @Get()
-  // @Roles(Role.SuperAdmin, Role.OWNER)
+  @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter f-nfts' })
   async findAll(@GetUser() user, @Query() filter: FilterFnftDto) {

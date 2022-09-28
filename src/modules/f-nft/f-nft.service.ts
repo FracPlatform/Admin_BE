@@ -133,25 +133,27 @@ export class FnftService {
     if (iaoRequestId) {
       const iaoRequest = await this.dataServices.iaoRequest.findOne({
         iaoId: iaoRequestId,
-        status: IAO_REQUEST_STATUS.APPROVED_B,
       });
-      if (iaoRequest)
+      if (!iaoRequest)
         throw ApiError(
           ErrorCode.DEFAULT_ERROR,
           'IaoRequest not already exists',
         );
 
+      if (iaoRequest.status !== IAO_REQUEST_STATUS.APPROVED_B)
+        throw ApiError(ErrorCode.INVALID_IAO_STATUS, 'Status invalid');
+
       items = iaoRequest.items;
     }
 
-    await this.checkAssets(items);
+    await this.checkStatusOfAssets(items);
 
-    await this.checkNfts(iaoRequestId, items);
+    await this.checkStatusOfNfts(iaoRequestId, items);
 
     return items;
   }
 
-  async checkAssets(items: string[]) {
+  async checkStatusOfAssets(items: string[]) {
     const listAsset = await this.dataServices.asset.findMany(
       {
         itemId: { $in: items },
@@ -164,10 +166,10 @@ export class FnftService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'asset not already exists');
 
     if (items.length !== listAsset.length)
-      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, '');
+      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, 'asset status invalid');
   }
 
-  async checkNfts(iaoRequestId: string, items: string[]) {
+  async checkStatusOfNfts(iaoRequestId: string, items: string[]) {
     const filter = {
       assetId: { $in: items },
       status: NFT_STATUS.MINTED,
@@ -182,6 +184,6 @@ export class FnftService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'nft not already exists');
 
     if (items.length !== listNft.length)
-      throw ApiError(ErrorCode.INVALID_ITEMS_NFT_STATUS, '');
+      throw ApiError(ErrorCode.INVALID_ITEMS_NFT_STATUS, 'nft status invalid');
   }
 }

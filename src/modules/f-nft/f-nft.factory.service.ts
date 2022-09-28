@@ -20,7 +20,7 @@ export class FnftBuilderService {
       tokenName: data.tokenName,
       totalSupply: data.totalSupply,
       tokenLogo: data.tokenLogo,
-      chainId: 20,
+      chainId: data.chainId,
       txhash: null,
       contractAddress: null,
       status: F_NFT_STATUS.INACTIVE,
