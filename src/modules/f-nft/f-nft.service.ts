@@ -98,7 +98,7 @@ export class FnftService {
 
     try {
       // check items
-      await this.checkItems(data.iaoRequestId, data.items);
+      data.items = await this.checkItems(data.iaoRequestId, data.items);
 
       const fnft = await this.dataServices.fnft.findOne({
         tokenSymbol: data.tokenSymbol,
@@ -147,6 +147,8 @@ export class FnftService {
     await this.checkAssets(items);
 
     await this.checkNfts(iaoRequestId, items);
+
+    return items;
   }
 
   async checkAssets(items: string[]) {
