@@ -56,7 +56,7 @@ export class Fnft {
   @Prop({ type: Number, default: F_NFT_STATUS.ACTIVE })
   status: number;
 
-  @Prop({ type: Number, default: F_NFT_STATUS.ACTIVE })
+  @Prop({ type: Number, default: F_NFT_MINTED_STATUS.PROCESS })
   mintedStatus: number;
 
   @Prop({ type: String })
