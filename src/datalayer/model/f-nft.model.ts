@@ -3,6 +3,11 @@ import { PREFIX_ID } from 'src/common/constants';
 
 export type FnftDocument = Fnft & Document;
 
+export enum F_NFT_CHAINID {
+  MAINNET = 56,
+  TESTNET = 97,
+}
+
 export enum F_NFT_STATUS {
   INACTIVE = 0,
   ACTIVE = 1,

@@ -12,6 +12,7 @@ import {
   IsUrl,
   IsEnum,
 } from 'class-validator';
+import { F_NFT_CHAINID } from 'src/datalayer/model';
 
 export class CreateFnftDto {
   @ApiProperty({ required: true })
@@ -36,7 +37,7 @@ export class CreateFnftDto {
   @ApiProperty({ required: true, description: '56- mainnet, 97- testnet' })
   @Type(() => Number)
   @IsNumber()
-  @IsEnum([56, 97])
+  @IsEnum([F_NFT_CHAINID.MAINNET, F_NFT_CHAINID.TESTNET])
   chainId: number;
 
   @ApiProperty({ required: false })
