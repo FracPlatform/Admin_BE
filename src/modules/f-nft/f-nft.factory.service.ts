@@ -4,7 +4,7 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
 import { FnftEntity, ListFnftEntity } from 'src/entity';
 import { CreateFnftDto } from './dto/f-nft.dto';
-import { F_NFT_STATUS, F_NFT_TYPE } from 'src/datalayer/model';
+import { F_NFT_MINTED_STATUS, F_NFT_STATUS, F_NFT_TYPE } from 'src/datalayer/model';
 
 @Injectable()
 export class FnftBuilderService {
@@ -23,13 +23,14 @@ export class FnftBuilderService {
       chainId: data.chainId,
       txhash: null,
       contractAddress: null,
-      status: F_NFT_STATUS.INACTIVE,
+      status: F_NFT_STATUS.ACTIVE,
+      mintedStatus: F_NFT_MINTED_STATUS.PROCESS,
       iaoRequestId: data.iaoRequestId || null,
       items: data.items,
       fnftType: data.iaoRequestId ? F_NFT_TYPE.AUTO_IMPORT : F_NFT_TYPE.SELECT_MANUALY,
       fractionalizedBy: user.adminId,
       fractionalizedOn: null,
-      lastUpdateBy: null,
+      lastUpdateBy: user.adminId,
       fnftId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
         PREFIX_ID.F_NFT,

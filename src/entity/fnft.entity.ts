@@ -10,6 +10,7 @@ export class FnftEntity {
   fnftType: number;
   iaoRequestId: string;
   status: number;
+  mintedStatus: number;
   fractionalizedBy: string;
   fractionalizedOn: Date;
   lastUpdateBy: string;
