@@ -53,9 +53,9 @@
         "inputs": [
           {
             "indexed": false,
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "iaoId",
-            "type": "string"
+            "type": "bytes"
           },
           {
             "indexed": false,
@@ -101,14 +101,8 @@
           },
           {
             "indexed": false,
-            "internalType": "string",
-            "name": "fractorId",
-            "type": "string"
-          },
-          {
-            "indexed": false,
             "internalType": "bytes",
-            "name": "internalTxId",
+            "name": "fractorId",
             "type": "bytes"
           }
         ],
@@ -181,14 +175,8 @@
           },
           {
             "indexed": false,
-            "internalType": "string",
-            "name": "fractorId",
-            "type": "string"
-          },
-          {
-            "indexed": false,
             "internalType": "bytes",
-            "name": "internalTxId",
+            "name": "fractorId",
             "type": "bytes"
           },
           {
@@ -224,9 +212,9 @@
           },
           {
             "indexed": false,
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "fractorId",
-            "type": "string"
+            "type": "bytes"
           },
           {
             "indexed": false,
@@ -239,12 +227,6 @@
             "internalType": "string",
             "name": "symbol",
             "type": "string"
-          },
-          {
-            "indexed": false,
-            "internalType": "bytes",
-            "name": "internalTxId",
-            "type": "bytes"
           }
         ],
         "name": "MintFNFTEvent",
@@ -282,12 +264,6 @@
             "internalType": "uint256[]",
             "name": "tokenAmounts",
             "type": "uint256[]"
-          },
-          {
-            "indexed": false,
-            "internalType": "bytes",
-            "name": "internalTxId",
-            "type": "bytes"
           }
         ],
         "name": "MintNFTEvent",
@@ -380,9 +356,9 @@
           },
           {
             "indexed": false,
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "id",
-            "type": "string"
+            "type": "bytes"
           },
           {
             "indexed": false,
@@ -411,9 +387,9 @@
           },
           {
             "indexed": false,
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "id",
-            "type": "string"
+            "type": "bytes"
           },
           {
             "indexed": false,
@@ -493,9 +469,9 @@
             "type": "bytes"
           },
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "",
-            "type": "string"
+            "type": "bytes"
           }
         ],
         "name": "buyFNFT",
@@ -559,14 +535,9 @@
             "type": "address[]"
           },
           {
-            "internalType": "string[]",
+            "internalType": "bytes[]",
             "name": "",
-            "type": "string[]"
-          },
-          {
-            "internalType": "bytes",
-            "name": "internalTxId",
-            "type": "bytes"
+            "type": "bytes[]"
           }
         ],
         "name": "createIAOEvent",
@@ -597,11 +568,6 @@
             "type": "uint256[]"
           },
           {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          },
-          {
             "internalType": "bytes",
             "name": "",
             "type": "bytes"
@@ -615,9 +581,9 @@
       {
         "inputs": [
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "",
-            "type": "string"
+            "type": "bytes"
           },
           {
             "internalType": "uint256",
@@ -673,9 +639,9 @@
       {
         "inputs": [
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "id",
-            "type": "string"
+            "type": "bytes"
           }
         ],
         "name": "getIAOEventById",
@@ -691,9 +657,9 @@
             "type": "address[2]"
           },
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "",
-            "type": "string"
+            "type": "bytes"
           }
         ],
         "stateMutability": "view",
@@ -715,9 +681,9 @@
       {
         "inputs": [
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "fractorId",
-            "type": "string"
+            "type": "bytes"
           }
         ],
         "name": "getNFTsDepositedByFractor",
@@ -793,9 +759,9 @@
       {
         "inputs": [
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "",
-            "type": "string"
+            "type": "bytes"
           }
         ],
         "name": "iaos",
@@ -836,9 +802,9 @@
             "type": "address"
           },
           {
-            "internalType": "string",
+            "internalType": "bytes",
             "name": "fractorId",
-            "type": "string"
+            "type": "bytes"
           }
         ],
         "stateMutability": "view",
@@ -866,9 +832,28 @@
       {
         "inputs": [
           {
-            "internalType": "string",
+            "internalType": "address",
             "name": "",
-            "type": "string"
+            "type": "address"
+          }
+        ],
+        "name": "isDeactivated",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
           }
         ],
         "name": "len",
@@ -895,24 +880,19 @@
             "type": "uint256"
           },
           {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          },
-          {
             "internalType": "bytes",
             "name": "",
             "type": "bytes"
+          },
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
           }
         ],
         "name": "mintFNFT",
@@ -922,6 +902,11 @@
       },
       {
         "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          },
           {
             "internalType": "uint256",
             "name": "",
@@ -946,11 +931,6 @@
             "internalType": "address[]",
             "name": "",
             "type": "address[]"
-          },
-          {
-            "internalType": "bytes",
-            "name": "",
-            "type": "bytes"
           }
         ],
         "name": "mintNFT",
@@ -1225,7 +1205,7 @@
     "devdoc": {
       "kind": "dev",
       "methods": {
-        "buyFNFT(uint256[],address[],bytes,bytes,string)": {
+        "buyFNFT(uint256[],address[],bytes,bytes,bytes)": {
           "details": "buyFNFT user buy FNFT, in vault period, user can claim their FNFT after the event end ** Params **",
           "params": {
             "": "(0) buyer BuyRequest signature internal transaction id"
@@ -1234,13 +1214,13 @@
         "claimNFTs(address[],uint256[],uint256[],uint256[],address,bytes,bytes)": {
           "details": "claimNFTs fractor claim back her NFTs or user who owned 100% FNFT claim her NFTs ** Params ** collectionAddrs collection addresses tokenIds tokenId  nftTypes 0: ERC721, 1: ERC1155  tokenAmounts NFT amount: If token type is ERC721, amount = 1  claimer address of the claimer  signature ClaimRequest signature  internalTxId internal transaction id"
         },
-        "createIAOEvent(uint256[],address[],string[],bytes)": {
+        "createIAOEvent(uint256[],address[],bytes[])": {
           "details": "createIAOEvent ** Params **",
           "params": {
             "": "(0) fractorId, (1) iaoId"
           }
         },
-        "depositNFTs(address[],uint256[],uint256[],uint256[],string,bytes)": {
+        "depositNFTs(address[],uint256[],uint256[],uint256[],bytes)": {
           "details": "depositNFTs fractor deposit NFTs to lock these NFTs ** Params **  addrs collection address  tokenIds tokenId  tokenTypes 0: ERC721, 1: ERC1155  amount NFT amount: If token type is ERC721, amount = 1"
         },
         "getAdminRole(address)": {
@@ -1258,8 +1238,8 @@
             "addr": "address"
           }
         },
-        "mintNFT(uint256,uint256[],uint256[],uint256[],address[],bytes)": {
-          "details": "mintNFT mint NFT that represent for fractor 's asset ** Params ** chainId chainId of the NFT  collectionAddresses collection address  tokenIds tokenId  nftTypes 0: ERC721, 1: ERC1155  tokenAmounts NFT amount: If token type is ERC721, amount = 1  internalTxId internal transaction id"
+        "mintNFT(uint256,uint256,uint256[],uint256[],uint256[],address[])": {
+          "details": "mintNFT mint NFT that represent for fractor 's asset ** Params ** chainId chainId of the NFT  collectionAddresses collection address  tokenIds tokenId  nftTypes 0: ERC721, 1: ERC1155  tokenAmounts NFT amount: If token type is ERC721, amount = 1"
         },
         "onERC721Received(address,address,uint256,bytes)": {
           "details": "Whenever an {IERC721} `tokenId` token is transferred to this contract via {IERC721-safeTransferFrom} by `operator` from `from`, this function is called. It must return its Solidity selector to confirm the token transfer. If any other value is returned or the interface is not implemented by the recipient, the transfer will be reverted. The selector can be obtained in Solidity with `IERC721Receiver.onERC721Received.selector`."
@@ -1397,27 +1377,27 @@
       ]
     },
     "contracts/common/Upgradeable.sol": {
-      "keccak256": "0xdf1b8ef9cd6e798b630eb103d102c03c6673d5c682eb2e26046ffe16af749fe6",
+      "keccak256": "0x47667ac02f9b5610695fb010152c2cac76fc1eaae33c6f1271943979284a0713",
       "license": "MIT",
       "urls": [
-        "bzz-raw://4a66fda1c08b317feb57015471e72b552a8a45b0a0e41d133d763efd8cb6bb54",
-        "dweb:/ipfs/QmSHebTcPrRELozQKFHpGXtJYgHak3RF5iaM5bfBpXMbnV"
+        "bzz-raw://202f537d68f8c4a3da1200391b905abb71923fca7818eae6e365522b8ca09835",
+        "dweb:/ipfs/Qmbjc1CWV5DWeskhTjkdF3rdKXF7Zih1LfVp2aGj9FdB4i"
       ]
     },
     "contracts/implementations/Implementation.sol": {
-      "keccak256": "0xa5f74fb4d73771781d03926c2b8ec0f731e7cf0aa40fc15f6ea2214256e08456",
+      "keccak256": "0x08d48cfb3585e034fea27c05b6432e72f63603cffb3ff7da7e9308f646c56b7b",
       "license": "MIT",
       "urls": [
-        "bzz-raw://3c1bff74752aec2f903c8cbf6ac2c62c9b9743db0a8a66a2bf5f0d9c78a40700",
-        "dweb:/ipfs/QmQ5eHDWntFHVPktKhNG65fo41hbQfr6hY4j2JauFwaH2z"
+        "bzz-raw://f7674fb732db65b573844cbc9fcaf644af67ecff955e5942ab5d55ba11999355",
+        "dweb:/ipfs/QmdaascwLayjxJF2tCmfC9zgFSPzzuBDdo8oXXdwCWn3uk"
       ]
     },
     "contracts/implementations/ImplementationV1.sol": {
-      "keccak256": "0x9606028b16a6b28651da8b111ab9a12098eaa9e025faafdcf0eb5cebb847d2db",
+      "keccak256": "0x0e05e8c3553d73bae3b8bdf1bcf2efba0c56c4df8c7f11f4dd2368cd1add6ad9",
       "license": "MIT",
       "urls": [
-        "bzz-raw://32811c7aa19dd1e1bc83f370a167834cb232a0b553d9a0b41e9100b867155365",
-        "dweb:/ipfs/QmNu1Vs1VXgbLY5Q5FD1Gur2YZw4EyZ4FQNxzHU6Hykve7"
+        "bzz-raw://574729da978a4d9919cf0778272467513537441f8db83b065a0ab2a9a38a9bd2",
+        "dweb:/ipfs/QmPLXYVepRPMPjWM3zM6PXGS57LnDVBxVdPPQw7eYhs5PJ"
       ]
     }
   },
