@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsDate,
+  IsDateString,
   IsEnum,
   IsEthereumAddress,
   IsNotEmpty,
@@ -30,7 +32,7 @@ import {
   MAX_HARD_CAP_PER_USER,
   MAX_LENGTH_WHITE_LIST_URL,
 } from 'src/datalayer/model';
-import { ValidateDate, ValidateGreaterComparse } from './validate.dto';
+import {  ValidateGreaterComparse } from './validate.dto';
 
 export class EventNameDTO {
   @ApiProperty({ required: true })
@@ -90,31 +92,20 @@ export class CreateIaoEventDto {
   @IsEthereumAddress({ message: 'E2' })
   FNFTcontractAddress: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  iaoRequestId: string;
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  registrationStartTime: Date;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString()
-  @ValidateDate({
-    message:
-      'registrationStartTime must be formatted as dd-mm-yyyy hh:mm:ss and greater than current date',
-  })
-  registrationStartTime: string;
-
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  @IsString()
-  @ValidateDate({
-    message:
-      'registrationEndTime must be formatted as dd-mm-yyyy hh:mm:ss and greater than current date',
-  })
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
   @ValidateGreaterComparse('registrationStartTime', {
     message: 'Registration Start time must be < Registration end time',
   })
-  registrationEndTime: string;
+  registrationEndTime: Date;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
@@ -125,24 +116,18 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString()
-  @ValidateDate({
-    message:
-      'participationStartTime must be formatted as dd-mm-yyyy hh:mm:ss and greater than current date',
-  })
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
   @ValidateGreaterComparse('registrationEndTime', {
     message: 'registrationEndTime must be < participationStartTime',
   })
-  participationStartTime: string;
+  participationStartTime: Date;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString()
-  @ValidateDate({
-    message:
-      'participationEndTime must be formatted as dd-mm-yyyy hh:mm:ss and greater than current date',
-  })
-  participationEndTime: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  participationEndTime: Date;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
@@ -227,12 +212,7 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  @ValidateDate()
-  whitelistAnnouncementTime: string;
-
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
-  @IsNumber()
-  totalSupply: number;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  whitelistAnnouncementTime: Date;
 }

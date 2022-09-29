@@ -15,24 +15,12 @@ export class IaoEventBuilderService {
       isDisplay: createIaoEventDto.isDisplay,
       chainId: createIaoEventDto.chainId,
       FNFTcontractAddress: createIaoEventDto.FNFTcontractAddress,
-      iaoRequestId: createIaoEventDto.iaoRequestId,
-      registrationStartTime: moment(
-        createIaoEventDto.registrationStartTime,
-        'DD-MM-YYYY HH:MM:SS',
-      ).toDate(),
-      registrationEndTime: moment(
-        createIaoEventDto.registrationEndTime,
-        'DD-MM-YYYY HH:MM:SS',
-      ).toDate(),
+      iaoRequestId: createIaoEventDto['iaoRequestId'],
+      registrationStartTime: createIaoEventDto.registrationStartTime,
+      registrationEndTime: createIaoEventDto.registrationEndTime,
       iaoEventDuration: createIaoEventDto.iaoEventDuration,
-      participationStartTime: moment(
-        createIaoEventDto.participationStartTime,
-        'DD-MM-YYYY HH:MM:SS',
-      ).toDate(),
-      participationEndTime: moment(
-        createIaoEventDto.participationEndTime,
-        'DD-MM-YYYY HH:MM:SS',
-      ).toDate(),
+      participationStartTime: createIaoEventDto.participationStartTime,
+      participationEndTime: createIaoEventDto.participationEndTime,
       vaultType: createIaoEventDto.vaultType,
       acceptedCurrencyAddress: createIaoEventDto.acceptedCurrencyAddress,
       exchangeRate: createIaoEventDto.exchangeRate,
@@ -45,14 +33,11 @@ export class IaoEventBuilderService {
       allocationType: createIaoEventDto.allocationType,
       hardCapPerUser: createIaoEventDto.hardCapPerUser,
       whitelistRegistrationUrl: createIaoEventDto.whitelistRegistrationUrl,
-      whitelistAnnouncementTime: moment(
-        createIaoEventDto.whitelistAnnouncementTime,
-        'DD-MM-YYYY HH:MM:SS',
-      ).toDate(),
+      whitelistAnnouncementTime: createIaoEventDto.whitelistAnnouncementTime,
       onChainStatus: ON_CHAIN_STATUS.DRAFT,
       updatedBy: user.adminId,
       createdBy: user.adminId,
-      totalSupply: createIaoEventDto.totalSupply,
+      totalSupply: createIaoEventDto['totalSupply'],
     };
   }
 }

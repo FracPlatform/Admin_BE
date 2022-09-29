@@ -23,9 +23,6 @@ export class IaoEventService {
     });
     if (!fnft) throw ApiError('E4', 'F-NFT not exists');
 
-    if (fnft.iaoRequestId !== createIaoEventDto.iaoRequestId)
-      throw ApiError('E4', 'F-NFT and IAO request ID not match');
-
     const existsIAOEvent = await this.dataService.iaoEvent.findOne({
       $or: [
         {
@@ -52,6 +49,8 @@ export class IaoEventService {
     if (existsIAOEvent)
       throw ApiError('E9', 'Must be unique among list of IAO event name');
 
+    createIaoEventDto['totalSupply'] = fnft.totalSupply;
+    createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
     const buildIAOEvent = this.iaoEventBuilderService.createIAOEvent(
       createIaoEventDto,
       user,
