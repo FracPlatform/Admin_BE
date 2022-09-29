@@ -30,9 +30,7 @@ export class AssetBuilderService {
         media: e.media,
         previewUrl: e.previewUrl,
         owner:
-          e.Fractor &&
-          e.Fractor.length &&
-          e.ownershipPrivacy == OWNERSHIP_PRIVACY.PUBLIC
+          e.Fractor && e.Fractor.length
             ? {
                 name: e.Fractor[0]['name'],
                 email: e.Fractor[0]['email'],
@@ -76,17 +74,16 @@ export class AssetBuilderService {
       status: data.status,
       media: data.media,
       previewUrl: data.previewUrl,
-      owner:
-        user && data.ownershipPrivacy == OWNERSHIP_PRIVACY.PUBLIC
-          ? {
-              name: user.name,
-              email: user.email,
-              kycStatus: user.kycStatus,
-              fullname: user.fullname,
-              avatar: user.avatar,
-              _id: user._id,
-            }
-          : null,
+      owner: user
+        ? {
+            name: user.name,
+            email: user.email,
+            kycStatus: user.kycStatus,
+            fullname: user.fullname,
+            avatar: user.avatar,
+            _id: user._id,
+          }
+        : null,
       itemId: data.itemId,
       assetTypeName,
       custodianshipStatus: data.custodianshipStatus,

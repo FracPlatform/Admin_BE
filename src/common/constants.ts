@@ -11,7 +11,11 @@ export const ErrorCode = {
   NO_DATA_EXISTS: 'E14',
   ALREADY_COMPLETED: 'already completed',
   MIN_PHOTOS: 'E14',
+  INVALID_TOKENSYMBOL_OR_TOKENNAME: 'E11',
   MAX_FILE_SIZE: 'E12',
+  INVALID_IAO_STATUS: 'E18',
+  INVALID_ITEMS_STATUS: 'E19',
+  INVALID_ITEMS_NFT_STATUS: 'E20',
 };
 export const Contract = {
   EVENT: {
@@ -60,6 +64,10 @@ export const CacheKeyName = {
     NAME: 'get-full-config',
     TTL: 300,
   },
+  NFT_ADDRESS: {
+    NAME: 'nft-address',
+    TTL: 300,
+  },
 };
 
 export const STRONG_PASSWORD_REGEX =
@@ -70,14 +78,26 @@ export const DEFAULT_OFFET = 0;
 export const DEFAULT_LIMIT = 10;
 
 export enum PREFIX_ID {
-  FRACTOR = 'F',
-  ADMIN = 'A',
-  ASSET = 'ITEM',
-  IAO_REQUEST = 'IAO-REQUEST',
-  ASSET_TYPE = 'ATYPE',
+  FRACTOR = 'FRT',
+  ADMIN = 'ADM',
+  ASSET = 'AI',
+  IAO_REQUEST = 'IR',
+  ASSET_TYPE = 'AT',
+  NFT = 'NFT',
   F_NFT = 'FNFT',
+  IAO_EVENT = 'IE',
+  ASSET_REDEMOTION_REQUEST = 'AR',
+  USER = 'U',
+  AFFILIATE = 'AFF',
+  EXCHANGE_TOKEN = 'TKN',
+  EXCHANGE_TRADING_PAIRS = 'TP',
 }
 
 export const CONTRACT_EVENTS = {
   SET_ADMIN: 'SetAdminEvent',
 };
+
+export enum CHAINID {
+  BSC_MAINNET = 56,
+  BSC_TESTNET = 97,
+}

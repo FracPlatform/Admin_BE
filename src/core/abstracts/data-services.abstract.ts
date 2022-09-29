@@ -7,6 +7,7 @@ import {
   IAORequest,
   CounterId,
   Fnft,
+  Nft,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
@@ -18,5 +19,6 @@ export abstract class IDataServices {
   abstract iaoRequest: IGenericRepository<IAORequest>;
   abstract counterId: IGenericRepository<CounterId>;
   abstract fnft: IGenericRepository<Fnft>;
+  abstract nft: IGenericRepository<Nft>;
   abstract iaoEvent: IGenericRepository<IAOEvent>;
 }
