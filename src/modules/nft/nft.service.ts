@@ -22,11 +22,7 @@ export class NftService {
         itemId: body.assetId,
       });
       if (!assetItem) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid asset');
-      if (
-        assetItem.status !== ASSET_STATUS.IAO_APPROVED ||
-        assetItem.isMintNFT ||
-        assetItem.inDraft
-      )
+      if (assetItem.status !== ASSET_STATUS.IAO_APPROVED)
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid asset');
     }
     if (body.assetType) {
@@ -45,18 +41,6 @@ export class NftService {
         session,
       );
       await this.dataService.nft.create(newNft, { session });
-      if (body.assetId)
-        await this.dataService.asset.updateOne(
-          {
-            itemId: body.assetId,
-          },
-          {
-            $set: {
-              isMintNFT: true,
-            },
-          },
-          { session },
-        );
       await session.commitTransaction();
       return newNft;
     } catch (error) {
