@@ -3,11 +3,6 @@ import { PREFIX_ID } from 'src/common/constants';
 
 export type FnftDocument = Fnft & Document;
 
-export enum F_NFT_CHAINID {
-  MAINNET = 56,
-  TESTNET = 97,
-}
-
 export enum F_NFT_STATUS {
   INACTIVE = 0,
   ACTIVE = 1,
@@ -83,7 +78,3 @@ export class Fnft {
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
 FnftSchema.index({ fnftId: 1, contractAddress: 1 });
 FnftSchema.index({ tokenSymbol: 1, tokenName: 1 }, { unique: true });
-FnftSchema.index(
-  { iaoRequestId: 1 },
-  { unique: true, partialFilterExpression: { houseName: { $type: 'string' } } },
-);

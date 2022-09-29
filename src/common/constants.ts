@@ -85,3 +85,8 @@ export enum PREFIX_ID {
 export const CONTRACT_EVENTS = {
   SET_ADMIN: 'SetAdminEvent',
 };
+
+export enum CHAINID {
+  MAINNET = 56,
+  TESTNET = 97,
+}
