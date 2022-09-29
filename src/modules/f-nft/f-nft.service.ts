@@ -196,7 +196,7 @@ export class FnftService {
 
   async getDetail(id: string, user: any) {
     const filter = {
-      _id: id,
+      fnftId: id,
       deleted: false,
     };
 
@@ -241,7 +241,7 @@ export class FnftService {
   }
 
   async update(id: string, user: any, data: UpdateFnftDto) {
-    const filter = { _id: id, deleted: false };
+    const filter = { fnftId: id, deleted: false };
 
     const currentFnft = await this.dataServices.fnft.findOne(filter);
     if (!currentFnft)
