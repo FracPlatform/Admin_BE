@@ -15,9 +15,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
+import { CHAINID } from 'src/common/constants';
 import {
   VAULT_TYPE,
-  CHAIN_ID,
   MAXLENGTH_CONTRACT_ADDRESS,
   MIN_IAO_EVENT_DURATION,
   MAX_IAO_EVENT_DURATION,
@@ -82,7 +82,7 @@ export class CreateIaoEventDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsNumber()
-  @IsEnum(CHAIN_ID)
+  @IsEnum(CHAINID)
   chainId: number;
 
   @ApiProperty({ required: true })

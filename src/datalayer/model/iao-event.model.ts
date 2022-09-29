@@ -31,11 +31,6 @@ export enum ALLOCATION_TYPE {
   FIRST_COME_FIRST_SERVED = 1,
 }
 
-export enum CHAIN_ID {
-  BSC = 56,
-  BSC_TESTNEST = 97,
-}
-
 export class EventName {
   en: string;
   jp: string;
