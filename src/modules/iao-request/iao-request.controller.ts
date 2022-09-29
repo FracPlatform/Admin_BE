@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Post,
   Query,
@@ -25,6 +27,7 @@ export class IaoRequestController {
 
   @Get()
   @ApiOperation({ summary: 'List IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async findAll(@Query() filter: FilterIAORequestDto, @Req() req: Request) {
@@ -34,6 +37,7 @@ export class IaoRequestController {
 
   @Get(':requestId')
   @ApiOperation({ summary: 'IAO request detail' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async findOne(@Param('requestId') requestId: string, @Req() req: Request) {
@@ -47,6 +51,7 @@ export class IaoRequestController {
 
   @Post('first-approve')
   @ApiOperation({ summary: 'First approve IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async firstApproveIaoRequest(
@@ -66,6 +71,7 @@ export class IaoRequestController {
 
   @Post('second-approve')
   @ApiOperation({ summary: 'Second approve IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async secondApproveIaoRequest(
@@ -85,6 +91,7 @@ export class IaoRequestController {
 
   @Post('first-reject')
   @ApiOperation({ summary: 'First reject IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async firstRejectIaoRequest(
@@ -104,6 +111,7 @@ export class IaoRequestController {
 
   @Post('second-reject')
   @ApiOperation({ summary: 'Second reject IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async secondRejectIaoRequest(
@@ -123,6 +131,7 @@ export class IaoRequestController {
 
   @Post('change-to-draft')
   @ApiOperation({ summary: 'Change to draft IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async changeToDraftIaoRequest(
@@ -142,6 +151,7 @@ export class IaoRequestController {
 
   @Post('edit-review-comment')
   @ApiOperation({ summary: 'Edit review comment IAO request' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async EditReviewComment(
