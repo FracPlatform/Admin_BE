@@ -37,7 +37,7 @@ export class CreateFnftDto {
   @ApiProperty({ required: true, description: '56- mainnet, 97- testnet' })
   @Type(() => Number)
   @IsNumber()
-  @IsEnum([CHAINID.MAINNET, CHAINID.TESTNET])
+  @IsEnum([CHAINID.BSC_MAINNET, CHAINID.BSC_TESTNET])
   chainId: number;
 
   @ApiProperty({ required: false })

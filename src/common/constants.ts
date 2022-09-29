@@ -87,6 +87,6 @@ export const CONTRACT_EVENTS = {
 };
 
 export enum CHAINID {
-  MAINNET = 56,
-  TESTNET = 97,
+  BSC_MAINNET = 56,
+  BSC_TESTNET = 97,
 }
