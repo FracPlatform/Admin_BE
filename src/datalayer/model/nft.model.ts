@@ -1,4 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { SchemaTypes } from 'mongoose';
+import { CHAINID } from 'src/common/constants';
+import { CategoryType } from '.';
 
 export type NftDocument = Nft & Document;
 
@@ -16,8 +19,6 @@ export enum NFT_STATUS {
 
 export enum DISPLAY_TYPE {
   NUMBER = 'number',
-  BOOST_NUMBER = 'boost_number',
-  BOOST_PERCENTAGE = 'boost_percentage',
 }
 
 @Schema({
@@ -28,45 +29,28 @@ export class Trait {
   @Prop({ type: String })
   trait_type: string;
 
-  @Prop({ type: String })
-  value: string;
+  @Prop({ type: SchemaTypes.Mixed })
+  value: string | number;
 
   @Prop({ type: String })
   display_type?: DISPLAY_TYPE;
-
-  @Prop({ type: Number })
-  max_value?: number;
 }
 
 export const TraitSchema = SchemaFactory.createForClass(Trait);
-
-export class NftMetadata {
-  @Prop({ type: [TraitSchema] })
-  properties: Trait[];
-
-  @Prop({ type: [TraitSchema] })
-  levels: Trait[];
-
-  @Prop({ type: [TraitSchema] })
-  stats: Trait[];
-
-  @Prop({ type: [TraitSchema] })
-  date: Trait[];
-}
 
 @Schema({
   timestamps: true,
   collection: 'Nft',
 })
 export class Nft {
-  @Prop({ type: String })
+  @Prop({ type: Number })
   nftType: NFT_TYPE;
 
-  @Prop({ type: String })
-  assetId: string;
+  @Prop({ type: String, required: false })
+  assetId?: string;
 
   @Prop({ type: String, required: false })
-  assetCategory?: string;
+  assetCategory?: CategoryType;
 
   @Prop({ type: String, required: false })
   assetType?: string;
@@ -77,17 +61,17 @@ export class Nft {
   @Prop({ type: String })
   contractAddress: string;
 
-  @Prop({ type: String })
-  fNftId: string;
+  @Prop({ type: String, required: false })
+  fNftId?: string;
 
-  @Prop({ type: String, default: NFT_STATUS.DRAFT })
+  @Prop({ type: Number, default: NFT_STATUS.DRAFT })
   status: NFT_STATUS;
 
   @Prop({ type: Boolean })
   display: boolean;
 
   @Prop({ type: Number })
-  chainId: number;
+  chainId: CHAINID;
 
   @Prop({ type: String })
   mediaUrl: string;
@@ -95,8 +79,8 @@ export class Nft {
   @Prop({ type: String })
   previewUrl: string;
 
-  @Prop({ type: NftMetadata })
-  metadata: NftMetadata;
+  @Prop({ type: [TraitSchema] })
+  metadata: Trait[];
 
   @Prop({ type: String })
   unlockableContent?: string;
@@ -108,16 +92,29 @@ export class Nft {
   description: string;
 
   @Prop({ type: String })
+  metadataUrl: string;
+
+  @Prop({ type: String })
   createdBy: string;
 
-  @Prop({ type: String })
-  mintedBy: string;
+  @Prop({ type: String, required: false })
+  mintedBy?: string;
 
-  @Prop({ type: Date })
-  mintedAt: string;
+  @Prop({ type: Date, required: false })
+  mintedAt?: string;
 
-  @Prop({ type: String })
-  mintingHashTx: string;
+  @Prop({ type: String, required: false })
+  mintingHashTx?: string;
 }
 export const NftSchema = SchemaFactory.createForClass(Nft);
 NftSchema.index({ tokenId: 1 });
+NftSchema.index(
+  { assetId: 1, status: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $gte: 2 },
+      assetId: { $type: 'string' },
+    },
+  },
+);
