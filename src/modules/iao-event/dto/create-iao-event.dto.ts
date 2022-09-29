@@ -31,8 +31,15 @@ import {
   MAX_DECIMAL_EXCHANGE_RATE,
   MAX_HARD_CAP_PER_USER,
   MAX_LENGTH_WHITE_LIST_URL,
+  MIN_HARD_CAP_PER_USER,
+  MIN_PERCENT_OFFERED,
+  MIN_PERCENT_VAULT,
 } from 'src/datalayer/model';
-import {  ValidateGreaterComparse } from './validate.dto';
+import {
+  ValidateGreaterComparse,
+  ValidateWhitelistGreaterRegistration,
+  ValidateWhitelistLessParticipation,
+} from './validate.dto';
 
 export class EventNameDTO {
   @ApiProperty({ required: true })
@@ -125,12 +132,6 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @Transform(({ value }) => new Date(value))
-  @IsDate()
-  participationEndTime: Date;
-
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsEnum(VAULT_TYPE)
   vaultType: number;
 
@@ -150,12 +151,14 @@ export class CreateIaoEventDto {
   @IsNotEmpty()
   @IsNumber()
   @Max(MAX_PERCENT_OFFERED)
+  @Min(MIN_PERCENT_OFFERED)
   percentageOffered: number;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsNumber()
   @Max(MAX_PERCENT_VAULT)
+  @Min(MIN_PERCENT_VAULT)
   vaultUnlockThreshold: number;
 
   @ApiProperty({ required: true })
@@ -194,6 +197,7 @@ export class CreateIaoEventDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @Max(MAX_HARD_CAP_PER_USER)
+  @Min(MIN_HARD_CAP_PER_USER)
   @IsNumber({ maxDecimalPlaces: MAX_DECIMAL_HARD_CAP_PER_USER })
   hardCapPerUser: number;
 
@@ -210,5 +214,11 @@ export class CreateIaoEventDto {
   @IsOptional()
   @Transform(({ value }) => new Date(value))
   @IsDate()
+  @ValidateWhitelistGreaterRegistration('registrationStartTime', {
+    message: 'whitelistAnnouncementTime Must >= Registration_end_time',
+  })
+  @ValidateWhitelistLessParticipation('participationEndTime', {
+    message: 'whitelistAnnouncementTime Must <= Participation_end_time.',
+  })
   whitelistAnnouncementTime: Date;
 }

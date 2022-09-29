@@ -62,7 +62,7 @@ export class IaoEventService {
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
-
+    
     const session = await this.connection.startSession();
     session.startTransaction();
 

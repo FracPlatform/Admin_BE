@@ -10,7 +10,7 @@ export class CreateIAOEventEntity {
   registrationEndTime: Date;
   iaoEventDuration: number;
   participationStartTime: Date;
-  participationEndTime: Date;
+  participationEndTime: any;
   vaultType: number;
   acceptedCurrencyAddress: string;
   exchangeRate: number;

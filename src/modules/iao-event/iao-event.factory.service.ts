@@ -16,6 +16,12 @@ export class IaoEventBuilderService {
     user: any,
     session,
   ): Promise<CreateIAOEventEntity> {
+    const date = createIaoEventDto.participationStartTime.toString();
+    const participationEndTime = new Date(date);
+    participationEndTime.setDate(
+      participationEndTime.getDate() + createIaoEventDto.iaoEventDuration,
+    );
+
     return {
       iaoEventId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
@@ -30,7 +36,7 @@ export class IaoEventBuilderService {
       registrationEndTime: createIaoEventDto.registrationEndTime,
       iaoEventDuration: createIaoEventDto.iaoEventDuration,
       participationStartTime: createIaoEventDto.participationStartTime,
-      participationEndTime: createIaoEventDto.participationEndTime,
+      participationEndTime: participationEndTime,
       vaultType: createIaoEventDto.vaultType,
       acceptedCurrencyAddress: createIaoEventDto.acceptedCurrencyAddress,
       exchangeRate: createIaoEventDto.exchangeRate,

@@ -19,8 +19,10 @@ export const MAX_IAO_REQUEST_NOTE = 3000;
 export const MAX_LENGTH_PHONE = 16;
 export const MAX_IAO_REQUEST_ADDRESS = 512;
 export const MAX_PERCENT_VAULT = 100;
+export const MIN_PERCENT_VAULT = 100;
 export const MIN_TOTAL_SUPPLY = 10000;
 export const MAX_PERCENT_OFFERED = 100;
+export const MIN_PERCENT_OFFERED = 1;
 export const MIN_IAO_EVENT_DURATION = 2;
 
 export enum CURRENCY_UNIT {
