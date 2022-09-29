@@ -1,4 +1,3 @@
-import { Nft } from 'src/datalayer/model/nft.model';
 import { IAOEvent } from 'src/datalayer/model/iao-event.model';
 import {
   Fractor,
@@ -8,6 +7,7 @@ import {
   IAORequest,
   CounterId,
   Fnft,
+  Nft,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 

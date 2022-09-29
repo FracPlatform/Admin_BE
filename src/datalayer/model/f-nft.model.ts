@@ -4,60 +4,88 @@ import { PREFIX_ID } from 'src/common/constants';
 export type FnftDocument = Fnft & Document;
 
 export enum F_NFT_STATUS {
-	INACTIVE = 0,
-	ACTIVE = 1,
+  INACTIVE = 0,
+  ACTIVE = 1,
+}
+
+export enum F_NFT_MINTED_STATUS {
+  PROCESS = 0,
+  MINTED = 1,
+}
+
+export enum F_NFT_TYPE {
+  AUTO_IMPORT = 1,
+  SELECT_MANUALY = 2,
 }
 
 @Schema({
-	timestamps: true,
-	collection: 'Fnft',
+  timestamps: true,
+  collection: 'Fnft',
 })
 export class Fnft {
-	@Prop({ type: String })
-	tokenSymbol: string;
+  @Prop({ type: String })
+  tokenSymbol: string;
 
-	@Prop({ type: String, default: null })
-	tokenName: string;
+  @Prop({ type: String })
+  tokenName: string;
 
-	@Prop({ type: Number })
+  @Prop({ type: Number })
   totalSupply: number;
 
-	@Prop({ type: String })
-	tokenLogo: string;
+  @Prop({ type: String })
+  tokenLogo: string;
 
-	@Prop({ type: Number })
+  @Prop({ type: Number })
   chainId: number;
 
-	@Prop({ type: String, default: null })
-	contractAddress: string;
+  @Prop({ type: String })
+  contractAddress: string;
 
-	@Prop([{ type: String }])
+  @Prop([{ type: String }])
   items: string[];
 
-  @Prop({ type: String, default: null })
-	iaoRequestId: string;
+  @Prop({ type: String })
+  iaoRequestId: string;
 
-  @Prop({ type: String, default: null })
-	txhash: string;
+  @Prop({ type: Number })
+  fnftType: number;
 
-	@Prop({ type: Number, default: F_NFT_STATUS.ACTIVE })
-	status: number;
+  @Prop({ type: String })
+  txhash: string;
 
-	@Prop({ type: String })
-	fractionalizedBy: string;
+  @Prop({ type: Number, default: F_NFT_STATUS.ACTIVE })
+  status: number;
+
+  @Prop({ type: Number, default: F_NFT_MINTED_STATUS.PROCESS })
+  mintedStatus: number;
+
+  @Prop({ type: String })
+  fractionalizedBy: string;
 
   @Prop({ type: Date })
-	fractionalizedOn: Date;
+  fractionalizedOn: Date;
 
-	@Prop({ type: String })
-	lastUpdateBy: string;
+  @Prop({ type: String })
+  lastUpdateBy: string;
 
-	@Prop({ type: String, default: PREFIX_ID.F_NFT })
-	fnftId?: string;
+  @Prop({ type: String, default: PREFIX_ID.F_NFT })
+  fnftId?: string;
 
-	@Prop({ type: Boolean, default: false })
-	deleted: boolean;
+  @Prop({ type: Boolean, default: false })
+  deleted: boolean;
 }
 
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
 FnftSchema.index({ fnftId: 1 });
+FnftSchema.index({ tokenSymbol: 1, tokenName: 1 }, { unique: true });
+FnftSchema.index({ contractAddress: 1 }, { unique: true });
+FnftSchema.index(
+  { iaoRequestId: 1, mintedStatus: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      mintedStatus: { $eq: 1 },
+      iaoRequestId: { $type: 'string' },
+    },
+  },
+);

@@ -7,7 +7,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { CHAIN_ID } from 'src/common/constants';
+import { CHAINID } from 'src/common/constants';
 import { CategoryType } from 'src/datalayer/model';
 import { DISPLAY_TYPE, NFT_TYPE } from 'src/datalayer/model/nft.model';
 
@@ -59,9 +59,9 @@ export class CreateNftDto {
   @ApiProperty({ type: Boolean })
   display: boolean;
 
-  @IsEnum(CHAIN_ID)
-  @ApiProperty({ type: Number, default: CHAIN_ID.BSC })
-  chainId: CHAIN_ID;
+  @IsEnum(CHAINID)
+  @ApiProperty({ type: Number, default: CHAINID.BSC_TESTNET })
+  chainId: CHAINID;
 
   @IsString()
   @ApiProperty({ type: String })

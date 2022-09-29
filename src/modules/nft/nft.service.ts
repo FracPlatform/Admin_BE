@@ -29,7 +29,7 @@ export class NftService {
       const assetType = await this.dataService.assetTypes.findOne({
         assetTypeId: body.assetType,
       });
-      if (!assetType)
+      if (!assetType || assetType.category !== body.assetCategory)
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid asset type');
     }
     const session = await this.connection.startSession();
@@ -41,6 +41,18 @@ export class NftService {
         session,
       );
       await this.dataService.nft.create(newNft, { session });
+      if (body.assetId)
+        await this.dataService.asset.updateOne(
+          {
+            itemId: body.assetId,
+          },
+          {
+            $set: {
+              status: ASSET_STATUS.CONVERTED_TO_NFT,
+            },
+          },
+          { session },
+        );
       await session.commitTransaction();
       return newNft;
     } catch (error) {

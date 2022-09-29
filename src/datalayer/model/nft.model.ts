@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
-import { CHAIN_ID } from 'src/common/constants';
+import { CHAINID } from 'src/common/constants';
 import { CategoryType } from '.';
 
 export type NftDocument = Nft & Document;
@@ -71,7 +71,7 @@ export class Nft {
   display: boolean;
 
   @Prop({ type: Number })
-  chainId: CHAIN_ID;
+  chainId: CHAINID;
 
   @Prop({ type: String })
   mediaUrl: string;
