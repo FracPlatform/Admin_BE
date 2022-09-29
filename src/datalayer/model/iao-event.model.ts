@@ -11,6 +11,7 @@ export const MAX_HARD_CAP_PER_USER = 100;
 export const MIN_HARD_CAP_PER_USER = 1;
 export const MAX_DECIMAL_EXCHANGE_RATE = 18;
 export const MAX_EXCHANGE_RATE = 999999999999;
+export const MIN_EXCHANGE_RATE = 0;
 export const MAX_LENGTH_WHITE_LIST_URL = 3000;
 
 export enum VAULT_TYPE {

@@ -34,6 +34,7 @@ import {
   MIN_HARD_CAP_PER_USER,
   MIN_PERCENT_OFFERED,
   MIN_PERCENT_VAULT,
+  MIN_EXCHANGE_RATE,
 } from 'src/datalayer/model';
 import {
   ValidateGreaterComparse,
@@ -144,6 +145,7 @@ export class CreateIaoEventDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @Max(MAX_EXCHANGE_RATE)
+  @Min(MIN_EXCHANGE_RATE)
   @IsNumber({ maxDecimalPlaces: MAX_DECIMAL_EXCHANGE_RATE })
   exchangeRate: number;
 
