@@ -136,3 +136,11 @@ export class FilterIAORequestDto {
   @IsNumber()
   sortType: number;
 }
+
+export class DetailIAORequestDto {
+  @ApiProperty({ required: false, description: '1-true, 0-false' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  isGetNft: number;
+}

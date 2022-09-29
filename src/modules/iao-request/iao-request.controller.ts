@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { IaoRequestService } from './iao-request.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
+import { DetailIAORequestDto, FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { ApiError } from 'src/common/api';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
@@ -36,9 +36,13 @@ export class IaoRequestController {
   @ApiOperation({ summary: 'IAO request detail' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async findOne(@Param('requestId') requestId: string, @Req() req: Request) {
+  async findOne(
+    @Param('requestId') requestId: string,
+    @Query() filter: DetailIAORequestDto,
+    @Req() req: Request,
+  ) {
     try {
-      const data = await this.iaoRequestService.findOne(requestId, req.user);
+      const data = await this.iaoRequestService.findOne(requestId, req.user, filter);
       return new ApiSuccessResponse().success(data, '');
     } catch (error) {
       throw ApiError('', 'Get iao request detail error');

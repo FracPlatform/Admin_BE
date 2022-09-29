@@ -18,7 +18,7 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { FnftService } from './f-nft.service';
 import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
-import { CreateFnftDto, FilterFnftDto } from './dto/f-nft.dto';
+import { CreateFnftDto, FilterFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
 @Controller('f-nft')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('F-nft')
@@ -38,10 +38,7 @@ export class FnftController {
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get Detail f-nft' })
-  async getDetail(
-    @Param('id', ParseObjectIdPipe) id: string,
-    @GetUser() user,
-  ) {
+  async getDetail(@Param('id', ParseObjectIdPipe) id: string, @GetUser() user) {
     const data = await this.fnftService.getDetail(id, user);
     return new ApiSuccessResponse().success(data, '');
   }
@@ -53,5 +50,18 @@ export class FnftController {
   async createFnft(@Body() createFnftDto: CreateFnftDto, @GetUser() user) {
     const data = await this.fnftService.createFnft(user, createFnftDto);
     return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Put(':id')
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Edit f-nft' })
+  async update(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() updateFnftDto: UpdateFnftDto,
+    @GetUser() user,
+  ) {
+    const response = await this.fnftService.update(id, user, updateFnftDto);
+    return new ApiSuccessResponse().success(response, '');
   }
 }

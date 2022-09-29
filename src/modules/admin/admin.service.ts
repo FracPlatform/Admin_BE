@@ -117,7 +117,7 @@ export class AdminService {
         throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
 
       // create referral
-      const referral = await this.randomReferal();
+      const referral = [Role.FractorBD, Role.MasterBD].includes(data.role) ? await this.randomReferal() : null;
 
       const adminObj = await this.adminBuilderService.createAdmin(
         data,

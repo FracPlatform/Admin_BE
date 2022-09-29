@@ -16,7 +16,6 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter Admins' })
@@ -29,7 +28,6 @@ export class AdminController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get Detail Admin' })
@@ -42,7 +40,6 @@ export class AdminController {
   }
 
   @Get('info/:id')
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.SuperAdmin, Role.OWNER, Role.HeadOfBD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get information admin by admin Id' })
@@ -55,7 +52,6 @@ export class AdminController {
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create admin' })
@@ -68,7 +64,6 @@ export class AdminController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Edit admin' })

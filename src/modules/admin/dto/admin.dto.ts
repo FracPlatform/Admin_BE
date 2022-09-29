@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
-import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsEnum, IsEmail } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsEnum, IsEmail, IsEthereumAddress } from 'class-validator';
 
 export class FilterAdminDto {
   @ApiProperty({ required: false })
@@ -65,6 +65,7 @@ export class CreateAdminDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
+  @IsEthereumAddress()
   walletAddress: string;
 
   @ApiProperty({ required: true, description: 'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5' })
