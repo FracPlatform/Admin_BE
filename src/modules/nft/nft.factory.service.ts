@@ -42,7 +42,7 @@ export class NftBuilderService {
     );
     const newNft: NftEntity = {
       nftType: body.nftType,
-      assetId: body.assetId,
+      assetId: body.assetId || null,
       assetCategory: body.assetCategory,
       assetType: body.assetType,
       tokenId,

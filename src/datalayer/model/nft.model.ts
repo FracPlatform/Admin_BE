@@ -108,3 +108,13 @@ export class Nft {
 }
 export const NftSchema = SchemaFactory.createForClass(Nft);
 NftSchema.index({ tokenId: 1 });
+NftSchema.index(
+  { assetId: 1, status: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $gte: 2 },
+      assetId: { $type: 'string' },
+    },
+  },
+);
