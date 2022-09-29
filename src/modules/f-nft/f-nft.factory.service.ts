@@ -3,7 +3,7 @@ import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
 import { FnftDetailEntity, FnftEntity, ListFnftEntity } from 'src/entity';
-import { CreateFnftDto } from './dto/f-nft.dto';
+import { CreateFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
 import {
   F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
@@ -45,6 +45,15 @@ export class FnftBuilderService {
       deleted: false,
     };
     return fnft;
+  }
+
+  updateFnft(data: UpdateFnftDto, currentAdminId) {
+    const dataUpdate = {
+      tokenName: data.tokenName,
+      tokenLogo: data.tokenLogo,
+      lastUpdateBy: currentAdminId,
+    };
+    return dataUpdate;
   }
 
   convertFnfts(data) {

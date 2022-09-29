@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { FilterIAORequestDto } from './dto/filter-iao-request.dto';
+import { DetailIAORequestDto, FilterIAORequestDto } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
 import {
@@ -255,7 +255,7 @@ export class IaoRequestService {
     } as ListDocument;
   }
 
-  async findOne(id: string, user: any): Promise<IAORequest> {
+  async findOne(id: string, user: any, filter: DetailIAORequestDto): Promise<IAORequest> {    
     const iaoRequestRole = [
       Role.FractorBD,
       Role.HeadOfBD,
@@ -265,7 +265,10 @@ export class IaoRequestService {
     ];
     if (!iaoRequestRole.includes(user.role))
       throw 'You do not have permission for this action';
-    const iaos = await this.dataService.iaoRequest.aggregate([
+
+    const agg = [];
+
+    agg.push(
       {
         $match: {
           iaoId: id,
@@ -411,7 +414,55 @@ export class IaoRequestService {
           assetType: { $arrayElemAt: ['$assetTypes', 0] },
         },
       },
+    );
+    
+    if (filter.isGetNft) {
+      agg.push({
+        $lookup: {
+          from: 'Nft',
+          let: { itemId: '$items' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$assetId', '$$itemId'] },
+              },
+            },
+            {
+              $project: {
+                assetCategory: 1,
+                name: 1,
+                tokenId: 1,
+                mediaUrl: 1,
+                status: 1,
+              },
+            },
+          ],
+          as: 'nfts',
+        },
+      },
       {
+        $addFields: {
+          nft: { $arrayElemAt: ['$nfts', 0] },
+        },
+      },
+      {
+        $addFields: {
+          itemDetail: {
+            _id: '$item._id',
+            itemId: '$item.itemId',
+            name: '$item.name',
+            media: '$item.media',
+            status: '$item.status',
+            nftName: '$nft.name',
+            tokenId: '$nft.tokenId',
+            nftMedia: '$nft.mediaUrl',
+            nftStatus: '$nft.status',
+            assetCategory: '$nft.assetCategory',
+          },
+        },
+      });
+    } else {
+      agg.push({
         $addFields: {
           itemDetail: {
             _id: '$item._id',
@@ -424,40 +475,43 @@ export class IaoRequestService {
             type: '$assetType.name',
           },
         },
+      });
+    }
+
+    agg.push({
+      $group: {
+        _id: '$_id',
+        type: { $first: '$type' },
+        status: { $first: '$status' },
+        assetValuation: { $first: '$assetValuation' },
+        totalSupply: { $first: '$totalSupply' },
+        percentOffered: { $first: '$percentOffered' },
+        percentVault: { $first: '$percentVault' },
+        eventDuration: { $first: '$eventDuration' },
+        walletAddress: { $first: '$walletAddress' },
+        phone: { $first: '$phone' },
+        address: { $first: '$address' },
+        note: { $first: '$note' },
+        ownerId: { $first: '$ownerId' },
+        usdPrice: { $first: '$usdPrice' },
+        sizeOfItem: { $first: '$sizeOfItem' },
+        items: { $push: '$itemDetail' },
+        fractor: { $first: '$fractor' },
+        requestId: { $first: '$iaoId' },
+        _firstReviewer: { $first: '$_firstReviewer' },
+        firstReviewer: { $first: '$firstReviewer' },
+        _secondReviewer: { $first: '$_secondReviewer' },
+        secondReviewer: { $first: '$secondReviewer' },
+        createdAt: { $first: '$createdAt' },
+        updatedAt: { $first: '$updatedAt' },
+        updatedBy: { $first: '$updatedBy' },
       },
-      {
-        $group: {
-          _id: '$_id',
-          type: { $first: '$type' },
-          status: { $first: '$status' },
-          assetValuation: { $first: '$assetValuation' },
-          totalSupply: { $first: '$totalSupply' },
-          percentOffered: { $first: '$percentOffered' },
-          percentVault: { $first: '$percentVault' },
-          eventDuration: { $first: '$eventDuration' },
-          walletAddress: { $first: '$walletAddress' },
-          phone: { $first: '$phone' },
-          address: { $first: '$address' },
-          note: { $first: '$note' },
-          ownerId: { $first: '$ownerId' },
-          usdPrice: { $first: '$usdPrice' },
-          sizeOfItem: { $first: '$sizeOfItem' },
-          items: { $push: '$itemDetail' },
-          fractor: { $first: '$fractor' },
-          requestId: { $first: '$iaoId' },
-          _firstReviewer: { $first: '$_firstReviewer' },
-          firstReviewer: { $first: '$firstReviewer' },
-          _secondReviewer: { $first: '$_secondReviewer' },
-          secondReviewer: { $first: '$secondReviewer' },
-          createdAt: { $first: '$createdAt' },
-          updatedAt: { $first: '$updatedAt' },
-          updatedBy: { $first: '$updatedBy' },
-        },
-      },
-    ]);
+    });
+
+    const iaos = await this.dataService.iaoRequest.aggregate(agg);
 
     if (iaos.length === 0) throw 'No data exists';
-    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
+    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos, filter.isGetNft);
     return iao;
   }
 

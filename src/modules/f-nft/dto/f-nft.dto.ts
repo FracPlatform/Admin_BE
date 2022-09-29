@@ -96,3 +96,19 @@ export class FilterFnftDto {
   @IsNumber()
   sortType: number;
 }
+
+export class UpdateFnftDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(64)
+  tokenName: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsUrl({
+    require_protocol: true,
+    require_valid_protocol: true,
+  })
+  tokenLogo: string;
+}

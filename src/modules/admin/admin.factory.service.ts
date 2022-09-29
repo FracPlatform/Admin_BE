@@ -60,7 +60,7 @@ export class AdminBuilderService {
         createBy: e.createBy,
         lastUpdateBy: e.lastUpdateBy,
         deleted: e.deleted,
-        adminId: e.deleted,
+        adminId: e.adminId,
         createdAt: e.createdAt,
         updatedAt: e.updatedAt,
       };

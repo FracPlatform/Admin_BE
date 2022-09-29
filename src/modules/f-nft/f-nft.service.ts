@@ -8,9 +8,13 @@ import { Connection } from 'mongoose';
 import { ListDocument } from 'src/common/common-type';
 import { FnftBuilderService } from './f-nft.factory.service';
 import { ApiError } from 'src/common/api';
-import { CreateFnftDto, FilterFnftDto } from './dto/f-nft.dto';
+import { CreateFnftDto, FilterFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
 import { NFT_STATUS, NFT_TYPE } from 'src/datalayer/model/nft.model';
-import { ASSET_STATUS, IAO_REQUEST_STATUS } from 'src/datalayer/model';
+import {
+  ASSET_STATUS,
+  F_NFT_STATUS,
+  IAO_REQUEST_STATUS,
+} from 'src/datalayer/model';
 
 @Injectable()
 export class FnftService {
@@ -192,7 +196,7 @@ export class FnftService {
 
   async getDetail(id: string, user: any) {
     const filter = {
-      _id: id,
+      fnftId: id,
       deleted: false,
     };
 
@@ -233,6 +237,41 @@ export class FnftService {
       currentFnft.items,
       listNft,
       relatedAdminList,
+    );
+  }
+
+  async update(id: string, user: any, data: UpdateFnftDto) {
+    const filter = { fnftId: id, deleted: false };
+
+    const currentFnft = await this.dataServices.fnft.findOne(filter);
+    if (!currentFnft)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    if (currentFnft.status !== F_NFT_STATUS.ACTIVE)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Status invalid');
+
+    const isName = await this.dataServices.fnft.findOne({
+      tokenName: data.tokenName,
+    });
+    if (isName)
+      throw ApiError(
+        ErrorCode.INVALID_TOKENSYMBOL_OR_TOKENNAME,
+        'TokenName already exists',
+      );
+
+    const updateFnftObj = await this.fnftBuilderService.updateFnft(
+      data,
+      user.adminId,
+    );
+
+    return await this.dataServices.fnft.findOneAndUpdate(
+      {
+        ...filter,
+        status: F_NFT_STATUS.ACTIVE,
+        updatedAt: currentFnft['updatedAt'],
+      },
+      updateFnftObj,
+      { new: true },
     );
   }
 }
