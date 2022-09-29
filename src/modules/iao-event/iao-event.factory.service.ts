@@ -1,17 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import moment = require('moment');
+import { PREFIX_ID } from 'src/common/constants';
+import { Utils } from 'src/common/utils';
+import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { ON_CHAIN_STATUS } from 'src/datalayer/model';
 import { CreateIAOEventEntity } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 
 @Injectable()
 export class IaoEventBuilderService {
-  createIAOEvent(
+  constructor(private readonly dataServices: IDataServices) {}
+
+  async createIAOEvent(
     createIaoEventDto: CreateIaoEventDto,
     user: any,
-  ): CreateIAOEventEntity {
+    session,
+  ): Promise<CreateIAOEventEntity> {
     return {
-      iaoEventId: 'fake',
+      iaoEventId: await Utils.getNextPrefixId(
+        this.dataServices.counterId,
+        PREFIX_ID.IAO_EVENT,
+        session,
+      ),
       isDisplay: createIaoEventDto.isDisplay,
       chainId: createIaoEventDto.chainId,
       FNFTcontractAddress: createIaoEventDto.FNFTcontractAddress,

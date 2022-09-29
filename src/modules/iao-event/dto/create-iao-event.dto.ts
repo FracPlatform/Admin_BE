@@ -176,16 +176,12 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString()
-  @MaxLength(MAXLENGTH_EVENT_NAME)
   @ValidateNested({ each: true })
   @Type(() => EventNameDTO)
   iaoEventName: EventNameDTO;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString()
-  @MaxLength(MAXLENGTH_EVENT_NAME)
   @ValidateNested({ each: true })
   @Type(() => DescriptionDTO)
   description: DescriptionDTO;

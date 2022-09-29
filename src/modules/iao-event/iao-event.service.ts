@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { F_NFT_STATUS, IAOEvent } from 'src/datalayer/model';
@@ -11,6 +13,7 @@ export class IaoEventService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly iaoEventBuilderService: IaoEventBuilderService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
   async createDraft(
@@ -23,7 +26,7 @@ export class IaoEventService {
     });
     if (!fnft) throw ApiError('E4', 'F-NFT not exists');
 
-    const existsIAOEvent = await this.dataService.iaoEvent.findOne({
+    const query: any = {
       $or: [
         {
           'iaoEventName.en': {
@@ -31,19 +34,27 @@ export class IaoEventService {
             $options: 'i',
           },
         },
-        {
-          'iaoEventName.jp': {
-            $regex: createIaoEventDto.iaoEventName.jp.trim(),
-            $options: 'i',
-          },
-        },
-        {
-          'iaoEventName.cn': {
-            $regex: createIaoEventDto.iaoEventName.cn.trim(),
-            $options: 'i',
-          },
-        },
       ],
+    };
+
+    if (createIaoEventDto.iaoEventName.cn)
+      query['$or'].push({
+        'iaoEventName.cn': {
+          $regex: createIaoEventDto.iaoEventName.cn.trim(),
+          $options: 'i',
+        },
+      });
+
+    if (createIaoEventDto.iaoEventName.jp)
+      query['$or'].push({
+        'iaoEventName.jp': {
+          $regex: createIaoEventDto.iaoEventName.jp.trim(),
+          $options: 'i',
+        },
+      });
+
+    const existsIAOEvent = await this.dataService.iaoEvent.findOne({
+      ...query,
     });
 
     if (existsIAOEvent)
@@ -51,14 +62,30 @@ export class IaoEventService {
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
-    const buildIAOEvent = this.iaoEventBuilderService.createIAOEvent(
-      createIaoEventDto,
-      user,
-    );
 
-    const iaoEvent = await this.dataService.iaoEvent.create(buildIAOEvent);
+    const session = await this.connection.startSession();
+    session.startTransaction();
 
-    return iaoEvent;
+    try {
+      const buildIAOEvent = await this.iaoEventBuilderService.createIAOEvent(
+        createIaoEventDto,
+        user,
+        session,
+      );
+
+      const iaoEvent = await this.dataService.iaoEvent.create(
+        buildIAOEvent,
+        session,
+      );
+      await session.commitTransaction();
+
+      return iaoEvent;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   findAll() {

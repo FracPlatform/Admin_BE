@@ -145,6 +145,9 @@ export class IAOEvent {
 
   @Prop({ type: Number })
   totalSupply: number;
+
+  @Prop({ type: Boolean, default: false })
+  isDeleted?: boolean;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);
