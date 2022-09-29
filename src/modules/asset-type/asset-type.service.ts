@@ -49,10 +49,20 @@ export class AssetTypeService {
     const dataPagination: any[] = [{ $skip: offset }];
     if (category) where['category'] = category;
     if (keyword)
-      where['name.en'] = {
-        $regex: Utils.escapeRegex(keyword.trim()),
-        $options: 'i',
-      };
+      where['$or'] = [
+        {
+          'name.en': {
+            $regex: Utils.escapeRegex(keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          assetTypeId: {
+            $regex: Utils.escapeRegex(keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
     if (status === ASSET_TYPE_STATUS.ACTIVE) where['isActive'] = true;
     if (status === ASSET_TYPE_STATUS.INACTIVE) where['isActive'] = false;
     if (sortField && sortType) sort['$sort'][sortField] = sortType;
