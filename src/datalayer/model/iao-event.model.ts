@@ -2,6 +2,43 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type IAOEventDocument = IAOEvent & Document;
 
+export const MAXLENGTH_CONTRACT_ADDRESS = 256;
+export const MAX_IAO_EVENT_DURATION = 99;
+export const MAXLENGTH_EVENT_NAME = 256;
+export const MAXLENGTH_DESCRIPTION = 3000;
+export const MAX_DECIMAL_HARD_CAP_PER_USER = 2;
+export const MAX_HARD_CAP_PER_USER = 100;
+export const MIN_HARD_CAP_PER_USER = 1;
+export const MAX_DECIMAL_EXCHANGE_RATE = 18;
+export const MAX_EXCHANGE_RATE = 999999999999;
+export const MIN_EXCHANGE_RATE = 0;
+export const MAX_LENGTH_WHITE_LIST_URL = 3000;
+
+export enum VAULT_TYPE {
+  VAULT = 1,
+  NON_VAULT = 2,
+}
+
+export enum ON_CHAIN_STATUS {
+  DRAFT = 1,
+  ON_CHAIN = 2,
+}
+
+export enum IAO_EVENT_STATUS {
+  ACTIVE = 1,
+  INACTIVE = 2,
+}
+
+export enum ALLOCATION_TYPE {
+  FIRST_COME_FIRST_SERVED = 1,
+}
+
+export class EventName {
+  en: string;
+  jp: string;
+  cn: string;
+}
+
 @Schema({
   timestamps: true,
   collection: 'IAOEvent',
@@ -10,14 +47,14 @@ export class IAOEvent {
   @Prop({ type: String })
   iaoEventId: string;
 
-  @Prop({ type: Boolean })
+  @Prop({ type: Boolean, default: false })
   isDisplay: boolean;
 
   @Prop({ type: Number })
   chainId: number;
 
   @Prop({ type: String })
-  contractAddress: string;
+  FNFTcontractAddress: string;
 
   @Prop({ type: String })
   iaoRequestId: string;
@@ -37,8 +74,8 @@ export class IAOEvent {
   @Prop({ type: Date })
   participationEndTime: Date;
 
-  @Prop({ type: String })
-  vaultType: string;
+  @Prop({ type: Number })
+  vaultType: number;
 
   @Prop({ type: String })
   acceptedCurrencyAddress: string;
@@ -58,14 +95,11 @@ export class IAOEvent {
   @Prop({ type: String })
   eventBannerUrl: string;
 
-  @Prop({ type: Number })
-  localization: number;
+  @Prop({ type: EventName })
+  iaoEventName: EventName;
 
-  @Prop({ type: String })
-  iaoEventName: string;
-
-  @Prop({ type: String })
-  description: string;
+  @Prop({ type: EventName })
+  description: EventName;
 
   @Prop({ type: Number })
   allocationType: number;
@@ -73,26 +107,20 @@ export class IAOEvent {
   @Prop({ type: Number })
   hardCapPerUser: number;
 
-  @Prop({ type: String })
+  @Prop({ type: String, default: null })
   whitelistRegistrationUrl: string;
 
-  @Prop({ type: Date })
+  @Prop({ type: Date, default: null })
   whitelistAnnouncementTime: Date;
 
-  @Prop({ type: Array })
-  whitelist: string[];
+  @Prop({ type: Array, default: [] })
+  whitelist?: string[];
 
   @Prop({ type: Number })
   onChainStatus: number;
 
-  @Prop({ type: Number })
-  status: number;
-
-  @Prop({ type: Date })
-  createdAt: Date;
-
-  @Prop({ type: Date })
-  updatedAt: Date;
+  @Prop({ type: Number, default: IAO_EVENT_STATUS.ACTIVE })
+  status?: number;
 
   @Prop({ type: String })
   updatedBy: string;
@@ -100,18 +128,25 @@ export class IAOEvent {
   @Prop({ type: String })
   createdBy: string;
 
-  @Prop({ type: Date })
-  createdOnChainAt: Date;
+  @Prop({ type: Date, default: null })
+  createdOnChainAt?: Date;
 
-  @Prop({ type: String })
-  createdOnChainBy: string;
+  @Prop({ type: String, default: null })
+  createdOnChainBy?: string;
 
-  @Prop({ type: Date })
-  lastWhitelistUpdatedAt: Date;
+  @Prop({ type: Date, default: null })
+  lastWhitelistUpdatedAt?: Date;
 
-  @Prop({ type: String })
-  lastWhitelistUpdatedBy: string;
+  @Prop({ type: String, default: null })
+  lastWhitelistUpdatedBy?: string;
+
+  @Prop({ type: Number })
+  totalSupply: number;
+
+  @Prop({ type: Boolean, default: false })
+  isDeleted?: boolean;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);
 IaoEventSchema.index({ iaoEventId: 1 });
+IaoEventSchema.index({ FNFTcontractAddress: 1 }, { unique: true });

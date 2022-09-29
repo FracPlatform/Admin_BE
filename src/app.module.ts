@@ -15,6 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { IaoRequestModule } from './modules/iao-request/iao-request.module';
 import { AssetModule } from './modules/asset/asset.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { IaoEventModule } from './modules/iao-event/iao-event.module';
 import { NftModule } from './modules/nft/nft.module';
 import { IPFSMofule } from './providers/ipfs/ipfs.module';
 import { FnftModule } from './modules/f-nft/f-nft.module';
@@ -44,6 +45,7 @@ import { FnftModule } from './modules/f-nft/f-nft.module';
     IaoRequestModule,
     FnftModule,
     AssetModule,
+    IaoEventModule,
     NftModule,
     IPFSMofule,
   ],
