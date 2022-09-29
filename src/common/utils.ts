@@ -10,6 +10,7 @@ import { AwsUtils } from './aws.util';
 import mongoose from 'mongoose';
 import { IGenericRepository } from '../core/abstracts/generic-repository.abstract';
 import { CounterId } from '../datalayer/model';
+import { Web3ETH } from 'src/blockchain/web3.eth';
 const jwt = require('jsonwebtoken');
 const { URL, parse } = require('url');
 export class Utils {
@@ -325,5 +326,13 @@ export class Utils {
 
   public static escapeRegex(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  }
+
+  public static async getNftContractAddress() {
+    const contractProxy = await new Web3ETH().getContractInstance();
+    const nftContractAddress = await contractProxy.methods
+      .token721Address()
+      .call();
+    return nftContractAddress;
   }
 }

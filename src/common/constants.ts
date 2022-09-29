@@ -64,6 +64,10 @@ export const CacheKeyName = {
     NAME: 'get-full-config',
     TTL: 300,
   },
+  NFT_ADDRESS: {
+    NAME: 'nft-address',
+    TTL: 300,
+  },
 };
 
 export const STRONG_PASSWORD_REGEX =

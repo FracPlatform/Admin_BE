@@ -7,7 +7,7 @@ import {
   IAORequest,
   CounterId,
   Fnft,
-  Nft
+  Nft,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
