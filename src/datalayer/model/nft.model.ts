@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { SchemaTypes } from 'mongoose';
+import { CHAIN_ID } from 'src/common/constants';
 import { CategoryType } from '.';
 
 export type NftDocument = Nft & Document;
@@ -18,9 +19,6 @@ export enum NFT_STATUS {
 
 export enum DISPLAY_TYPE {
   NUMBER = 'number',
-  BOOST_NUMBER = 'boost_number',
-  BOOST_PERCENTAGE = 'boost_percentage',
-  DATE = 'date',
 }
 
 @Schema({
@@ -36,26 +34,9 @@ export class Trait {
 
   @Prop({ type: String })
   display_type?: DISPLAY_TYPE;
-
-  @Prop({ type: Number })
-  max_value?: number;
 }
 
 export const TraitSchema = SchemaFactory.createForClass(Trait);
-
-export class NftMetadata {
-  @Prop({ type: [TraitSchema] })
-  properties: Trait[];
-
-  @Prop({ type: [TraitSchema] })
-  levels: Trait[];
-
-  @Prop({ type: [TraitSchema] })
-  stats: Trait[];
-
-  @Prop({ type: [TraitSchema] })
-  date: Trait[];
-}
 
 @Schema({
   timestamps: true,
@@ -90,7 +71,7 @@ export class Nft {
   display: boolean;
 
   @Prop({ type: Number })
-  chainId: number;
+  chainId: CHAIN_ID;
 
   @Prop({ type: String })
   mediaUrl: string;
@@ -98,8 +79,8 @@ export class Nft {
   @Prop({ type: String })
   previewUrl: string;
 
-  @Prop({ type: NftMetadata })
-  metadata: NftMetadata;
+  @Prop({ type: [TraitSchema] })
+  metadata: Trait[];
 
   @Prop({ type: String })
   unlockableContent?: string;
@@ -109,6 +90,9 @@ export class Nft {
 
   @Prop({ type: String })
   description: string;
+
+  @Prop({ type: String })
+  metadataUrl: string;
 
   @Prop({ type: String })
   createdBy: string;

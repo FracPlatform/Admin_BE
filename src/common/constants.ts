@@ -74,15 +74,25 @@ export const DEFAULT_OFFET = 0;
 export const DEFAULT_LIMIT = 10;
 
 export enum PREFIX_ID {
-  FRACTOR = 'F',
-  ADMIN = 'A',
-  ASSET = 'ITEM',
-  IAO_REQUEST = 'IAO-REQUEST',
-  ASSET_TYPE = 'ATYPE',
-  F_NFT = 'FNFT',
+  FRACTOR = 'FRT',
+  ADMIN = 'ADM',
+  ASSET = 'AI',
+  IAO_REQUEST = 'IR',
+  ASSET_TYPE = 'AT',
   NFT = 'NFT',
+  F_NFT = 'FNFT',
+  IAO_EVENT = 'IE',
+  ASSET_REDEMOTION_REQUEST = 'AR',
+  USER = 'U',
+  AFFILIATE = 'AFF',
+  EXCHANGE_TOKEN = 'TKN',
+  EXCHANGE_TRADING_PAIRS = 'TP',
 }
 
 export const CONTRACT_EVENTS = {
   SET_ADMIN: 'SetAdminEvent',
 };
+
+export enum CHAIN_ID {
+  BSC = 97,
+}

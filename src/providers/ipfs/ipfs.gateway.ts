@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MAX_RETRY, MIMEType, TIME_WAIT_RETRY } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IpfsNFTStorage } from './ipfs.nft-storage';
@@ -12,7 +12,7 @@ export class IpfsGateway {
 
   private instance: IIPFS;
 
-  constructor(ipfsClientType = undefined) {
+  constructor(ipfsClientType = IpfsClientType.SELF_HOST) {
     this.changeClientType(ipfsClientType);
   }
 

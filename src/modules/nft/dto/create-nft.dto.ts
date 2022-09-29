@@ -4,17 +4,12 @@ import {
   IsBoolean,
   IsEnum,
   IsNumber,
-  IsNumberString,
-  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { CHAIN_ID } from 'src/common/constants';
 import { CategoryType } from 'src/datalayer/model';
-import {
-  DISPLAY_TYPE,
-  NftMetadata,
-  NFT_TYPE,
-} from 'src/datalayer/model/nft.model';
+import { DISPLAY_TYPE, NFT_TYPE } from 'src/datalayer/model/nft.model';
 
 export class TraitDto {
   @IsString()
@@ -30,29 +25,6 @@ export class TraitDto {
   @IsOptional()
   @ApiProperty({ type: String, enum: DISPLAY_TYPE, required: false })
   display_type?: DISPLAY_TYPE;
-
-  @IsNumber()
-  @IsOptional()
-  @ApiProperty({ type: Number, required: false })
-  max_value?: number;
-}
-
-export class NftMetadataDto {
-  @IsArray()
-  @ApiProperty({ type: [TraitDto] })
-  properties: TraitDto[];
-
-  @IsArray()
-  @ApiProperty({ type: [TraitDto] })
-  levels: TraitDto[];
-
-  @IsArray()
-  @ApiProperty({ type: [TraitDto] })
-  stats: TraitDto[];
-
-  @IsArray()
-  @ApiProperty({ type: [TraitDto] })
-  date: TraitDto;
 }
 
 export class CreateNftDto {
@@ -87,9 +59,9 @@ export class CreateNftDto {
   @ApiProperty({ type: Boolean })
   display: boolean;
 
-  @IsNumber()
-  @ApiProperty({ type: Number })
-  chainId: number;
+  @IsEnum(CHAIN_ID)
+  @ApiProperty({ type: Number, default: CHAIN_ID.BSC })
+  chainId: CHAIN_ID;
 
   @IsString()
   @ApiProperty({ type: String })
@@ -99,9 +71,9 @@ export class CreateNftDto {
   @ApiProperty({ type: String })
   previewUrl: string;
 
-  @IsObject()
-  @ApiProperty({ type: () => NftMetadataDto })
-  metadata: NftMetadata;
+  @IsArray()
+  @ApiProperty({ type: [TraitDto] })
+  metadata: TraitDto[];
 
   @IsString()
   @IsOptional()

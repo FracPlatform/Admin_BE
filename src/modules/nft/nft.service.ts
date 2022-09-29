@@ -3,7 +3,6 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
-import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { ASSET_STATUS } from 'src/datalayer/model';
 import { CreateNftDto } from './dto/create-nft.dto';

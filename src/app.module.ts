@@ -16,6 +16,7 @@ import { IaoRequestModule } from './modules/iao-request/iao-request.module';
 import { AssetModule } from './modules/asset/asset.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NftModule } from './modules/nft/nft.module';
+import { IPFSMofule } from './providers/ipfs/ipfs.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { NftModule } from './modules/nft/nft.module';
     IaoRequestModule,
     AssetModule,
     NftModule,
+    IPFSMofule,
   ],
   controllers: [AppController],
 })
