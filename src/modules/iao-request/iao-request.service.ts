@@ -266,7 +266,7 @@ export class IaoRequestService {
     if (!iaoRequestRole.includes(user.role))
       throw 'You do not have permission for this action';
 
-    let agg = [];
+    const agg = [];
 
     agg.push(
       {
