@@ -26,25 +26,22 @@ export class IaoEventService {
     if (fnft.iaoRequestId !== createIaoEventDto.iaoRequestId)
       throw ApiError('E4', 'F-NFT and IAO request ID not match');
 
-    if (fnft.totalSupply !== createIaoEventDto.totalSupply)
-      throw ApiError('E4', 'Total supply is not match');
-
     const existsIAOEvent = await this.dataService.iaoEvent.findOne({
       $or: [
         {
-          iaoEventName: {
+          'iaoEventName.en': {
             $regex: createIaoEventDto.iaoEventName.en.trim(),
             $options: 'i',
           },
         },
         {
-          iaoEventName: {
+          'iaoEventName.jp': {
             $regex: createIaoEventDto.iaoEventName.jp.trim(),
             $options: 'i',
           },
         },
         {
-          iaoEventName: {
+          'iaoEventName.cn': {
             $regex: createIaoEventDto.iaoEventName.cn.trim(),
             $options: 'i',
           },

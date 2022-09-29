@@ -3,7 +3,7 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
-import moment from 'moment';
+import moment = require('moment');
 
 export function ValidateDate(
   validationOptions?: ValidationOptions,

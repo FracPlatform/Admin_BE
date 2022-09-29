@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import moment from 'moment';
+import moment = require('moment');
 import { ON_CHAIN_STATUS } from 'src/datalayer/model';
 import { CreateIAOEventEntity } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
