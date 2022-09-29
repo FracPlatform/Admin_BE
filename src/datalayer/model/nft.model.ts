@@ -59,7 +59,7 @@ export class NftMetadata {
   collection: 'Nft',
 })
 export class Nft {
-  @Prop({ type: String })
+  @Prop({ type: Number })
   nftType: NFT_TYPE;
 
   @Prop({ type: String })
@@ -80,7 +80,7 @@ export class Nft {
   @Prop({ type: String })
   fNftId: string;
 
-  @Prop({ type: String, default: NFT_STATUS.DRAFT })
+  @Prop({ type: Number, default: NFT_STATUS.DRAFT })
   status: NFT_STATUS;
 
   @Prop({ type: Boolean })
