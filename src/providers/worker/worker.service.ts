@@ -9,6 +9,8 @@ import { SocketGateway } from '../socket/socket.gateway';
 import { WorkerDataDto } from './dto/worker-data.dto';
 import { NFT_STATUS } from 'src/datalayer/model/nft.model';
 import { ASSET_STATUS } from 'src/datalayer/model/asset.model';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 const jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -18,6 +20,7 @@ export class WorkerService {
   constructor(
     private readonly dataServices: IDataServices,
     private readonly socketGateway: SocketGateway,
+    @InjectConnection() private readonly connection: Connection,
   ) {}
 
   async generateToken() {
@@ -74,6 +77,8 @@ export class WorkerService {
   }
 
   private async _handleMintNFTEvent(requestData: WorkerDataDto) {
+    const session = await this.connection.startSession();
+    session.startTransaction();
     try {
       if (requestData.metadata) {
         const nft = await this.dataServices.nft.findOneAndUpdate(
@@ -88,6 +93,7 @@ export class WorkerService {
               mintedBy: requestData.metadata.mintBy,
             },
           },
+          { session },
         );
         if (nft.assetId) {
           await this.dataServices.asset.findOneAndUpdate(
@@ -99,14 +105,20 @@ export class WorkerService {
                 status: ASSET_STATUS.CONVERTED_TO_NFT,
               },
             },
+            { session },
           );
         }
-
+        await session.commitTransaction();
         this.socketGateway.sendMessage(
           SOCKET_EVENT.MINT_NFT_EVENT,
           requestData,
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }
