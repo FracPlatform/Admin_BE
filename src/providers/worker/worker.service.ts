@@ -81,15 +81,12 @@ export class WorkerService {
     session.startTransaction();
     try {
       if (requestData.metadata) {
-        const mintedBy = await this.dataServices.admin.findOne(
-          {
-            walletAddress: {
-              $regex: requestData.metadata.mintBy,
-              $options: 'i',
-            },
+        const mintedBy = await this.dataServices.admin.findOne({
+          walletAddress: {
+            $regex: requestData.metadata.mintBy,
+            $options: 'i',
           },
-          { session },
-        );
+        });
         const nft = await this.dataServices.nft.findOneAndUpdate(
           {
             tokenId: `${PREFIX_ID.NFT}-${requestData.metadata.nftId}`,
