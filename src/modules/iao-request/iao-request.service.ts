@@ -549,7 +549,7 @@ export class IaoRequestService {
         },
         { session },
       );
-      if (updateAsset.modifiedCount > 0) throw 'Cannot update asset status';
+      if (updateAsset.modifiedCount === 0) throw 'Cannot update asset status';
 
       await session.commitTransaction();
       return approveIaoRequestDTO.requestId;
