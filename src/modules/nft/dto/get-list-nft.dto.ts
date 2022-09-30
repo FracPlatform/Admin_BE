@@ -1,0 +1,76 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type, TransformFnParams } from 'class-transformer';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
+import { NFT_STATUS, NFT_TYPE } from 'src/datalayer/model';
+
+export enum ASSET_CATEGORY {
+  PHYSICAL = 1,
+  DIGITAL_NFT = 2,
+  DIGITAL_NON_NFT = 3,
+}
+
+export class GetListNftDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+  @MaxLength(256)
+  keyword: string;
+
+  @IsEnum(NFT_STATUS)
+  @IsOptional()
+  @ApiProperty({ type: Number, enum: NFT_STATUS, required: false })
+  @Type(() => Number)
+  status: NFT_STATUS;
+
+  @IsEnum(ASSET_CATEGORY)
+  @IsOptional()
+  @ApiProperty({
+    type: Number,
+    enum: ASSET_CATEGORY,
+    description: '1 => Physical, 2 => Digital (NFT), 3 => Digital (non-NFT)',
+    required: false,
+  })
+  @Type(() => Number)
+  assetCategory: ASSET_CATEGORY;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ type: String, description: 'AT-1', required: false })
+  assetType: string;
+
+  @IsEnum(NFT_TYPE)
+  @IsOptional()
+  @ApiProperty({ type: Number, enum: NFT_TYPE, required: false })
+  @Type(() => Number)
+  nftType: NFT_TYPE;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  offset: number;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({ type: String, required: false })
+  sortType: number;
+
+  @ApiProperty({ required: false, description: '-1 => DESC, 1 => ASC' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  sortField: number;
+}

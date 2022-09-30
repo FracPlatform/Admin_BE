@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
@@ -7,6 +7,7 @@ import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
 import { CreateNftDto } from './dto/create-nft.dto';
+import { GetListNftDto } from './dto/get-list-nft.dto';
 import { NftService } from './nft.service';
 
 @Controller('nft')
@@ -15,6 +16,14 @@ import { NftService } from './nft.service';
 @ApiBearerAuth()
 export class NftController {
   constructor(private readonly nftService: NftService) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Get list NFT' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.WORKER)
+  async getListNft(@Query() filter: GetListNftDto) {
+    try {
+    } catch (error) {}
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create NFT' })
