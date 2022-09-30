@@ -286,7 +286,8 @@ export class AssetTypeService {
       assetTypeId: params.id,
     });
     const toEditSpecification = assetType.specifications.find(
-      (specification) => (specification['_id'] = editedSpecification.id),
+      (specification) =>
+        specification['_id'].toString() === editedSpecification.id,
     );
     if (
       editedSpecification.newSpecification.label.en &&
