@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
@@ -19,10 +27,14 @@ export class NftController {
 
   @Get()
   @ApiOperation({ summary: 'Get list NFT' })
-  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.WORKER)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async getListNft(@Query() filter: GetListNftDto) {
     try {
-    } catch (error) {}
+      const responseData = await this.nftService.getListNft(filter);
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post()
@@ -35,5 +47,13 @@ export class NftController {
     } catch (error) {
       throw error;
     }
+  }
+
+  @Put()
+  @ApiOperation({ summary: 'Edit NFT' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async editNFT() {
+    try {
+    } catch (error) {}
   }
 }
