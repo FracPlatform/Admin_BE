@@ -95,6 +95,7 @@ export enum PREFIX_ID {
 
 export const CONTRACT_EVENTS = {
   SET_ADMIN: 'SetAdminEvent',
+  MINT_NFT: 'MintNFTEvent',
 };
 
 export enum CHAINID {

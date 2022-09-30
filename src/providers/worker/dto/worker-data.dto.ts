@@ -8,4 +8,6 @@ export class WorkerDataDto {
   eventName: string;
 
   metadata: any;
+
+  transactionHash: string;
 }
