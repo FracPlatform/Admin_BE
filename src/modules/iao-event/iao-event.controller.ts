@@ -15,6 +15,8 @@ import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Request } from 'express';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
 
 @Controller('iao-event')
 @ApiTags('IAO Event')
@@ -25,6 +27,7 @@ export class IaoEventController {
   @ApiOperation({ summary: 'Create IAO event as draft' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async createDraft(
     @Body() createIaoEventDto: CreateIaoEventDto,
     @Req() req: Request,
