@@ -29,10 +29,6 @@ export class FnftService {
   async getListFnft(user: any, filter: FilterFnftDto) {
     const query: any = { deleted: false };
 
-    if (filter.name) {
-      query['items'] = { $regex: filter.name.trim(), $options: 'i' };
-    }
-
     if (filter.status) {
       const filterStatus = filter.status.split(',');
       const status: any = filterStatus.map((e) => parseInt(e));
@@ -49,18 +45,61 @@ export class FnftService {
         $addFields: { sizeOfItem: { $size: '$items' } },
       },
       {
-        $project: {
-          tokenSymbol: 1,
-          items: 1,
-          contractAddress: 1,
-          totalSupply: 1,
-          status: 1,
-          fractionalizedBy: 1,
-          fractionalizedOn: 1,
-          fnftId: 1,
+        $unwind: '$items',
+      },
+      {
+        $lookup: {
+          from: 'Nft',
+          let: { items: '$items' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$tokenId', '$$items'] },
+              },
+            },
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                mediaUrl: 1,
+                previewUrl: 1,
+                tokenId: 1,
+              },
+            },
+          ],
+          as: 'items',
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          tokenSymbol: { $first: '$tokenSymbol' },
+          contractAddress: { $first: '$contractAddress' },
+          totalSupply: { $first: '$totalSupply' },
+          status: { $first: '$status' },
+          fnftId: { $first: '$fnftId' },
+          fractionalizedBy: { $first: '$fractionalizedBy' },
+          fractionalizedOn: { $first: '$fractionalizedOn' },
+          sizeOfItem: { $first: '$sizeOfItem' },
+          items: { $push: { $arrayElemAt: ['$items', 0] } },
+          createdAt: { $first: '$createdAt' },
         },
       },
     );
+
+    const where = {};
+
+    if (filter.name) {
+      where['$or'] = [
+        { 'items.name': { $regex: filter.name.trim(), $options: 'i' } },
+        { contractAddress: { $regex: filter.name.trim(), $options: 'i' } },
+        { tokenSymbol: { $regex: filter.name.trim(), $options: 'i' } },
+      ];
+    }
+
+    if (Object.keys(where).length > 0) {
+      agg.push({ $match: where });
+    }
 
     let sort: any = { $sort: {} };
     if (filter.sortField && filter.sortType) {
@@ -102,11 +141,10 @@ export class FnftService {
 
     try {
       // check items
-      data.items = await this.checkItems(data.iaoRequestId, data.items);
+      await this.checkItems(data.iaoRequestId, data);
 
       const fnft = await this.dataServices.fnft.findOne({
-        tokenSymbol: data.tokenSymbol,
-        tokenName: data.tokenName,
+        $or: [{ tokenSymbol: data.tokenSymbol }, { tokenName: data.tokenName }],
         deleted: false,
       });
       if (fnft)
@@ -133,7 +171,7 @@ export class FnftService {
     }
   }
 
-  async checkItems(iaoRequestId: string, items: string[]) {
+  async checkItems(iaoRequestId: string, data: CreateFnftDto) {
     if (iaoRequestId) {
       const iaoRequest = await this.dataServices.iaoRequest.findOne({
         iaoId: iaoRequestId,
@@ -147,17 +185,15 @@ export class FnftService {
       if (iaoRequest.status !== IAO_REQUEST_STATUS.APPROVED_B)
         throw ApiError(ErrorCode.INVALID_IAO_STATUS, 'Status invalid');
 
-      items = iaoRequest.items;
+      data.items = iaoRequest.items;
     }
 
-    if (!items.length)
+    if (!data.items.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'items not data');
 
-    await this.checkStatusOfAssets(items);
+    if (iaoRequestId) await this.checkStatusOfAssets(data.items);
 
-    await this.checkStatusOfNfts(iaoRequestId, items);
-
-    return items;
+    await this.checkStatusOfNfts(iaoRequestId, data);
   }
 
   async checkStatusOfAssets(items: string[]) {
@@ -176,22 +212,37 @@ export class FnftService {
       throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, 'asset status invalid');
   }
 
-  async checkStatusOfNfts(iaoRequestId: string, items: string[]) {
-    const filter = {
-      assetId: { $in: items },
-      status: NFT_STATUS.MINTED,
-    };
+  async checkStatusOfNfts(iaoRequestId: string, data: CreateFnftDto) {
+    const filter = { status: NFT_STATUS.MINTED };
 
-    if (iaoRequestId) filter['nftType'] = NFT_TYPE.FRACTOR_ASSET;
-    else filter['nftType'] = NFT_TYPE.FRAC_ASSET;
+    if (iaoRequestId) {
+      filter['nftType'] = NFT_TYPE.FRACTOR_ASSET;
+      filter['assetId'] = { $in: data.items };
+    } else {
+      filter['nftType'] = NFT_TYPE.FRAC_ASSET;
+      filter['tokenId'] = { $in: data.items };
+    }
 
-    const listNft = await this.dataServices.nft.findMany(filter, { _id: 1 });
+    const listNft = await this.dataServices.nft.findMany(filter, {
+      _id: 0,
+      assetId: 1,
+      tokenId: 1,
+    });
 
     if (!listNft.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'nft not already exists');
 
-    if (items.length !== listNft.length)
+    if (data.items.length !== listNft.length)
       throw ApiError(ErrorCode.INVALID_ITEMS_NFT_STATUS, 'nft status invalid');
+
+    const items = [];
+    let variable = iaoRequestId ? 'assetId' : 'tokenId';
+    for (const i of data.items) {
+      const currentNft = listNft.find((n) => n[variable] == i);
+      items.push(currentNft.tokenId);
+    }
+
+    data.items = items;
   }
 
   async getDetail(id: string, user: any) {
@@ -205,7 +256,7 @@ export class FnftService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
 
     const listNft = await this.dataServices.nft.findMany(
-      { assetId: { $in: currentFnft.items } },
+      { tokenId: { $in: currentFnft.items } },
       {
         _id: 1,
         tokenId: 1,
