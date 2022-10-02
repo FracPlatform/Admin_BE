@@ -140,7 +140,7 @@ export class IaoEventService {
 
   async checkWhitelist(data: CreateWhitelistDto) {
     //check duplicate
-    let listAddress: any = [...new Set(data.whitelistAddresses)];
+    const listAddress: any = [...new Set(data.whitelistAddresses)];
 
     //check incorrect
     for (const address of listAddress) {

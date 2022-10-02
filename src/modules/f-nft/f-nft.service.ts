@@ -236,7 +236,7 @@ export class FnftService {
       throw ApiError(ErrorCode.INVALID_ITEMS_NFT_STATUS, 'nft status invalid');
 
     const items = [];
-    let variable = iaoRequestId ? 'assetId' : 'tokenId';
+    const variable = iaoRequestId ? 'assetId' : 'tokenId';
     for (const i of data.items) {
       const currentNft = listNft.find((n) => n[variable] == i);
       items.push(currentNft.tokenId);
