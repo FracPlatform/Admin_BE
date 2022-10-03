@@ -29,6 +29,16 @@ export class IaoEventService {
     createIaoEventDto: CreateIaoEventDto,
     user: any,
   ): Promise<IAOEvent> {
+    // validate whitelistAnnouncementTime
+    const date = createIaoEventDto.participationStartTime.toString();
+    const participationEndTime = new Date(date);
+    participationEndTime.setDate(
+      participationEndTime.getDate() + createIaoEventDto.iaoEventDuration,
+    );
+    createIaoEventDto['participationEndTime'] = participationEndTime;
+    if (createIaoEventDto.whitelistAnnouncementTime > participationEndTime)
+      throw ApiError('E23', 'Must <= Participation_end_time');
+
     const fnft = await this.dataService.fnft.findOne({
       contractAddress: createIaoEventDto.FNFTcontractAddress,
       status: F_NFT_STATUS.ACTIVE,

@@ -1,10 +1,47 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsDate, IsEnum, IsEthereumAddress, IsNumber, IsOptional, IsString, IsUrl, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsEthereumAddress,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Max,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { CHAINID } from 'src/common/constants';
-import { ALLOCATION_TYPE, MAXLENGTH_CONTRACT_ADDRESS, MAX_DECIMAL_EXCHANGE_RATE, MAX_DECIMAL_HARD_CAP_PER_USER, MAX_EXCHANGE_RATE, MAX_HARD_CAP_PER_USER, MAX_IAO_EVENT_DURATION, MAX_LENGTH_WHITE_LIST_URL, MAX_PERCENT_OFFERED, MAX_PERCENT_VAULT, MIN_EXCHANGE_RATE, MIN_HARD_CAP_PER_USER, MIN_IAO_EVENT_DURATION, MIN_PERCENT_OFFERED, MIN_PERCENT_VAULT, VAULT_TYPE } from 'src/datalayer/model';
-import { CreateIaoEventDto, DescriptionDTO, EventNameDTO } from './create-iao-event.dto';
-import { ValidateGreaterComparse, ValidateWhitelistGreaterRegistration, ValidateWhitelistLessParticipation } from './validate.dto';
+import {
+  ALLOCATION_TYPE,
+  MAXLENGTH_CONTRACT_ADDRESS,
+  MAX_DECIMAL_EXCHANGE_RATE,
+  MAX_DECIMAL_HARD_CAP_PER_USER,
+  MAX_EXCHANGE_RATE,
+  MAX_HARD_CAP_PER_USER,
+  MAX_IAO_EVENT_DURATION,
+  MAX_LENGTH_WHITE_LIST_URL,
+  MAX_PERCENT_OFFERED,
+  MAX_PERCENT_VAULT,
+  MIN_EXCHANGE_RATE,
+  MIN_HARD_CAP_PER_USER,
+  MIN_IAO_EVENT_DURATION,
+  MIN_PERCENT_OFFERED,
+  MIN_PERCENT_VAULT,
+  VAULT_TYPE,
+} from 'src/datalayer/model';
+import {
+  CreateIaoEventDto,
+  DescriptionDTO,
+  EventNameDTO,
+} from './create-iao-event.dto';
+import {
+  ValidateGreaterComparse,
+  ValidateWhitelistGreaterRegistration,
+} from './validate.dto';
 
 export class UpdateIaoEventDto extends CreateIaoEventDto {
   @ApiProperty({ required: false })
@@ -123,12 +160,8 @@ export class UpdateIaoEventDto extends CreateIaoEventDto {
   @IsNumber({ maxDecimalPlaces: MAX_DECIMAL_HARD_CAP_PER_USER })
   hardCapPerUser: number;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsUrl({
-    require_protocol: true,
-    require_valid_protocol: true,
-  })
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
   @MaxLength(MAX_LENGTH_WHITE_LIST_URL)
   whitelistRegistrationUrl: string;
 
@@ -138,9 +171,6 @@ export class UpdateIaoEventDto extends CreateIaoEventDto {
   @IsDate()
   @ValidateWhitelistGreaterRegistration('registrationStartTime', {
     message: 'whitelistAnnouncementTime Must >= Registration_end_time',
-  })
-  @ValidateWhitelistLessParticipation('participationEndTime', {
-    message: 'whitelistAnnouncementTime Must <= Participation_end_time.',
   })
   whitelistAnnouncementTime: Date;
 }

@@ -38,7 +38,6 @@ import {
 import {
   ValidateGreaterComparse,
   ValidateWhitelistGreaterRegistration,
-  ValidateWhitelistLessParticipation,
 } from './validate.dto';
 
 export class EventNameDTO {
@@ -216,10 +215,7 @@ export class CreateIaoEventDto {
   @Transform(({ value }) => new Date(value))
   @IsDate()
   @ValidateWhitelistGreaterRegistration('registrationStartTime', {
-    message: 'whitelistAnnouncementTime Must >= Registration_end_time',
-  })
-  @ValidateWhitelistLessParticipation('participationEndTime', {
-    message: 'whitelistAnnouncementTime Must <= Participation_end_time.',
+    message: 'whitelistAnnouncementTime Must >= registrationStartTime',
   })
   whitelistAnnouncementTime: Date;
 }
