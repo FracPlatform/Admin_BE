@@ -1,8 +1,7 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
-import { ObjectId } from 'mongodb';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { ListDocument } from 'src/common/common-type';
@@ -207,10 +206,16 @@ export class FnftService {
       { _id: 1 },
     );
     if (!listAsset.length)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Asset item must converted to NFT');
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Asset item must converted to NFT',
+      );
 
     if (items.length !== listAsset.length)
-      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, 'Asset item must converted to NFT');
+      throw ApiError(
+        ErrorCode.INVALID_ITEMS_STATUS,
+        'Asset item must converted to NFT',
+      );
   }
 
   async checkStatusOfNfts(iaoRequestId: string, data: CreateFnftDto) {
@@ -248,7 +253,7 @@ export class FnftService {
 
   async getDetail(id: string, user: any) {
     const filter = {
-      fnftId: id,
+      $or: [{ fnftId: id }, { contractAddress: id }],
       deleted: false,
     };
 

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import moment = require('moment');
 import { PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
