@@ -30,8 +30,7 @@ export class SocketGateway
   }
 
   async handleConnection(client: Socket, ...args: any[]) {
-    console.log(client);
-    console.log(args);
+    this.logger.log(`Client connected: ${client.id}`);
   }
 
   sendMessage(event: any, data: any) {
