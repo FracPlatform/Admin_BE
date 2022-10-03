@@ -45,12 +45,16 @@ export class NftController {
     }
   }
 
-  @Get()
+  @Get(':id')
   @ApiOperation({ summary: 'Get NFT detail' })
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async getNFTDetail(@Param('id') id: string) {
     try {
-    } catch (error) {}
+      const responseData = await this.nftService.getNFTDetail(id);
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post()
@@ -93,6 +97,10 @@ export class NftController {
   @ApiOperation({ summary: 'Hide/unhide NFT' })
   async editDisplayNFT(@Param('id') id: string) {
     try {
-    } catch (error) {}
+      const responseData = await this.nftService.editDisplayNFT(id);
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
   }
 }

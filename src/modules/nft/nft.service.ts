@@ -160,6 +160,119 @@ export class NftService {
     };
   }
 
+  async getNFTDetail(id: string) {
+    const nft = await this.dataService.nft.findOne({ tokenId: id });
+    const agg = [];
+    agg.push(
+      {
+        $match: {
+          tokenId: id,
+          deleted: false,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fnft',
+          localField: 'tokenId',
+          foreignField: 'items',
+          as: 'fnft',
+        },
+      },
+      {
+        $unwind: { path: '$fnft', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdBy',
+          foreignField: 'adminId',
+          as: 'createdByAdmin',
+        },
+      },
+      {
+        $unwind: { path: '$createdByAdmin', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'fnft.fractionalizedBy',
+          foreignField: 'adminId',
+          as: 'fractionalizedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$fractionalizedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'mintedBy',
+          foreignField: 'adminId',
+          as: 'mintedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$mintedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    );
+    if (nft.assetId)
+      agg.push(
+        {
+          $lookup: {
+            from: 'Asset',
+            localField: 'assetId',
+            foreignField: 'itemId',
+            as: 'asset',
+          },
+        },
+        {
+          $unwind: {
+            path: '$asset',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'IAORequest',
+            localField: 'assetId',
+            foreignField: 'items',
+            as: 'iaoRequest',
+          },
+        },
+        {
+          $unwind: {
+            path: '$iaoRequest',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'Fractor',
+            localField: 'asset.ownerId',
+            foreignField: 'fractorId',
+            as: 'fractor',
+          },
+        },
+        {
+          $unwind: {
+            path: '$fractor',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      );
+    const queryNft = await this.dataService.nft.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+    const finalNft = this.nftBuilderService.convertNFTDetail(queryNft[0]);
+    return finalNft;
+  }
+
   async createNft(body: CreateNftDto, user: any) {
     if (body.assetId) {
       const assetItem = await this.dataService.asset.findOne({
@@ -225,13 +338,31 @@ export class NftService {
     return { success: true };
   }
 
+  async editDisplayNFT(id: string) {
+    const nft = await this._validateNFT(id);
+    await this.dataService.nft.updateOne(
+      {
+        tokenId: id,
+        updatedAt: nft['updatedAt'],
+      },
+      [
+        {
+          $set: {
+            display: { $not: '$display' },
+          },
+        },
+      ],
+    );
+    return { success: true };
+  }
+
   private async _validateNFT(id: string) {
     const nft = await this.dataService.nft.findOne({
       tokenId: id,
     });
     if (!nft || nft.deleted)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'NFT not exists');
-    if (nft.status < NFT_STATUS.MINTED)
+    if (nft.status > NFT_STATUS.DRAFT)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit NFT');
     return nft;
   }
