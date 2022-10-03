@@ -142,13 +142,13 @@ export class IaoEventService {
       const itemsId = iaoRequest.items.map((i) => {
         return { itemId: i };
       });
-      const items = await this.dataService.asset.findMany(
+      const items: any = await this.dataService.asset.findMany(
         {
           $or: itemsId,
         },
-        { itemId: 1, name: 1, media: 1 },
+        { itemId: 1, name: 1, media: 1, _id: 0 },
       );
-      iaoRequest.items = items;
+      iaoRequest.itemObject = items;
       // get NFT
       const nftId = fnft.items.map((i) => {
         return { tokenId: i };
@@ -192,18 +192,18 @@ export class IaoEventService {
         },
         { fullname: 1 },
       );
-      iaoRequest.createdOnChainBy = createdOnChainBy?.fullname
+      iaoEvent.createdOnChainBy = createdOnChainBy?.fullname
         ? createdOnChainBy.fullname
         : null;
-
-      const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
-        iaoEvent,
-        fnft,
-        iaoRequest,
-      );
-
-      return iaoEventDetail;
     }
+
+    const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
+      iaoEvent,
+      fnft,
+      iaoRequest,
+    );
+
+    return iaoEventDetail;
   }
 
   update(id: number, updateIaoEventDto: UpdateIaoEventDto) {
