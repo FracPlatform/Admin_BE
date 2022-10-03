@@ -1,8 +1,7 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
-import { ObjectId } from 'mongodb';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { ListDocument } from 'src/common/common-type';
@@ -165,7 +164,7 @@ export class FnftService {
     } catch (error) {
       await session.abortTransaction();
       this.logger.debug(error.message);
-      throw ApiError('', 'Cannot create f-nft');
+      throw ApiError('', error.message);
     } finally {
       session.endSession();
     }
@@ -187,6 +186,7 @@ export class FnftService {
 
       data.items = iaoRequest.items;
     }
+    console.log(data);
 
     if (!data.items.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'items not data');
@@ -206,10 +206,16 @@ export class FnftService {
       { _id: 1 },
     );
     if (!listAsset.length)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'asset not already exists');
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Asset item must converted to NFT',
+      );
 
     if (items.length !== listAsset.length)
-      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, 'asset status invalid');
+      throw ApiError(
+        ErrorCode.INVALID_ITEMS_STATUS,
+        'Asset item must converted to NFT',
+      );
   }
 
   async checkStatusOfNfts(iaoRequestId: string, data: CreateFnftDto) {
@@ -247,7 +253,7 @@ export class FnftService {
 
   async getDetail(id: string, user: any) {
     const filter = {
-      fnftId: id,
+      $or: [{ fnftId: id }, { contractAddress: id }],
       deleted: false,
     };
 

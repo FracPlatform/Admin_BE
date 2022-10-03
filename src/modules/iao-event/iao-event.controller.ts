@@ -21,7 +21,6 @@ import { Request } from 'express';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
-import { ApiError } from 'src/common/api';
 import { GetUser } from '../auth/get-user.decorator';
 import { CreateWhitelistDto } from './dto/create-whilist.dto';
 

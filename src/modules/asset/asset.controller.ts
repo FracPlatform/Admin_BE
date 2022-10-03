@@ -7,11 +7,9 @@ import {
   Post,
   Put,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Request, response } from 'express';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
 // import { ListDocument } from 'src/common/common-type';
@@ -29,7 +27,7 @@ import {
   CreateDocumentItemDto,
   UpdateDocumentItemDto,
 } from './dto/documentItem.dto';
-import { FilterAssetDto, FilterMoreUserAssetDto } from './dto/filter-asset.dto';
+import { FilterAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 
 @Controller('asset')

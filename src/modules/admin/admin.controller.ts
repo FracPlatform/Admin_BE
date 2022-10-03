@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
@@ -45,7 +45,6 @@ export class AdminController {
   @ApiOperation({ summary: 'get information admin by admin Id' })
   async getInforAdmin(
     @Param('id') id: string,
-    @GetUser() user,
   ) {
     const data = await this.adminService.getInforAdmin(id.trim());
     return new ApiSuccessResponse().success(data, '');

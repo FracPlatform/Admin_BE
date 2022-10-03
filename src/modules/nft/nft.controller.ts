@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   Put,
   Query,
@@ -15,6 +16,7 @@ import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
 import { CreateNftDto } from './dto/create-nft.dto';
+import { EditNftDto } from './dto/edit-nft.dto';
 import { GetListNftDto } from './dto/get-list-nft.dto';
 import { NftService } from './nft.service';
 
@@ -49,11 +51,15 @@ export class NftController {
     }
   }
 
-  @Put()
+  @Put(':id')
   @ApiOperation({ summary: 'Edit NFT' })
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
-  async editNFT() {
+  async editNFT(@Param('id') id: string, @Body() body: EditNftDto) {
     try {
-    } catch (error) {}
+      const responseData = await this.nftService.editNFT(id, body);
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
   }
 }

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { OWNERSHIP_PRIVACY } from 'src/datalayer/model/asset.model';
 import {
   AssetForOwnerEntity,
   DocumentItemEntity,

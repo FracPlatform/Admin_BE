@@ -24,6 +24,7 @@ export class EditNftDto {
   description: string;
 
   @IsArray()
+  @IsOptional()
   @ApiProperty({ type: [TraitDto] })
   metadata: TraitDto[];
 
