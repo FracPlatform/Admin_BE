@@ -34,6 +34,7 @@ import {
   MIN_PERCENT_OFFERED,
   MIN_PERCENT_VAULT,
   MIN_EXCHANGE_RATE,
+  MAX_whitelistRegistrationUrl,
 } from 'src/datalayer/model';
 import {
   ValidateGreaterComparse,
@@ -203,6 +204,7 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @Max(MAX_whitelistRegistrationUrl)
   whitelistRegistrationUrl: string;
 
   @ApiProperty({ required: false })
