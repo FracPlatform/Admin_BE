@@ -129,7 +129,7 @@ export class IaoEventService {
         },
         { fullname: 1, assignedBD: 1 },
       );
-      iaoRequest.fractor = fractor.fullname || null;
+      iaoRequest.fractor = fractor.fullname;
       // get name of BD
       const bd = await this.dataService.admin.findOne(
         {
@@ -185,7 +185,24 @@ export class IaoEventService {
       iaoEvent.createdBy = createdBy.fullname;
       iaoEvent.updatedBy = updatedBy.fullname;
       iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy.fullname;
-      return iaoEvent;
+
+      const createdOnChainBy = await this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.createdOnChainBy,
+        },
+        { fullname: 1 },
+      );
+      iaoRequest.createdOnChainBy = createdOnChainBy?.fullname
+        ? createdOnChainBy.fullname
+        : null;
+
+      const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
+        iaoEvent,
+        fnft,
+        iaoRequest,
+      );
+
+      return iaoEventDetail;
     }
   }
 

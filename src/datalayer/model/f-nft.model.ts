@@ -3,6 +3,8 @@ import { PREFIX_ID } from 'src/common/constants';
 
 export type FnftDocument = Fnft & Document;
 
+export const FNFT_DECIMAL = 18;
+
 export enum F_NFT_STATUS {
   INACTIVE = 0,
   ACTIVE = 1,
