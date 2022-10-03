@@ -63,4 +63,5 @@ export class InformationAdmin {
   fullname: string;
   description: string;
   adminId: string;
+  role: number;
 }
