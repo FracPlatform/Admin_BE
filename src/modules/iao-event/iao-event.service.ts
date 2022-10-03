@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
+import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { F_NFT_STATUS, IAOEvent } from 'src/datalayer/model';
+import { F_NFT_STATUS, IAOEvent, ON_CHAIN_STATUS } from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
+import { CreateWhitelistDto } from './dto/create-whilist.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
+import { ethers } from 'ethers';
 
 @Injectable()
 export class IaoEventService {
@@ -102,5 +105,49 @@ export class IaoEventService {
 
   remove(id: number) {
     return `This action removes a #${id} iaoEvent`;
+  }
+
+  async createWhitelist(user, data: CreateWhitelistDto) {
+    if (!data.whitelistAddresses.length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'whitelistAddresses is empty');
+
+    const filter = { iaoEventId: data.iaoEventId, deleted: false };
+
+    const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
+    if (!currentIaoEvent)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    if (currentIaoEvent.onChainStatus !== ON_CHAIN_STATUS.ON_CHAIN)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Status invalid');
+
+    // check whitelist
+    await this.checkWhitelist(data);
+
+    return await this.dataService.iaoEvent.findOneAndUpdate(
+      {
+        ...filter,
+        onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+        updatedAt: currentIaoEvent['updatedAt'],
+      },
+      {
+        lastWhitelistUpdatedBy: user.adminId,
+        lastWhitelistUpdatedAt: Date.now(),
+        whitelist: data.whitelistAddresses,
+      },
+      { new: true },
+    );
+  }
+
+  async checkWhitelist(data: CreateWhitelistDto) {
+    //check duplicate
+    const listAddress: any = [...new Set(data.whitelistAddresses)];
+
+    //check incorrect
+    for (const address of listAddress) {
+      if (!ethers.utils.isAddress(address))
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid wallet address');
+    }
+
+    data.whitelistAddresses = listAddress;
   }
 }
