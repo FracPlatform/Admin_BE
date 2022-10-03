@@ -8,6 +8,7 @@ import {
   IAOEventDetailEntity,
 } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
+import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 
 @Injectable()
 export class IaoEventBuilderService {
@@ -68,7 +69,7 @@ export class IaoEventBuilderService {
       iaoEventId: iaoEvent.iaoEventId,
       status: iaoEvent.status,
       onChainStatus: iaoEvent.onChainStatus,
-      currentStage: 0,
+      currentStage: 1,
       isDisplay: iaoEvent.isDisplay,
       chainId: iaoEvent.chainId,
       FNFTcontractAddress: iaoEvent.FNFTcontractAddress,
@@ -92,7 +93,7 @@ export class IaoEventBuilderService {
       iaoEventDuration: iaoEvent.iaoEventDuration,
       participationStartTime: iaoEvent.participationStartTime,
       participationEndTime: iaoEvent.participationEndTime,
-      iaoEventVaultType: iaoEvent.iaoEventVaultType,
+      iaoEventVaultType: iaoEvent.vaultType,
       acceptedCurrencyAddress: iaoEvent.acceptedCurrencyAddress,
       exchangeRate: iaoEvent.exchangeRate,
       percentageOffered: iaoEvent.percentageOffered,
@@ -117,4 +118,44 @@ export class IaoEventBuilderService {
       lastWhitelistUpdatedBy: iaoEvent.lastWhitelistUpdatedBy,
     };
   }
+
+  updateIaoEventDetail(iaoEvent: UpdateIaoEventDto, user: any) {
+    return {
+      isDisplay: iaoEvent.isDisplay,
+      FNFTcontractAddress: iaoEvent.FNFTcontractAddress,
+      registrationStartTime: iaoEvent.registrationStartTime,
+      registrationEndTime: iaoEvent.registrationEndTime,
+      iaoEventDuration: iaoEvent.iaoEventDuration,
+      participationStartTime: iaoEvent.participationStartTime,
+      iaoEventVaultType: iaoEvent.vaultType,
+      acceptedCurrencyAddress: iaoEvent.acceptedCurrencyAddress,
+      exchangeRate: iaoEvent.exchangeRate,
+      percentageOffered: iaoEvent.percentageOffered,
+      vaultUnlockThreshold: iaoEvent.vaultUnlockThreshold,
+      eventPhotoUrl: iaoEvent.eventPhotoUrl,
+      eventBannerUrl: iaoEvent.eventBannerUrl,
+      iaoEventName: iaoEvent.iaoEventName,
+      description: iaoEvent.description,
+      allocationType: iaoEvent.allocationType,
+      hardCapPerUser: iaoEvent.hardCapPerUser,
+      whitelistRegistrationUrl: iaoEvent.whitelistRegistrationUrl,
+      whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
+      updatedBy: user.adminId,
+    };
+  }
+
+  updateIaoOnChain(iaoEvent: UpdateIaoEventDto, user: any) {
+    return {
+      isDisplay: iaoEvent.isDisplay,
+      eventPhotoUrl: iaoEvent.eventPhotoUrl,
+      eventBannerUrl: iaoEvent.eventBannerUrl,
+      iaoEventName: iaoEvent.iaoEventName,
+      description: iaoEvent.description,
+      allocationType: iaoEvent.allocationType,
+      whitelistRegistrationUrl: iaoEvent.whitelistRegistrationUrl,
+      whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
+      updatedBy: user.adminId,
+    };
+  }
+
 }

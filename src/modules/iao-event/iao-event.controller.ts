@@ -10,6 +10,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  Put,
 } from '@nestjs/common';
 import { IaoEventService } from './iao-event.service';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -85,12 +86,50 @@ export class IaoEventController {
     }
   }
 
-  @Patch(':id')
-  update(
+  @Put(':id/draft')
+  @ApiOperation({ summary: 'update IAO event as draft' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async updateIaoDraft(
     @Param('id') id: string,
     @Body() updateIaoEventDto: UpdateIaoEventDto,
+    @Req() req: Request,
   ) {
-    return this.iaoEventService.update(+id, updateIaoEventDto);
+    try {
+      const iaoEventId = await this.iaoEventService.updateIaoDraft(
+        id,
+        updateIaoEventDto,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(iaoEventId, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Put(':id/onchain')
+  @ApiOperation({ summary: 'update IAO OnChain' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async updateIaoOnChain(
+    @Param('id') id: string,
+    @Body() updateIaoEventDto: UpdateIaoEventDto,
+    @Req() req: Request,
+  ) {
+    try {
+      const iaoEventId = await this.iaoEventService.updateIaoOnChain(
+        id,
+        updateIaoEventDto,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(iaoEventId, '');
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Delete(':id')

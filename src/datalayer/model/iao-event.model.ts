@@ -128,7 +128,7 @@ export class IAOEvent {
   @Prop({ type: Number })
   onChainStatus: number;
 
-  @Prop({ type: Number, default: IAO_EVENT_STATUS.ACTIVE })
+  @Prop({ type: Number, default: null })
   status?: number;
 
   @Prop({ type: String })
@@ -158,4 +158,8 @@ export class IAOEvent {
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);
 IaoEventSchema.index({ iaoEventId: 1 });
+IaoEventSchema.index({ registrationStartTime: 1 });
+IaoEventSchema.index({ registrationEndTime: 1 });
+IaoEventSchema.index({ participationStartTime: 1 });
+IaoEventSchema.index({ participationEndTime: 1 });
 IaoEventSchema.index({ FNFTcontractAddress: 1 }, { unique: true });
