@@ -165,7 +165,7 @@ export class FnftService {
     } catch (error) {
       await session.abortTransaction();
       this.logger.debug(error.message);
-      throw ApiError('', 'Cannot create f-nft');
+      throw ApiError('', error.message);
     } finally {
       session.endSession();
     }
@@ -187,6 +187,7 @@ export class FnftService {
 
       data.items = iaoRequest.items;
     }
+    console.log(data);
 
     if (!data.items.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'items not data');
@@ -206,10 +207,10 @@ export class FnftService {
       { _id: 1 },
     );
     if (!listAsset.length)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'asset not already exists');
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Asset item must converted to NFT');
 
     if (items.length !== listAsset.length)
-      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, 'asset status invalid');
+      throw ApiError(ErrorCode.INVALID_ITEMS_STATUS, 'Asset item must converted to NFT');
   }
 
   async checkStatusOfNfts(iaoRequestId: string, data: CreateFnftDto) {
