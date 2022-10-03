@@ -206,8 +206,66 @@ export class IaoEventService {
     return iaoEventDetail;
   }
 
-  update(id: number, updateIaoEventDto: UpdateIaoEventDto) {
-    return `This action updates a #${id} iaoEvent`;
+  async updateIaoDraft(
+    id: string,
+    updateIaoEventDto: UpdateIaoEventDto,
+    user: any,
+  ) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId: id,
+      isDeleted: false,
+      status: ON_CHAIN_STATUS.DRAFT,
+    });
+    if (!iaoEvent) throw ApiError('', 'Data not exists');
+    const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
+      updateIaoEventDto,
+      user,
+    );
+    const update = await this.dataService.iaoEvent.updateOne(
+      {
+        iaoEventId: id,
+        isDeleted: false,
+        onChainStatus: ON_CHAIN_STATUS.DRAFT,
+      },
+      {
+        $set: {
+          ...iaoEventToUpdate,
+        },
+      },
+    );
+    if (update.modifyCount === 0)
+      throw ApiError('', 'Cannot update this IAO event');
+    return id;
+  }
+
+  async updateIaoOnChain(
+    id: string,
+    updateIaoEventDto: UpdateIaoEventDto,
+    user: any,
+  ) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId: id,
+      isDeleted: false,
+      onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+    });
+    if (!iaoEvent) throw ApiError('', 'Data not exists');
+    const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoOnChain(
+      updateIaoEventDto,
+      user,
+    );
+    const update = await this.dataService.iaoEvent.updateOne(
+      {
+        iaoEventId: id,
+        isDeleted: false,
+        status: ON_CHAIN_STATUS.ON_CHAIN,
+      },
+      {
+        $set: {
+          ...iaoEventToUpdate,
+        },
+      },
+    );
+    return id;
   }
 
   remove(id: number) {
