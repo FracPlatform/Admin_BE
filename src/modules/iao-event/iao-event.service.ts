@@ -9,6 +9,7 @@ import {
   IAOEvent,
   ON_CHAIN_STATUS,
   IAO_REQUEST_STATUS,
+  IAO_EVENT_STATUS,
 } from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { CreateWhitelistDto } from './dto/create-whilist.dto';
@@ -214,7 +215,8 @@ export class IaoEventService {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
-      status: ON_CHAIN_STATUS.DRAFT,
+      onChainStatus: ON_CHAIN_STATUS.DRAFT,
+      status: IAO_EVENT_STATUS.ACTIVE,
     });
     if (!iaoEvent) throw ApiError('', 'Data not exists');
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
@@ -226,6 +228,7 @@ export class IaoEventService {
         iaoEventId: id,
         isDeleted: false,
         onChainStatus: ON_CHAIN_STATUS.DRAFT,
+        status: IAO_EVENT_STATUS.ACTIVE,
       },
       {
         $set: {
@@ -247,6 +250,7 @@ export class IaoEventService {
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+      status: IAO_EVENT_STATUS.ACTIVE,
     });
     if (!iaoEvent) throw ApiError('', 'Data not exists');
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoOnChain(
@@ -257,7 +261,8 @@ export class IaoEventService {
       {
         iaoEventId: id,
         isDeleted: false,
-        status: ON_CHAIN_STATUS.ON_CHAIN,
+        onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+        status: IAO_EVENT_STATUS.ACTIVE,
       },
       {
         $set: {
