@@ -334,7 +334,7 @@ export class AssetService {
     const response = this.assetBuilderService.convertAssetDetail(
       currentAsset,
       currentUser,
-      currentAssetType?.name,
+      currentAssetType,
       currentAssetDocument,
     );
     return response;

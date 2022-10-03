@@ -19,7 +19,7 @@ export class AssetBuilderService {
         collectionId: e.collectionId,
         name: e.name,
         category: e.category,
-        typeId: e.typetypeId,
+        typeId: e.AssetType[0].assetTypeId,
         isMintNFT: e.isMintNFT,
         network: e.network,
         ownershipPrivacy: e.ownershipPrivacy,
@@ -52,19 +52,14 @@ export class AssetBuilderService {
     });
   }
 
-  convertAssetDetail(
-    data: any,
-    user: any,
-    assetTypeName: string,
-    documents: any[],
-  ) {
+  convertAssetDetail(data: any, user: any, assetType: any, documents: any[]) {
     const asset: AssetForOwnerEntity = {
       _id: data._id,
       ownerId: data.ownerId,
       collectionId: data.collectionId,
       name: data.name,
       category: data.category,
-      typeId: data.typeId,
+      typeId: assetType.assetTypeId,
       isMintNFT: data.isMintNFT,
       network: data.network,
       ownershipPrivacy: data.ownershipPrivacy,
@@ -85,7 +80,7 @@ export class AssetBuilderService {
           }
         : null,
       itemId: data.itemId,
-      assetTypeName,
+      assetTypeName: assetType.name,
       custodianshipStatus: data.custodianshipStatus,
       deleted: data.deleted,
       lastUpdatedBy: {
