@@ -128,7 +128,7 @@ export class IAOEvent {
   @Prop({ type: Number })
   onChainStatus: number;
 
-  @Prop({ type: Number, default: IAO_EVENT_STATUS.ACTIVE })
+  @Prop({ type: Number, default: null })
   status?: number;
 
   @Prop({ type: String })

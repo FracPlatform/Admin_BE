@@ -216,7 +216,6 @@ export class IaoEventService {
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.DRAFT,
-      status: IAO_EVENT_STATUS.ACTIVE,
     });
     if (!iaoEvent) throw ApiError('', 'Data not exists');
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
@@ -228,7 +227,6 @@ export class IaoEventService {
         iaoEventId: id,
         isDeleted: false,
         onChainStatus: ON_CHAIN_STATUS.DRAFT,
-        status: IAO_EVENT_STATUS.ACTIVE,
       },
       {
         $set: {
