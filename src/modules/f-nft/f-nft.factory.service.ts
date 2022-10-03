@@ -68,16 +68,18 @@ export class FnftBuilderService {
         fractionalizedBy: e.fractionalizedBy,
         fractionalizedOn: e.fractionalizedOn,
         fnftId: e.fnftId,
+        sizeOfItem: e.sizeOfItem,
+        createdAt: e.createdAt,
       };
       return fnft;
     });
   }
 
-  convertFnftDetail(data, currentassetIds: string[], listNft: any, relatedAdminList: any) {
+  convertFnftDetail(data, currentNftIds: string[], listNft: any, relatedAdminList: any) {
     const items = [];
 
-    for (const i of currentassetIds) {
-      items.push(listNft.find((a) => a.assetId == i));
+    for (const i of currentNftIds) {
+      items.push(listNft.find((a) => a.tokenId == i));
     }
 
     const fnft: FnftDetailEntity = {

@@ -37,7 +37,7 @@ export class IAOEventDetailEntity {
   currentStage: number;
   isDisplay: boolean;
   chainId: number;
-  fnftContractAddress: string;
+  FNFTcontractAddress: string;
   tokenSymbol: string;
   tokenName: string;
   tokenLogo: string;

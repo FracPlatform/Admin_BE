@@ -40,7 +40,7 @@ export class Fnft {
   @Prop({ type: String })
   contractAddress: string;
 
-  @Prop([{ type: String }])
+  @Prop([{ type: Array }])
   items: string[];
 
   @Prop({ type: String })

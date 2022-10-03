@@ -2,15 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
+import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   F_NFT_STATUS,
   IAOEvent,
+  ON_CHAIN_STATUS,
   IAO_REQUEST_STATUS,
 } from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
+import { CreateWhitelistDto } from './dto/create-whilist.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
+import { ethers } from 'ethers';
 
 @Injectable()
 export class IaoEventService {
@@ -103,7 +107,7 @@ export class IaoEventService {
     });
     if (!iaoEvent) throw ApiError('', 'This IAO event not exists');
 
-    const fnft = await this.dataService.fnft.findOne({
+    const fnft: any = await this.dataService.fnft.findOne({
       contractAddress: iaoEvent.FNFTcontractAddress,
       deleted: false,
       status: F_NFT_STATUS.ACTIVE,
@@ -123,22 +127,22 @@ export class IaoEventService {
         {
           fractorId: iaoRequest.ownerId,
         },
-        { fullname: 1 },
+        { fullname: 1, assignedBD: 1 },
       );
-      iaoRequest.fractor = fractor.fullname;
+      iaoRequest.fractor = fractor.fullname || null;
       // get name of BD
       const bd = await this.dataService.admin.findOne(
         {
-          adminId: iaoRequest.assignedBD,
+          adminId: fractor.assignedBD,
         },
         { fullname: 1 },
       );
-      iaoRequest.bd = bd.fullname;
+      iaoRequest.bd = bd?.fullname ? bd.fullname : null;
       // get url of items
       const itemsId = iaoRequest.items.map((i) => {
         return { itemId: i };
       });
-      const items = await this.dataService.iaoRequest.findMany(
+      const items = await this.dataService.asset.findMany(
         {
           $or: itemsId,
         },
@@ -146,14 +150,42 @@ export class IaoEventService {
       );
       iaoRequest.items = items;
       // get NFT
-      // const assetId = iaoRequest.items.map((i) => {
-      //   return { assetId: i };
-      // });
-      // const nfts = await this.dataService.nft.findMany(
-      //   { $or: assetId },
-      //   { name: 1, tokenId: 1, status: 1, assetId: 1 },
-      // );
-
+      const nftId = fnft.items.map((i) => {
+        return { tokenId: i };
+      });
+      const nfts = await this.dataService.nft.findMany(
+        { $or: nftId },
+        { name: 1, tokenId: 1, status: 1, assetId: 1 },
+      );
+      fnft.items = nfts;
+      //other info
+      const getCreatedBy = this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.createdBy,
+        },
+        { fullName: 1 },
+      );
+      const getUpdatedBy = this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.updatedBy,
+        },
+        { fullName: 1 },
+      );
+      const getLastWhitelistUpdatedBy = this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.lastWhitelistUpdatedBy,
+        },
+        { fullName: 1 },
+      );
+      const [createdBy, updatedBy, lastWhitelistUpdatedBy] = await Promise.all([
+        getCreatedBy,
+        getUpdatedBy,
+        getLastWhitelistUpdatedBy,
+      ]);
+      iaoEvent.createdBy = createdBy.fullname;
+      iaoEvent.updatedBy = updatedBy.fullname;
+      iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy.fullname;
+      return iaoEvent;
     }
   }
 
@@ -163,5 +195,49 @@ export class IaoEventService {
 
   remove(id: number) {
     return `This action removes a #${id} iaoEvent`;
+  }
+
+  async createWhitelist(user, data: CreateWhitelistDto) {
+    if (!data.whitelistAddresses.length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'whitelistAddresses is empty');
+
+    const filter = { iaoEventId: data.iaoEventId, deleted: false };
+
+    const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
+    if (!currentIaoEvent)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    if (currentIaoEvent.onChainStatus !== ON_CHAIN_STATUS.ON_CHAIN)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Status invalid');
+
+    // check whitelist
+    await this.checkWhitelist(data);
+
+    return await this.dataService.iaoEvent.findOneAndUpdate(
+      {
+        ...filter,
+        onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+        updatedAt: currentIaoEvent['updatedAt'],
+      },
+      {
+        lastWhitelistUpdatedBy: user.adminId,
+        lastWhitelistUpdatedAt: Date.now(),
+        whitelist: data.whitelistAddresses,
+      },
+      { new: true },
+    );
+  }
+
+  async checkWhitelist(data: CreateWhitelistDto) {
+    //check duplicate
+    const listAddress: any = [...new Set(data.whitelistAddresses)];
+
+    //check incorrect
+    for (const address of listAddress) {
+      if (!ethers.utils.isAddress(address))
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid wallet address');
+    }
+
+    data.whitelistAddresses = listAddress;
   }
 }

@@ -57,5 +57,17 @@ export class IaoEventBuilderService {
     };
   }
 
-  
+  async getIaoEventDetail(iaoEvent: any, fnft: any, iaoRequest: any) {
+    return {
+      iaoEventId: iaoEvent.iaoEventId,
+      status: iaoEvent.status,
+      onChainStatus: iaoEvent.onChainStatus,
+      currentStage:0,
+      isDisplay:iaoEvent.isDisplay,
+      chaniId:iaoEvent.chainId,
+      FNFTcontractAddress:iaoEvent.FNFTcontractAddress,
+      tokenSymbol:fnft.tokenSymbol,
+      
+    };
+  }
 }

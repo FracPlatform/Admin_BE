@@ -21,6 +21,8 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { ApiError } from 'src/common/api';
+import { GetUser } from '../auth/get-user.decorator';
+import { CreateWhitelistDto } from './dto/create-whilist.dto';
 
 @Controller('iao-event')
 @ApiTags('IAO Event')
@@ -48,6 +50,22 @@ export class IaoEventController {
     }
   }
 
+  @Post('/whitelist')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a whitelist"' })
+  async createWhitelist(
+    @Body() createWhitelistDto: CreateWhitelistDto,
+    @GetUser() user,
+  ) {
+    const data = await this.iaoEventService.createWhitelist(
+      user,
+      createWhitelistDto,
+    );
+    return new ApiSuccessResponse().success(data, '');
+  }
+
   @Get()
   findAll() {
     return this.iaoEventService.findAll();
@@ -55,6 +73,7 @@ export class IaoEventController {
 
   @Get(':id')
   @ApiOperation({ summary: 'get IAO event detail' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)

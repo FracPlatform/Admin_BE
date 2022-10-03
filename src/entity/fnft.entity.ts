@@ -28,6 +28,8 @@ export class ListFnftEntity {
   fractionalizedBy: string;
   fractionalizedOn: Date;
   fnftId?: string;
+  sizeOfItem?: string;
+  createdAt?: Date;
 }
 
 export class FnftDetailEntity {
