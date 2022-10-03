@@ -17,7 +17,6 @@ export const MAXLENGTH_EVENT_NAME = 256;
 export const MAXLENGTH_DESCRIPTION = 3000;
 export const MAX_DECIMAL_HARD_CAP_PER_USER = 2;
 export const MAX_HARD_CAP_PER_USER = 100;
-export const MAX_whitelistRegistrationUrl = 3000;
 export const MIN_HARD_CAP_PER_USER = 1;
 export const MAX_DECIMAL_EXCHANGE_RATE = 18;
 export const MAX_EXCHANGE_RATE = 999999999999;
