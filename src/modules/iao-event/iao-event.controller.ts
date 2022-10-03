@@ -8,6 +8,8 @@ import {
   Delete,
   UseGuards,
   Req,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { IaoEventService } from './iao-event.service';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -18,6 +20,7 @@ import { Request } from 'express';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
+import { ApiError } from 'src/common/api';
 import { GetUser } from '../auth/get-user.decorator';
 import { CreateWhitelistDto } from './dto/create-whilist.dto';
 
@@ -28,6 +31,7 @@ export class IaoEventController {
 
   @Post('/draft')
   @ApiOperation({ summary: 'Create IAO event as draft' })
+  @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
@@ -35,7 +39,15 @@ export class IaoEventController {
     @Body() createIaoEventDto: CreateIaoEventDto,
     @Req() req: Request,
   ) {
-    return await this.iaoEventService.createDraft(createIaoEventDto, req.user);
+    try {
+      const iaoEvent = await this.iaoEventService.createDraft(
+        createIaoEventDto,
+        req.user,
+      );
+      return new ApiSuccessResponse().success(iaoEvent, '');
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('/whitelist')
@@ -60,8 +72,18 @@ export class IaoEventController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.iaoEventService.findOne(+id);
+  @ApiOperation({ summary: 'get IAO event detail' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async findOne(@Param('id') id: string) {
+    try {
+      const iaoEvent = await this.iaoEventService.findOne(id);
+      return new ApiSuccessResponse().success(iaoEvent, '');
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Patch(':id')

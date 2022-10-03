@@ -4,7 +4,12 @@ import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { F_NFT_STATUS, IAOEvent, ON_CHAIN_STATUS } from 'src/datalayer/model';
+import {
+  F_NFT_STATUS,
+  IAOEvent,
+  ON_CHAIN_STATUS,
+  IAO_REQUEST_STATUS,
+} from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { CreateWhitelistDto } from './dto/create-whilist.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
@@ -65,7 +70,7 @@ export class IaoEventService {
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
-    
+
     const session = await this.connection.startSession();
     session.startTransaction();
 
@@ -82,7 +87,7 @@ export class IaoEventService {
       );
       await session.commitTransaction();
 
-      return iaoEvent;
+      return iaoEvent[0];
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -95,8 +100,110 @@ export class IaoEventService {
     return `This action returns all iaoEvent`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} iaoEvent`;
+  async findOne(id: string) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId: id,
+      isDeleted: false,
+    });
+    if (!iaoEvent) throw ApiError('', 'This IAO event not exists');
+
+    const fnft: any = await this.dataService.fnft.findOne({
+      contractAddress: iaoEvent.FNFTcontractAddress,
+      deleted: false,
+      status: F_NFT_STATUS.ACTIVE,
+    });
+
+    if (!fnft) throw ApiError('', 'F-NFT of This IAO event not exists');
+
+    const iaoRequest: any = await this.dataService.iaoRequest.findOne({
+      iaoId: fnft.iaoRequestId,
+      deleted: false,
+      status: IAO_REQUEST_STATUS.APPROVED_B,
+    });
+
+    if (iaoRequest) {
+      // get name of fractor
+      const fractor = await this.dataService.fractor.findOne(
+        {
+          fractorId: iaoRequest.ownerId,
+        },
+        { fullname: 1, assignedBD: 1 },
+      );
+      iaoRequest.fractor = fractor.fullname;
+      // get name of BD
+      const bd = await this.dataService.admin.findOne(
+        {
+          adminId: fractor.assignedBD,
+        },
+        { fullname: 1 },
+      );
+      iaoRequest.bd = bd?.fullname ? bd.fullname : null;
+      // get url of items
+      const itemsId = iaoRequest.items.map((i) => {
+        return { itemId: i };
+      });
+      const items: any = await this.dataService.asset.findMany(
+        {
+          $or: itemsId,
+        },
+        { itemId: 1, name: 1, media: 1, _id: 0 },
+      );
+      iaoRequest.itemObject = items;
+      // get NFT
+      const nftId = fnft.items.map((i) => {
+        return { tokenId: i };
+      });
+      const nfts = await this.dataService.nft.findMany(
+        { $or: nftId },
+        { name: 1, tokenId: 1, status: 1, assetId: 1 },
+      );
+      fnft.items = nfts;
+      //other info
+      const getCreatedBy = this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.createdBy,
+        },
+        { fullName: 1 },
+      );
+      const getUpdatedBy = this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.updatedBy,
+        },
+        { fullName: 1 },
+      );
+      const getLastWhitelistUpdatedBy = this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.lastWhitelistUpdatedBy,
+        },
+        { fullName: 1 },
+      );
+      const [createdBy, updatedBy, lastWhitelistUpdatedBy] = await Promise.all([
+        getCreatedBy,
+        getUpdatedBy,
+        getLastWhitelistUpdatedBy,
+      ]);
+      iaoEvent.createdBy = createdBy.fullname;
+      iaoEvent.updatedBy = updatedBy.fullname;
+      iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy.fullname;
+
+      const createdOnChainBy = await this.dataService.admin.findOne(
+        {
+          adminId: iaoEvent.createdOnChainBy,
+        },
+        { fullname: 1 },
+      );
+      iaoEvent.createdOnChainBy = createdOnChainBy?.fullname
+        ? createdOnChainBy.fullname
+        : null;
+    }
+
+    const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
+      iaoEvent,
+      fnft,
+      iaoRequest,
+    );
+
+    return iaoEventDetail;
   }
 
   update(id: number, updateIaoEventDto: UpdateIaoEventDto) {

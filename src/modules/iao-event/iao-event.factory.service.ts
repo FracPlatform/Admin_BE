@@ -3,8 +3,11 @@ import moment = require('moment');
 import { PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { ON_CHAIN_STATUS } from 'src/datalayer/model';
-import { CreateIAOEventEntity } from 'src/entity/create-iao-event.entity';
+import { FNFT_DECIMAL, ON_CHAIN_STATUS } from 'src/datalayer/model';
+import {
+  CreateIAOEventEntity,
+  IAOEventDetailEntity,
+} from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 
 @Injectable()
@@ -54,6 +57,65 @@ export class IaoEventBuilderService {
       updatedBy: user.adminId,
       createdBy: user.adminId,
       totalSupply: createIaoEventDto['totalSupply'],
+    };
+  }
+
+  getIaoEventDetail(
+    iaoEvent: any,
+    fnft: any,
+    iaoRequest: any,
+  ): IAOEventDetailEntity {
+    return {
+      iaoEventId: iaoEvent.iaoEventId,
+      status: iaoEvent.status,
+      onChainStatus: iaoEvent.onChainStatus,
+      currentStage: 0,
+      isDisplay: iaoEvent.isDisplay,
+      chainId: iaoEvent.chainId,
+      FNFTcontractAddress: iaoEvent.FNFTcontractAddress,
+      tokenSymbol: fnft.tokenSymbol,
+      tokenName: fnft.tokenName,
+      tokenLogo: fnft.tokenLogo,
+      fnftStatus: fnft.status,
+      fnftDecimal: FNFT_DECIMAL,
+      iaoRequestStatus: iaoRequest?.status,
+      iaoRequestType: iaoRequest?.type,
+      fractor: iaoRequest?.fractor,
+      bd: iaoRequest?.bd,
+      iaoRequestDuration: iaoRequest?.eventDuration,
+      iaoRequestOffer: iaoRequest?.percentOffered,
+      iaoRequestVaultUnlockThreshold: iaoRequest?.percentVault,
+      totalItems: iaoRequest?.items.length,
+      items: iaoRequest?.itemObject,
+      nfts: fnft.items,
+      registrationStartTime: iaoEvent.registrationStartTime,
+      registrationEndTime: iaoEvent.registrationEndTime,
+      iaoEventDuration: iaoEvent.iaoEventDuration,
+      participationStartTime: iaoEvent.participationStartTime,
+      participationEndTime: iaoEvent.participationEndTime,
+      iaoEventVaultType: iaoEvent.iaoEventVaultType,
+      acceptedCurrencyAddress: iaoEvent.acceptedCurrencyAddress,
+      exchangeRate: iaoEvent.exchangeRate,
+      percentageOffered: iaoEvent.percentageOffered,
+      vaultUnlockThreshold: iaoEvent.vaultUnlockThreshold,
+      eventPhotoUrl: iaoEvent.eventPhotoUrl,
+      eventBannerUrl: iaoEvent.eventBannerUrl,
+      iaoEventName: iaoEvent.iaoEventName,
+      description: iaoEvent.description,
+      allocationType: iaoEvent.allocationType,
+      hardCapPerUser: iaoEvent.hardCapPerUser,
+      whitelistRegistrationUrl: iaoEvent.whitelistRegistrationUrl,
+      whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
+      whitelist: iaoEvent.whitelist,
+      totalWhitelist: iaoEvent.whitelist.length,
+      updatedBy: iaoEvent.updatedBy,
+      createdBy: iaoEvent.createdBy,
+      createdAt: iaoEvent.createdAt,
+      updatedAt: iaoEvent.updatedAt,
+      createdOnChainBy: iaoEvent.createdOnChainBy,
+      createdOnChainAt: iaoEvent.createdOnChainAt,
+      lastWhitelistUpdatedAt: iaoEvent.lastWhitelistUpdatedAt,
+      lastWhitelistUpdatedBy: iaoEvent.lastWhitelistUpdatedBy,
     };
   }
 }
