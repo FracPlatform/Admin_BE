@@ -203,10 +203,6 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUrl({
-    require_protocol: true,
-    require_valid_protocol: true,
-  })
   @MaxLength(MAX_LENGTH_WHITE_LIST_URL)
   whitelistRegistrationUrl: string;
 
