@@ -3,7 +3,11 @@ import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { F_NFT_STATUS, IAOEvent } from 'src/datalayer/model';
+import {
+  F_NFT_STATUS,
+  IAOEvent,
+  IAO_REQUEST_STATUS,
+} from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
@@ -62,7 +66,7 @@ export class IaoEventService {
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
-    
+
     const session = await this.connection.startSession();
     session.startTransaction();
 
@@ -79,7 +83,7 @@ export class IaoEventService {
       );
       await session.commitTransaction();
 
-      return iaoEvent;
+      return iaoEvent[0];
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -92,8 +96,65 @@ export class IaoEventService {
     return `This action returns all iaoEvent`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} iaoEvent`;
+  async findOne(id: string) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId: id,
+      isDeleted: false,
+    });
+    if (!iaoEvent) throw ApiError('', 'This IAO event not exists');
+
+    const fnft = await this.dataService.fnft.findOne({
+      contractAddress: iaoEvent.FNFTcontractAddress,
+      deleted: false,
+      status: F_NFT_STATUS.ACTIVE,
+    });
+
+    if (!fnft) throw ApiError('', 'F-NFT of This IAO event not exists');
+
+    const iaoRequest: any = await this.dataService.iaoRequest.findOne({
+      iaoId: fnft.iaoRequestId,
+      deleted: false,
+      status: IAO_REQUEST_STATUS.APPROVED_B,
+    });
+
+    if (iaoRequest) {
+      // get name of fractor
+      const fractor = await this.dataService.fractor.findOne(
+        {
+          fractorId: iaoRequest.ownerId,
+        },
+        { fullname: 1 },
+      );
+      iaoRequest.fractor = fractor.fullname;
+      // get name of BD
+      const bd = await this.dataService.admin.findOne(
+        {
+          adminId: iaoRequest.assignedBD,
+        },
+        { fullname: 1 },
+      );
+      iaoRequest.bd = bd.fullname;
+      // get url of items
+      const itemsId = iaoRequest.items.map((i) => {
+        return { itemId: i };
+      });
+      const items = await this.dataService.iaoRequest.findMany(
+        {
+          $or: itemsId,
+        },
+        { itemId: 1, name: 1, media: 1 },
+      );
+      iaoRequest.items = items;
+      // get NFT
+      // const assetId = iaoRequest.items.map((i) => {
+      //   return { assetId: i };
+      // });
+      // const nfts = await this.dataService.nft.findMany(
+      //   { $or: assetId },
+      //   { name: 1, tokenId: 1, status: 1, assetId: 1 },
+      // );
+
+    }
   }
 
   update(id: number, updateIaoEventDto: UpdateIaoEventDto) {

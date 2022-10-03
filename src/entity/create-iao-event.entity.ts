@@ -29,3 +29,56 @@ export class CreateIAOEventEntity {
   createdBy: string;
   totalSupply: number;
 }
+
+export class IAOEventDetailEntity {
+  iaoEventId: string;
+  status: number;
+  onChainStatus: number;
+  currentStage: number;
+  isDisplay: boolean;
+  chainId: number;
+  fnftContractAddress: string;
+  tokenSymbol: string;
+  tokenName: string;
+  tokenLogo: string;
+  fnftStatus: number;
+  fnftDecimal: number;
+  iaoRequestStatus: number;
+  iaoRequestType: number;
+  fractor: string;
+  bd: string;
+  iaoRequestDuration: number;
+  iaoRequestOffer: number;
+  iaoRequestVaultUnlockThreshold: number;
+  totalItems: number;
+  items: [];
+  nfts: [];
+  registrationStartTime: Date;
+  registrationEndTime: Date;
+  iaoEventDuration: number;
+  participationStartTime: Date;
+  participationEndTime: Date;
+  iaoEventVaultType: number;
+  acceptedCurrencyAddress: string;
+  exchangeRate: number;
+  percentageOffered: number;
+  vaultUnlockThreshold: number;
+  eventPhotoUrl: string;
+  eventBannerUrl: string;
+  iaoEventName: EventName;
+  description: EventName;
+  allocationType: number;
+  hardCapPerUser: number;
+  whitelistRegistrationUrl: string;
+  whitelistAnnouncementTime: Date;
+  whitelist: [];
+  totalWhitelist: number;
+  updatedBy: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  createdOnChainBy: string;
+  createdOnChainAt: Date;
+  lastWhitelistUpdatedAt: Date;
+  lastWhitelistUpdatedBy: string;
+}

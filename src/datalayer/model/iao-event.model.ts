@@ -2,6 +2,15 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type IAOEventDocument = IAOEvent & Document;
 
+export enum IAOEventStage {
+  UPCOMING = 1,
+  REGISTER_NOW = 2,
+  ON_SALE_SOON = 3,
+  ON_SALE = 4,
+  COMPLETED = 5,
+  FAILED = 6,
+}
+
 export const MAXLENGTH_CONTRACT_ADDRESS = 256;
 export const MAX_IAO_EVENT_DURATION = 99;
 export const MAXLENGTH_EVENT_NAME = 256;
