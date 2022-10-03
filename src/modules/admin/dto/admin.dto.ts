@@ -1,6 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Transform, Type } from "class-transformer";
-import { IsString, IsNotEmpty, IsOptional, IsNumber, MaxLength, IsEnum, IsEmail, IsEthereumAddress } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  MaxLength,
+  IsEnum,
+  IsEmail,
+  IsEthereumAddress,
+} from 'class-validator';
 
 export class FilterAdminDto {
   @ApiProperty({ required: false })
@@ -10,7 +19,11 @@ export class FilterAdminDto {
   @MaxLength(256)
   name: string;
 
-  @ApiProperty({ required: false, description: 'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5, OWNER = 100, WORKER = 101' })
+  @ApiProperty({
+    required: false,
+    description:
+      'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5, OWNER = 100, WORKER = 101',
+  })
   @IsOptional()
   role: string;
 
@@ -68,10 +81,14 @@ export class CreateAdminDto {
   @IsEthereumAddress()
   walletAddress: string;
 
-  @ApiProperty({ required: true, description: 'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5' })
+  @ApiProperty({
+    required: true,
+    description:
+      'SuperAdmin = 1, OperationAdmin = 2, HeadOfBD = 3, FractorBD = 4, MasterBD = 5',
+  })
   @Type(() => Number)
   @IsNumber()
-  @IsEnum([1,2,3,4,5])
+  @IsEnum([1, 2, 3, 4, 5])
   role: number;
 }
 
