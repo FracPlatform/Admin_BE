@@ -25,7 +25,12 @@ export class GetListNftDto {
 
   @IsEnum(NFT_STATUS)
   @IsOptional()
-  @ApiProperty({ type: Number, enum: NFT_STATUS, required: false })
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description:
+      '1=> Draft, 2 => Minted, 3 => Fractionalized, 4 => Owner, 5 => Requesting, 6 => Request Approved, 7 => Redeemed',
+  })
   @Type(() => Number)
   status: NFT_STATUS;
 
@@ -33,7 +38,6 @@ export class GetListNftDto {
   @IsOptional()
   @ApiProperty({
     type: Number,
-    enum: ASSET_CATEGORY,
     description: '1 => Physical, 2 => Digital (NFT), 3 => Digital (non-NFT)',
     required: false,
   })
@@ -47,7 +51,11 @@ export class GetListNftDto {
 
   @IsEnum(NFT_TYPE)
   @IsOptional()
-  @ApiProperty({ type: Number, enum: NFT_TYPE, required: false })
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description: "1 => Fractor's asset, 2 => Frac's asset",
+  })
   @Type(() => Number)
   nftType: NFT_TYPE;
 
@@ -66,11 +74,11 @@ export class GetListNftDto {
   @IsString()
   @IsOptional()
   @ApiProperty({ type: String, required: false })
-  sortType: number;
+  sortField: string;
 
   @ApiProperty({ required: false, description: '-1 => DESC, 1 => ASC' })
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  sortField: number;
+  sortType: number;
 }

@@ -14,7 +14,10 @@ export enum NFT_STATUS {
   DRAFT = 1,
   MINTED = 2,
   FRACTIONLIZED = 3,
-  CLOSED = 4,
+  OWNED = 4,
+  REQUESTING = 5,
+  REQUEST_APPROVED = 6,
+  REDEEMED = 7,
 }
 
 export enum DISPLAY_TYPE {
