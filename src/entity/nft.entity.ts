@@ -19,6 +19,7 @@ export class NftEntity {
   description: string;
   metadataUrl: string;
   createdBy: string;
+  deleted: boolean;
 }
 
 export class NftMetadataEntity {

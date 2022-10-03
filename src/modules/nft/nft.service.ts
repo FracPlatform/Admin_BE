@@ -21,7 +21,7 @@ export class NftService {
   ) {}
 
   async getListNft(filter: GetListNftDto) {
-    const query = {};
+    const query = { deleted: false };
     if (filter.status) query['status'] = filter.status;
     if (filter.nftType) query['nftType'] = filter.nftType;
     if (filter.keyword) {
@@ -196,12 +196,7 @@ export class NftService {
   }
 
   async editNFT(id: string, body: EditNftDto) {
-    const nft = await this.dataService.nft.findOne({
-      tokenId: id,
-    });
-    if (!nft) throw ApiError(ErrorCode.DEFAULT_ERROR, 'NFT not exists');
-    if (nft.status < NFT_STATUS.MINTED)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit NFT');
+    const nft = await this._validateNFT(id);
     await this.dataService.nft.updateOne(
       {
         tokenId: id,
@@ -212,5 +207,32 @@ export class NftService {
       },
     );
     return { success: true };
+  }
+
+  async deleteNFT(id: string) {
+    const nft = await this._validateNFT(id);
+    await this.dataService.nft.updateOne(
+      {
+        tokenId: id,
+        updatedAt: nft['updatedAt'],
+      },
+      {
+        $set: {
+          deleted: true,
+        },
+      },
+    );
+    return { success: true };
+  }
+
+  private async _validateNFT(id: string) {
+    const nft = await this.dataService.nft.findOne({
+      tokenId: id,
+    });
+    if (!nft || nft.deleted)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'NFT not exists');
+    if (nft.status < NFT_STATUS.MINTED)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit NFT');
+    return nft;
   }
 }

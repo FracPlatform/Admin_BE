@@ -57,6 +57,7 @@ export class NftBuilderService {
       name: body.name,
       description: body.description,
       createdBy: user.adminId,
+      deleted: false,
       metadataUrl,
     };
     return newNft;
