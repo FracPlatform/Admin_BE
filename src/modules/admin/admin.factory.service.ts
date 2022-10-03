@@ -94,6 +94,7 @@ export class AdminBuilderService {
       fullname: data.fullname,
       description: data.description,
       adminId: data.adminId,
+      role: data.role,
     };
     return information;
   }

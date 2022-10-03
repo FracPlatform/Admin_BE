@@ -17,16 +17,16 @@ export class UpdateFractorDto {
   assignedBD: string;
 
   @ApiProperty({ required: false })
-  @IsNumber({ allowNaN: true, maxDecimalPlaces: 2 })
+  @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
   @IsNotEmpty()
-  @Min(0.01)
+  @Min(0)
   @Max(100)
   iaoFeeRate: number;
 
   @ApiProperty({ required: false })
-  @IsNumber({ allowNaN: true, maxDecimalPlaces: 2 })
+  @IsNumber({ allowNaN: false, maxDecimalPlaces: 2 })
   @IsNotEmpty()
-  @Min(0.01)
+  @Min(0)
   @Max(20)
   tradingFeeProfit: number;
 
