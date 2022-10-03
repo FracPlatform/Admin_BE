@@ -133,7 +133,17 @@ export class IaoEventController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.iaoEventService.remove(+id);
+  @ApiOperation({ summary: 'Delete IAO event' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async remove(@Param('id') id: string, @Req() req: Request) {
+    try {
+      const iaoEventId = await this.iaoEventService.remove(id, req.user);
+      return new ApiSuccessResponse().success(iaoEventId, '');
+    } catch (error) {
+      throw error;
+    }
   }
 }
