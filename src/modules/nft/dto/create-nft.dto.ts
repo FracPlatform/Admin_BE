@@ -41,8 +41,7 @@ export class CreateNftDto {
   @ApiProperty({ type: String, description: 'ITEM-1', required: false })
   assetId?: string;
 
-  @IsString()
-  @IsOptional()
+  @IsEnum(CategoryType)
   @ApiProperty({
     type: String,
     required: false,
@@ -51,7 +50,6 @@ export class CreateNftDto {
   assetCategory?: CategoryType;
 
   @IsString()
-  @IsOptional()
   @ApiProperty({ type: String, required: false, description: 'ATYPE-1' })
   assetType?: string;
 
