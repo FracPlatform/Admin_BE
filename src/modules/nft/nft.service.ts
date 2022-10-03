@@ -5,11 +5,12 @@ import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { ASSET_STATUS, CategoryType } from 'src/datalayer/model';
+import { ASSET_STATUS, CategoryType, NFT_STATUS } from 'src/datalayer/model';
 import { CreateNftDto } from './dto/create-nft.dto';
 import { ASSET_CATEGORY, GetListNftDto } from './dto/get-list-nft.dto';
 import { NftBuilderService } from './nft.factory.service';
 import { get } from 'lodash';
+import { EditNftDto } from './dto/edit-nft.dto';
 
 @Injectable()
 export class NftService {
@@ -192,5 +193,24 @@ export class NftService {
     } finally {
       session.endSession();
     }
+  }
+
+  async editNFT(id: string, body: EditNftDto) {
+    const nft = await this.dataService.nft.findOne({
+      tokenId: id,
+    });
+    if (!nft) throw ApiError(ErrorCode.DEFAULT_ERROR, 'NFT not exists');
+    if (nft.status < NFT_STATUS.MINTED)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit NFT');
+    await this.dataService.nft.updateOne(
+      {
+        tokenId: id,
+        updatedAt: nft['updatedAt'],
+      },
+      {
+        $set: body,
+      },
+    );
+    return { success: true };
   }
 }
