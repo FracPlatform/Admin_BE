@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { MAX_RETRY, MIMEType, TIME_WAIT_RETRY } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IpfsNFTStorage } from './ipfs.nft-storage';

@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Post,
@@ -17,7 +16,6 @@ import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { FnftService } from './f-nft.service';
-import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
 import { CreateFnftDto, FilterFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
 @Controller('f-nft')
 @UseGuards(JwtAuthGuard, RolesGuard)

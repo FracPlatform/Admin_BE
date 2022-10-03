@@ -9,7 +9,7 @@ import { ASSET_STATUS, CategoryType } from 'src/datalayer/model';
 import { CreateNftDto } from './dto/create-nft.dto';
 import { ASSET_CATEGORY, GetListNftDto } from './dto/get-list-nft.dto';
 import { NftBuilderService } from './nft.factory.service';
-import { get, isEqual } from 'lodash';
+import { get } from 'lodash';
 
 @Injectable()
 export class NftService {
