@@ -19,14 +19,14 @@ export class UpdateFractorDto {
   @ApiProperty({ required: false })
   @IsNumber({ allowNaN: true, maxDecimalPlaces: 2 })
   @IsNotEmpty()
-  @Min(0)
+  @Min(0.01)
   @Max(100)
   iaoFeeRate: number;
 
   @ApiProperty({ required: false })
   @IsNumber({ allowNaN: true, maxDecimalPlaces: 2 })
   @IsNotEmpty()
-  @Min(0)
+  @Min(0.01)
   @Max(20)
   tradingFeeProfit: number;
 

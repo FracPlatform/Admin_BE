@@ -144,41 +144,45 @@ export class FractorService {
   async filterFractor(filter: FilterFractorDto) {
     let match: Record<string, any> = {};
     if (filter.textSearch) {
+      const matchOrCondition: any = [
+        {
+          email: {
+            $regex: Utils.escapeRegex(filter.textSearch.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          fullname: {
+            $regex: Utils.escapeRegex(filter.textSearch.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          fractorId: {
+            $regex: Utils.escapeRegex(filter.textSearch.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          assignedBD: {
+            $regex: Utils.escapeRegex(filter.textSearch.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+
       const bdIds = await this._filterAdminIdByName(filter.textSearch.trim());
 
       if (bdIds.length > 0) {
-        match.assignedBD = {
-          $in: bdIds,
-        };
+        matchOrCondition.push({
+          assignedBD: {
+            $in: bdIds,
+          },
+        });
       }
 
       match = {
-        $or: [
-          {
-            email: {
-              $regex: Utils.escapeRegex(filter.textSearch.trim()),
-              $options: 'i',
-            },
-          },
-          {
-            fullname: {
-              $regex: Utils.escapeRegex(filter.textSearch.trim()),
-              $options: 'i',
-            },
-          },
-          {
-            fractorId: {
-              $regex: Utils.escapeRegex(filter.textSearch.trim()),
-              $options: 'i',
-            },
-          },
-          {
-            assignedBD: {
-              $regex: Utils.escapeRegex(filter.textSearch.trim()),
-              $options: 'i',
-            },
-          },
-        ],
+        $or: matchOrCondition,
       };
     }
     if (Object.keys(filter).includes('status')) {

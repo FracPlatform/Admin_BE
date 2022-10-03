@@ -55,8 +55,8 @@ export class CreateAdminDto {
   @MaxLength(256)
   email: string;
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
   @MaxLength(3000)
   description: string;
