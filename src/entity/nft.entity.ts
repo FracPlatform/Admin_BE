@@ -19,6 +19,7 @@ export class NftEntity {
   description: string;
   metadataUrl: string;
   createdBy: string;
+  deleted: boolean;
 }
 
 export class NftMetadataEntity {
@@ -29,4 +30,32 @@ export class NftMetadataEntity {
   animation_type: string;
   external_url: string;
   attributes: object[];
+}
+
+export class NftDetailEntity {
+  nftType: NFT_TYPE;
+  assetId?: string;
+  assetCategory?: CategoryType;
+  assetType?: string;
+  tokenId: string;
+  contractAddress: string;
+  status: NFT_STATUS;
+  display: boolean;
+  chainId: number;
+  mediaUrl: string;
+  previewUrl: string;
+  metadata: Trait[];
+  unlockableContent?: string;
+  name: string;
+  description: string;
+  createdBy: object;
+  createdAt: string;
+  mintedBy: object;
+  mintedAt: string;
+  mintingHashTx: string;
+  fractionalizedBy: object;
+  fractionalizedAt: string;
+  fractionalizationTxHash: string;
+  fnft: object;
+  asset: object;
 }

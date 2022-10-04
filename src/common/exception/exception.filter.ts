@@ -17,7 +17,7 @@ export class AllExceptionFilter extends BaseExceptionFilter {
       this.logger.debug(`Error ${request.method} ${request.originalUrl}`);
       this.logger.debug(exception.message, exception.stack);
     }
-    if (errorName === 'ValidationError') {
+    if (errorName === 'ValidationError' || errorName === 'MongoServerError') {
       response.status(400).json({
         statusCode: 400,
         message: exception['message'],

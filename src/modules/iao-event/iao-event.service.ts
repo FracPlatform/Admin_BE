@@ -16,6 +16,7 @@ import { CreateWhitelistDto } from './dto/create-whilist.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
 import { ethers } from 'ethers';
+import { CheckTimeDTO } from './dto/check-time.dto';
 
 @Injectable()
 export class IaoEventService {
@@ -43,7 +44,7 @@ export class IaoEventService {
       contractAddress: createIaoEventDto.FNFTcontractAddress,
       status: F_NFT_STATUS.ACTIVE,
     });
-    if (!fnft) throw ApiError('E4', 'F-NFT not exists');
+    if (!fnft) throw ApiError('E4', 'F-NFT not exists or deactive');
 
     const query: any = {
       $or: [
@@ -343,5 +344,101 @@ export class IaoEventService {
     }
 
     data.whitelistAddresses = listAddress;
+  }
+
+  async checkRegistrationParticipation(
+    checkTimeDTO: CheckTimeDTO,
+  ): Promise<Array<IAOEvent>> {
+    const query = { $or: [] };
+    // check with registrationStartTime
+    query['$or'].push(
+      {
+        registrationStartTime: {
+          $lte: checkTimeDTO.date,
+          $gte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+      {
+        registrationStartTime: {
+          $gte: checkTimeDTO.date,
+          $lte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+    );
+    // check with registrationEndTime
+    query['$or'].push(
+      {
+        registrationEndTime: {
+          $lte: checkTimeDTO.date,
+          $gte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+      {
+        registrationEndTime: {
+          $gte: checkTimeDTO.date,
+          $lte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+    );
+    // check with participationStartTime
+    query['$or'].push(
+      {
+        participationStartTime: {
+          $lte: checkTimeDTO.date,
+          $gte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+      {
+        participationStartTime: {
+          $gte: checkTimeDTO.date,
+          $lte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+    );
+    // check with participationEndTime
+    query['$or'].push(
+      {
+        participationEndTime: {
+          $lte: checkTimeDTO.date,
+          $gte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+      {
+        participationEndTime: {
+          $gte: checkTimeDTO.date,
+          $lte: checkTimeDTO.date.setHours(
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          ),
+        },
+      },
+    );
+
+    const iaoEventList = await this.dataService.iaoEvent.findMany({
+      ...query,
+      status: IAO_EVENT_STATUS.ACTIVE,
+    });
+    return iaoEventList;
   }
 }
