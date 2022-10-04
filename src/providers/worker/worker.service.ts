@@ -41,8 +41,6 @@ export class WorkerService {
         case CONTRACT_EVENTS.MINT_F_NFT:
           await this._handleMintFNFTEvent(requestData);
           break;
-        case CONTRACT_EVENTS.CREATE_ON_CHAIN:
-
       }
     } catch (err) {
       this.logger.debug(err.message, err.stack);
@@ -157,28 +155,5 @@ export class WorkerService {
     );
 
     this.socketGateway.sendMessage(SOCKET_EVENT.MINT_F_NFT_EVENT, requestData);
-  }
-
-  private async _handleCreateOnChain(requestData: WorkerDataDto) {
-    /**
-     * update status iao event
-     * update status asset
-     */
-
-    const admin = await this.dataServices.admin.findOne({
-      walletAddress: requestData.metadata.mintBy,
-    });
-
-    await this.dataServices.fnft.findOneAndUpdate(
-      { fnftId: requestData.metadata.fnftId },
-      {
-        mintedStatus: F_NFT_MINTED_STATUS.MINTED,
-        contractAddress: requestData.metadata.fracTokenAddr,
-        fractionalizedBy: admin.adminId,
-        fractionalizedOn: new Date(),
-        txhash: requestData.transactionHash,
-      },
-    );
-
   }
 }
