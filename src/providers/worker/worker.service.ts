@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from '../../common/api';
 import { CONTRACT_EVENTS, PREFIX_ID } from '../../common/constants';
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
-import { ADMIN_STATUS } from '../../datalayer/model';
+import { ADMIN_STATUS, F_NFT_MINTED_STATUS } from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
 import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
@@ -138,5 +138,22 @@ export class WorkerService {
      * Update status nft to 3(FRACTIONLIZED)
      * Update status asset item to 5(FRACTIONALIZED)
      */
+
+    const admin = await this.dataServices.admin.findOne({
+      walletAddress: requestData.metadata.mintBy,
+    });
+
+    await this.dataServices.fnft.findOneAndUpdate(
+      { fnftId: requestData.metadata.fnftId },
+      {
+        mintedStatus: F_NFT_MINTED_STATUS.MINTED,
+        contractAddress: requestData.metadata.fracTokenAddr,
+        fractionalizedBy: admin.adminId,
+        fractionalizedOn: new Date(),
+        txhash: requestData.transactionHash,
+      },
+    );
+
+    this.socketGateway.sendMessage(SOCKET_EVENT.MINT_F_NFT_EVENT, requestData);
   }
 }
