@@ -325,14 +325,14 @@ export class IaoEventService {
   }
 
   async checkWhitelist(data: CreateWhitelistDto) {
-    let listWalletAddress = [];
+    const listWalletAddress = [];
 
     for (const [i, obj] of data.whitelistAddresses.entries()) {
       // check duplicate
       const isAddress = listWalletAddress.find((e) => e === obj['address']);
       if (isAddress) {
         data.whitelistAddresses.splice(i, 1);
-      };
+      }
 
       //check incorrect
       if (!ethers.utils.isAddress(obj['address']))
