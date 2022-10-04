@@ -23,13 +23,13 @@ export class NftEntity {
 }
 
 export class NftMetadataEntity {
-  name: string;
-  description: string;
-  image: string;
-  animation_url: string;
-  animation_type: string;
-  external_url: string;
-  attributes: object[];
+  name?: string;
+  description?: string;
+  image?: string;
+  animation_url?: string;
+  animation_type?: string;
+  external_url?: string;
+  attributes?: object[];
 }
 
 export class NftDetailEntity {

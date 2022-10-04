@@ -66,6 +66,8 @@ export class NftService {
           break;
       }
     }
+    console.log(query);
+
     const agg = [];
     agg.push(
       {
@@ -128,6 +130,7 @@ export class NftService {
           assetType: '$assetType',
           asset: '$asset',
           status: '$status',
+          deleted: '$deleted',
         },
       },
       { $match: query },
@@ -312,8 +315,7 @@ export class NftService {
 
   async editNFT(id: string, body: EditNftDto) {
     const nft = await this._validateNFT(id);
-
-    const res = await this.dataService.nft.findOneAndUpdate(
+    const currentNft = await this.dataService.nft.findOneAndUpdate(
       {
         tokenId: id,
         updatedAt: nft['updatedAt'],
@@ -322,7 +324,13 @@ export class NftService {
         $set: body,
       },
     );
-    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update NFT');
+    if (!currentNft)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update NFT');
+    const nftMetadata = await this.nftBuilderService.updateNftMetadata(
+      body,
+      currentNft,
+    );
+    await this.s3Service.uploadNftMetadata(nftMetadata, id);
     return { success: true };
   }
 
