@@ -7,3 +7,4 @@ export * from './counter-id.model';
 export * from './f-nft.model';
 export * from './iao-event.model';
 export * from './nft.model';
+export * from './whitelist.model';

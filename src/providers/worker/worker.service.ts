@@ -38,6 +38,9 @@ export class WorkerService {
         case CONTRACT_EVENTS.MINT_NFT:
           await this._handleMintNFTEvent(requestData);
           break;
+        case CONTRACT_EVENTS.MINT_F_NFT:
+          await this._handleMintFNFTEvent(requestData);
+          break;
       }
     } catch (err) {
       this.logger.debug(err.message, err.stack);
@@ -126,5 +129,14 @@ export class WorkerService {
     } finally {
       session.endSession();
     }
+  }
+
+  private async _handleMintFNFTEvent(requestData: WorkerDataDto) {
+    /**
+     * Update mintedStatus of f-nft in db to 1(MINTED)
+     *   contract address, fractionalized by, fractionalized on, tx hash
+     * Update status nft to 3(FRACTIONLIZED)
+     * Update status asset item to 5(FRACTIONALIZED)
+     */
   }
 }

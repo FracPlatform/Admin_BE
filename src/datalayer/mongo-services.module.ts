@@ -20,6 +20,8 @@ import {
   IaoEventSchema,
   Nft,
   NftSchema,
+  Whitelist,
+  WhitelistSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -36,6 +38,7 @@ import 'dotenv/config';
       { name: Fnft.name, schema: FnftSchema },
       { name: IAOEvent.name, schema: IaoEventSchema },
       { name: Nft.name, schema: NftSchema },
+      { name: Whitelist.name, schema: WhitelistSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

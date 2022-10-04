@@ -22,6 +22,10 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.create([item], options);
   }
 
+  insertMany(items: T[], options?: object) {
+    return this._repository.insertMany(items, options);
+  }
+
   updateById(id: string, item: T) {
     return this._repository.findByIdAndUpdate(id, item);
   }
@@ -34,7 +38,11 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.updateMany(filter, update, options);
   }
 
-  findOne(conditions: object, projection?: object, options?: object): Promise<T> {
+  findOne(
+    conditions: object,
+    projection?: object,
+    options?: object,
+  ): Promise<T> {
     return this._repository.findOne(conditions, projection, options).exec();
   }
 
