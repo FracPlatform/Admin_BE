@@ -12,6 +12,7 @@ import {
 } from 'src/entity/nft.entity';
 import { S3Service } from 'src/s3/s3.service';
 import { CreateNftDto } from './dto/create-nft.dto';
+import { EditNftDto } from './dto/edit-nft.dto';
 const FileType = require('file-type/browser');
 
 @Injectable()
@@ -68,17 +69,22 @@ export class NftBuilderService {
   }
 
   async createNftMetadata(body: CreateNftDto) {
-    const response = await axios.get(body.mediaUrl, { responseType: 'stream' });
-    const { fileType } = await FileType.stream(response.data);
     const nftMetadata: NftMetadataEntity = {
       name: body.name,
       description: body.description,
-      image: body.mediaUrl ? body.previewUrl : body.mediaUrl,
-      animation_url: body.mediaUrl,
-      animation_type: fileType.ext,
+      image: body.previewUrl ? body.previewUrl : body.mediaUrl,
+      animation_url: body.mediaUrl || '',
+      animation_type: '',
       external_url: '',
       attributes: [...body.metadata],
     };
+    if (body.previewUrl) {
+      const response = await axios.get(body.mediaUrl, {
+        responseType: 'stream',
+      });
+      const { fileType } = await FileType.stream(response.data);
+      nftMetadata.animation_type = fileType;
+    }
     return nftMetadata;
   }
 
@@ -133,5 +139,29 @@ export class NftBuilderService {
       fractionalizedAt: data.fnft?.fractionalizedOn,
     };
     return nftDetail;
+  }
+
+  async updateNftMetadata(updatedData: EditNftDto, currentNft: NftEntity) {
+    const { data } = await axios.get(currentNft.metadataUrl);
+    const nftMetadata: NftMetadataEntity = { ...data };
+    if (updatedData.mediaUrl) {
+      nftMetadata.image = updatedData.mediaUrl;
+      nftMetadata.animation_type = '';
+      nftMetadata.animation_url = '';
+    }
+    if (updatedData.previewUrl) {
+      const response = await axios.get(updatedData.mediaUrl, {
+        responseType: 'stream',
+      });
+      const { fileType } = await FileType.stream(response.data);
+      nftMetadata.animation_type = fileType;
+      nftMetadata.animation_url = updatedData.mediaUrl;
+      nftMetadata.image = updatedData.previewUrl;
+    }
+    if (updatedData.description)
+      nftMetadata.description = updatedData.description;
+    if (updatedData.name) nftMetadata.name = updatedData.name;
+    if (updatedData.metadata) nftMetadata.attributes = updatedData.metadata;
+    return nftMetadata;
   }
 }
