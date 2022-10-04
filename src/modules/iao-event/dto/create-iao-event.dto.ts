@@ -93,9 +93,9 @@ export class CreateIaoEventDto {
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
-  @IsString({ message: 'E2' })
+  @IsString()
   @MaxLength(MAXLENGTH_CONTRACT_ADDRESS)
-  @IsEthereumAddress({ message: 'E2' })
+  @IsEthereumAddress()
   FNFTcontractAddress: string;
 
   @ApiProperty({ required: true })
