@@ -175,28 +175,28 @@ export class IaoEventService {
         {
           adminId: iaoEvent.createdBy,
         },
-        { fullName: 1 },
+        { fullname: 1 },
       );
       const getUpdatedBy = this.dataService.admin.findOne(
         {
           adminId: iaoEvent.updatedBy,
         },
-        { fullName: 1 },
+        { fullname: 1 },
       );
       const getLastWhitelistUpdatedBy = this.dataService.admin.findOne(
         {
           adminId: iaoEvent.lastWhitelistUpdatedBy,
         },
-        { fullName: 1 },
+        { fullname: 1 },
       );
       const [createdBy, updatedBy, lastWhitelistUpdatedBy] = await Promise.all([
         getCreatedBy,
         getUpdatedBy,
         getLastWhitelistUpdatedBy,
       ]);
-      iaoEvent.createdBy = createdBy.fullname;
-      iaoEvent.updatedBy = updatedBy.fullname;
-      iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy.fullname;
+      iaoEvent.createdBy = createdBy?.fullname;
+      iaoEvent.updatedBy = updatedBy?.fullname;
+      iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy?.fullname;
 
       const createdOnChainBy = await this.dataService.admin.findOne(
         {
