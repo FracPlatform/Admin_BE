@@ -101,6 +101,7 @@ export class FilterIAORequestDto {
 
   @ApiProperty({ required: false, description: '1 => VAULT, 2 => NON_VAULT' })
   @IsOptional()
+  @Type(() => Number)
   @IsEnum(IAO_REQUEST_TYPE)
   type: number;
 
@@ -110,6 +111,7 @@ export class FilterIAORequestDto {
       '1 => DRAFT, 2 => IN_REVIEW, 3 => REJECTED, 4 => APPROVED_A, 5 => APPROVED_B, 6 => CLOSED',
   })
   @IsOptional()
+  @Type(() => Number)
   @IsEnum(IAO_REQUEST_STATUS)
   status: number;
 
