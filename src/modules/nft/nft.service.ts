@@ -11,17 +11,19 @@ import { ASSET_CATEGORY, GetListNftDto } from './dto/get-list-nft.dto';
 import { NftBuilderService } from './nft.factory.service';
 import { get } from 'lodash';
 import { EditNftDto } from './dto/edit-nft.dto';
+import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
 export class NftService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly nftBuilderService: NftBuilderService,
+    private readonly s3Service: S3Service,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
   async getListNft(filter: GetListNftDto) {
-    const query = {};
+    const query = { deleted: false };
     if (filter.status) query['status'] = filter.status;
     if (filter.nftType) query['nftType'] = filter.nftType;
     if (filter.keyword) {
@@ -160,6 +162,119 @@ export class NftService {
     };
   }
 
+  async getNFTDetail(id: string) {
+    const nft = await this.dataService.nft.findOne({ tokenId: id });
+    const agg = [];
+    agg.push(
+      {
+        $match: {
+          tokenId: id,
+          deleted: false,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fnft',
+          localField: 'tokenId',
+          foreignField: 'items',
+          as: 'fnft',
+        },
+      },
+      {
+        $unwind: { path: '$fnft', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdBy',
+          foreignField: 'adminId',
+          as: 'createdByAdmin',
+        },
+      },
+      {
+        $unwind: { path: '$createdByAdmin', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'fnft.fractionalizedBy',
+          foreignField: 'adminId',
+          as: 'fractionalizedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$fractionalizedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'mintedBy',
+          foreignField: 'adminId',
+          as: 'mintedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$mintedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+    );
+    if (nft.assetId)
+      agg.push(
+        {
+          $lookup: {
+            from: 'Asset',
+            localField: 'assetId',
+            foreignField: 'itemId',
+            as: 'asset',
+          },
+        },
+        {
+          $unwind: {
+            path: '$asset',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'IAORequest',
+            localField: 'assetId',
+            foreignField: 'items',
+            as: 'iaoRequest',
+          },
+        },
+        {
+          $unwind: {
+            path: '$iaoRequest',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        {
+          $lookup: {
+            from: 'Fractor',
+            localField: 'asset.ownerId',
+            foreignField: 'fractorId',
+            as: 'fractor',
+          },
+        },
+        {
+          $unwind: {
+            path: '$fractor',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+      );
+    const queryNft = await this.dataService.nft.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+    const finalNft = this.nftBuilderService.convertNFTDetail(queryNft[0]);
+    return finalNft;
+  }
+
   async createNft(body: CreateNftDto, user: any) {
     if (body.assetId) {
       const assetItem = await this.dataService.asset.findOne({
@@ -196,13 +311,9 @@ export class NftService {
   }
 
   async editNFT(id: string, body: EditNftDto) {
-    const nft = await this.dataService.nft.findOne({
-      tokenId: id,
-    });
-    if (!nft) throw ApiError(ErrorCode.DEFAULT_ERROR, 'NFT not exists');
-    if (nft.status < NFT_STATUS.MINTED)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit NFT');
-    await this.dataService.nft.updateOne(
+    const nft = await this._validateNFT(id);
+
+    const res = await this.dataService.nft.findOneAndUpdate(
       {
         tokenId: id,
         updatedAt: nft['updatedAt'],
@@ -211,6 +322,54 @@ export class NftService {
         $set: body,
       },
     );
+    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update NFT');
     return { success: true };
+  }
+
+  async deleteNFT(id: string) {
+    const nft = await this._validateNFT(id);
+    const res = await this.dataService.nft.findOneAndUpdate(
+      {
+        tokenId: id,
+        updatedAt: nft['updatedAt'],
+      },
+      {
+        $set: {
+          deleted: true,
+        },
+      },
+    );
+    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not delete NFT');
+    return { success: true };
+  }
+
+  async editDisplayNFT(id: string) {
+    const nft = await this._validateNFT(id);
+    const res = await this.dataService.nft.findOneAndUpdate(
+      {
+        tokenId: id,
+        updatedAt: nft['updatedAt'],
+      },
+      [
+        {
+          $set: {
+            display: { $not: '$display' },
+          },
+        },
+      ],
+    );
+    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update NFT');
+    return { success: true };
+  }
+
+  private async _validateNFT(id: string) {
+    const nft = await this.dataService.nft.findOne({
+      tokenId: id,
+    });
+    if (!nft || nft.deleted)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'NFT not exists');
+    if (nft.status > NFT_STATUS.DRAFT)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit NFT');
+    return nft;
   }
 }

@@ -108,6 +108,9 @@ export class Nft {
 
   @Prop({ type: String, required: false })
   mintingHashTx?: string;
+
+  @Prop({ type: Boolean, required: false, default: false })
+  deleted: boolean;
 }
 export const NftSchema = SchemaFactory.createForClass(Nft);
 NftSchema.index({ tokenId: 1 });
