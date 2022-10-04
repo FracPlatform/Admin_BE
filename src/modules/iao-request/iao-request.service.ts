@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { DetailIAORequestDto, FilterIAORequestDto } from './dto/filter-iao-request.dto';
+import {
+  DetailIAORequestDto,
+  FilterIAORequestDto,
+} from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
 import moment = require('moment');
 import {
@@ -17,7 +20,19 @@ import { Role } from '../auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { EditReviewComment } from './dto/edit-review-comment.dto';
-import { DEFAULT_LIMIT, DEFAULT_OFFET } from 'src/common/constants';
+import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
+import {
+  DISPLAY_STATUS,
+  FilterDocumentDto,
+} from '../asset/dto/filter-document.dto';
+import { Utils } from 'src/common/utils';
+import {
+  CreateDocumentItemDto,
+  UpdateDocumentItemDto,
+} from '../asset/dto/documentItem.dto';
+import { ApiError } from 'src/common/api';
+import { MAX_FILE_SIZE } from 'src/datalayer/model/document-item.model';
+const ufs = require('url-file-size');
 
 export interface ListDocument {
   docs?: any[];
@@ -255,7 +270,11 @@ export class IaoRequestService {
     } as ListDocument;
   }
 
-  async findOne(id: string, user: any, filter: DetailIAORequestDto): Promise<IAORequest> {    
+  async findOne(
+    id: string,
+    user: any,
+    filter: DetailIAORequestDto,
+  ): Promise<IAORequest> {
     const iaoRequestRole = [
       Role.FractorBD,
       Role.HeadOfBD,
@@ -415,52 +434,54 @@ export class IaoRequestService {
         },
       },
     );
-    
+
     if (filter.isGetNft) {
-      agg.push({
-        $lookup: {
-          from: 'Nft',
-          let: { itemId: '$items' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ['$assetId', '$$itemId'] },
+      agg.push(
+        {
+          $lookup: {
+            from: 'Nft',
+            let: { itemId: '$items' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$assetId', '$$itemId'] },
+                },
               },
-            },
-            {
-              $project: {
-                assetCategory: 1,
-                name: 1,
-                tokenId: 1,
-                mediaUrl: 1,
-                status: 1,
+              {
+                $project: {
+                  assetCategory: 1,
+                  name: 1,
+                  tokenId: 1,
+                  mediaUrl: 1,
+                  status: 1,
+                },
               },
-            },
-          ],
-          as: 'nfts',
-        },
-      },
-      {
-        $addFields: {
-          nft: { $arrayElemAt: ['$nfts', 0] },
-        },
-      },
-      {
-        $addFields: {
-          itemDetail: {
-            _id: '$item._id',
-            itemId: '$item.itemId',
-            name: '$item.name',
-            media: '$item.media',
-            status: '$item.status',
-            nftName: '$nft.name',
-            tokenId: '$nft.tokenId',
-            nftMedia: '$nft.mediaUrl',
-            nftStatus: '$nft.status',
-            assetCategory: '$nft.assetCategory',
+            ],
+            as: 'nfts',
           },
         },
-      });
+        {
+          $addFields: {
+            nft: { $arrayElemAt: ['$nfts', 0] },
+          },
+        },
+        {
+          $addFields: {
+            itemDetail: {
+              _id: '$item._id',
+              itemId: '$item.itemId',
+              name: '$item.name',
+              media: '$item.media',
+              status: '$item.status',
+              nftName: '$nft.name',
+              tokenId: '$nft.tokenId',
+              nftMedia: '$nft.mediaUrl',
+              nftStatus: '$nft.status',
+              assetCategory: '$nft.assetCategory',
+            },
+          },
+        },
+      );
     } else {
       agg.push({
         $addFields: {
@@ -511,7 +532,10 @@ export class IaoRequestService {
     const iaos = await this.dataService.iaoRequest.aggregate(agg);
 
     if (iaos.length === 0) throw 'No data exists';
-    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos, filter.isGetNft);
+    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(
+      iaos,
+      filter.isGetNft,
+    );
     return iao;
   }
 
@@ -870,5 +894,174 @@ export class IaoRequestService {
       { ...update },
     );
     return iaoRequest.iaoId;
+  }
+
+  async searchDocument(id: string, filter: FilterDocumentDto) {
+    const query = {};
+    if (filter.keyword)
+      query['$or'] = [
+        {
+          'documents.name': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'documents.description': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'documents.uploadBy': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    if (filter.display === DISPLAY_STATUS.DISPLAY)
+      query['documents.display'] = true;
+    if (filter.display === DISPLAY_STATUS.NOT_DISPLAY)
+      query['documents.display'] = false;
+    const documents = await this.dataService.iaoRequest.aggregate([
+      {
+        $match: {
+          iaoId: id,
+        },
+      },
+      {
+        $unwind: { path: '$documents' },
+      },
+      { $match: query },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { id: '$documents.uploadBy' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$adminId', '$$id'] } } },
+            {
+              $project: {
+                email: 1,
+                fullname: 1,
+              },
+            },
+          ],
+          as: 'documents.uploaderAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$documents.uploaderAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: '$_id',
+          documents: { $push: '$documents' },
+        },
+      },
+      {
+        $project: { _id: 0 },
+      },
+    ]);
+    return documents.length ? documents[0].documents : documents;
+  }
+
+  async addDocumentItem(user: any, data: CreateDocumentItemDto, id: string) {
+    const filter = {
+      iaoId: id,
+    };
+    const iao = await this.dataService.iaoRequest.findOne(filter);
+    if (!iao) throw ApiError('', `Id of IAO is invalid`);
+
+    const fileSize = await ufs(data.fileUrl).catch(console.error);
+    if (fileSize > MAX_FILE_SIZE)
+      throw ApiError(ErrorCode.MAX_FILE_SIZE, `file name: ${data.name}`);
+
+    //create newDocuments
+    const newDoc = await this.iaoRequestBuilderService.createDocumentItem(
+      data,
+      fileSize,
+      user.adminId,
+    );
+
+    const newIaoRequest = await this.dataService.iaoRequest.findOneAndUpdate(
+      filter,
+      {
+        $push: {
+          documents: {
+            $each: [newDoc],
+            $position: 0,
+          },
+        },
+        $set: {
+          updatedBy: user.adminId,
+        },
+      },
+      { new: true },
+    );
+
+    return this.iaoRequestBuilderService.convertDocumentItem(
+      newIaoRequest.documents[0],
+      user,
+    );
+  }
+
+  async editDocumentItem(
+    user: any,
+    id: string,
+    docId: string,
+    data: UpdateDocumentItemDto,
+  ) {
+    const filter = {
+      iaoId: id,
+    };
+
+    const iao = await this.dataService.iaoRequest.findOne(filter);
+    if (!iao) throw ApiError('', `Id of IAO request is invalid`);
+    const updatedIao = await this.dataService.iaoRequest.findOneAndUpdate(
+      {
+        iaoId: id,
+        updatedAt: iao['updatedAt'],
+        'documents._id': docId,
+      },
+      {
+        $set: {
+          'documents.$.description': data.description,
+          'documents.$.display': data.display,
+          updatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedIao)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit document');
+    return { success: true };
+  }
+
+  async deleteDocumentItem(user, id: string, docId: string) {
+    const filter = {
+      iaoId: id,
+    };
+
+    const iao = await this.dataService.iaoRequest.findOne(filter);
+    if (!iao) throw ApiError('', `Id of IAO request is invalid`);
+
+    const updatedIao = await this.dataService.iaoRequest.findOneAndUpdate(
+      {
+        iaoId: id,
+        updatedAt: iao['updatedAt'],
+        'documents._id': docId,
+      },
+      {
+        $pull: { documents: { _id: docId } },
+        $set: {
+          updatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedIao)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete document');
+    return { success: true };
   }
 }
