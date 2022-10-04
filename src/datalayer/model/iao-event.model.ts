@@ -2,8 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type IAOEventDocument = IAOEvent & Document;
 
-export const IAO_EVENT_CHECK_HOURS = 24;
-
 export enum IAOEventStage {
   UPCOMING = 1,
   REGISTER_NOW = 2,

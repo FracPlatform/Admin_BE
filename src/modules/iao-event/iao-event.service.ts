@@ -10,7 +10,6 @@ import {
   ON_CHAIN_STATUS,
   IAO_REQUEST_STATUS,
   IAO_EVENT_STATUS,
-  IAO_EVENT_CHECK_HOURS,
 } from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { CreateWhitelistDto } from './dto/create-whilist.dto';
@@ -357,7 +356,8 @@ export class IaoEventService {
         registrationStartTime: {
           $lte: checkTimeDTO.date,
           $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() - IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -365,7 +365,8 @@ export class IaoEventService {
         registrationStartTime: {
           $gte: checkTimeDTO.date,
           $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() + IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -376,7 +377,8 @@ export class IaoEventService {
         registrationEndTime: {
           $lte: checkTimeDTO.date,
           $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() - IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -384,7 +386,8 @@ export class IaoEventService {
         registrationEndTime: {
           $gte: checkTimeDTO.date,
           $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() + IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -395,7 +398,8 @@ export class IaoEventService {
         participationStartTime: {
           $lte: checkTimeDTO.date,
           $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() - IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -403,7 +407,8 @@ export class IaoEventService {
         participationStartTime: {
           $gte: checkTimeDTO.date,
           $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() + IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -414,7 +419,8 @@ export class IaoEventService {
         participationEndTime: {
           $lte: checkTimeDTO.date,
           $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() - IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() -
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
@@ -422,7 +428,8 @@ export class IaoEventService {
         participationEndTime: {
           $gte: checkTimeDTO.date,
           $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() + IAO_EVENT_CHECK_HOURS,
+            checkTimeDTO.date.getHours() +
+              Number(process.env.IAO_EVENT_CHECK_HOURS),
           ),
         },
       },
