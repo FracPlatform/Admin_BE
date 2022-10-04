@@ -11,12 +11,14 @@ import { ASSET_CATEGORY, GetListNftDto } from './dto/get-list-nft.dto';
 import { NftBuilderService } from './nft.factory.service';
 import { get, isEqual } from 'lodash';
 import { EditNftDto } from './dto/edit-nft.dto';
+import { S3Service } from 'src/s3/s3.service';
 
 @Injectable()
 export class NftService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly nftBuilderService: NftBuilderService,
+    private readonly s3Service: S3Service,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -310,7 +312,8 @@ export class NftService {
 
   async editNFT(id: string, body: EditNftDto) {
     const nft = await this._validateNFT(id);
-    await this.dataService.nft.updateOne(
+
+    const res = await this.dataService.nft.findOneAndUpdate(
       {
         tokenId: id,
         updatedAt: nft['updatedAt'],
@@ -319,12 +322,13 @@ export class NftService {
         $set: body,
       },
     );
+    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update NFT');
     return { success: true };
   }
 
   async deleteNFT(id: string) {
     const nft = await this._validateNFT(id);
-    await this.dataService.nft.updateOne(
+    const res = await this.dataService.nft.findOneAndUpdate(
       {
         tokenId: id,
         updatedAt: nft['updatedAt'],
@@ -335,12 +339,13 @@ export class NftService {
         },
       },
     );
+    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not delete NFT');
     return { success: true };
   }
 
   async editDisplayNFT(id: string) {
     const nft = await this._validateNFT(id);
-    await this.dataService.nft.updateOne(
+    const res = await this.dataService.nft.findOneAndUpdate(
       {
         tokenId: id,
         updatedAt: nft['updatedAt'],
@@ -353,6 +358,7 @@ export class NftService {
         },
       ],
     );
+    if (!res) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update NFT');
     return { success: true };
   }
 
