@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { DocumentItem, DocumentItemSchema } from './document-item.model';
 
 export type IAORequestDocument = IAORequest & Document;
 
@@ -85,7 +86,7 @@ export class IAORequest {
 
   @Prop({ type: String })
   address: string;
-  
+
   @Prop({ type: Number })
   status: number;
 
@@ -106,6 +107,9 @@ export class IAORequest {
 
   @Prop({ type: ApprovedBy })
   secondReviewer: ApprovedBy;
+
+  @Prop({ type: [DocumentItemSchema] })
+  documents: DocumentItem[];
 }
 
 export const IAORequestSchema = SchemaFactory.createForClass(IAORequest);
