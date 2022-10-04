@@ -97,6 +97,7 @@ export const CONTRACT_EVENTS = {
   SET_ADMIN: 'SetAdminEvent',
   MINT_NFT: 'MintNFTEvent',
   MINT_F_NFT: 'MintFNFTEvent',
+  CREATE_ON_CHAIN: 'createIAOEvent',
 };
 
 export enum CHAINID {
