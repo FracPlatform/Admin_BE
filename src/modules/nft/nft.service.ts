@@ -66,8 +66,6 @@ export class NftService {
           break;
       }
     }
-    console.log(query);
-
     const agg = [];
     agg.push(
       {
