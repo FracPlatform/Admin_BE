@@ -318,32 +318,28 @@ export class IaoEventService {
     // check whitelist
     await this.checkWhitelist(data);
 
-    return await this.dataService.iaoEvent.findOneAndUpdate(
-      {
-        ...filter,
-        onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
-        updatedAt: currentIaoEvent['updatedAt'],
-      },
-      {
-        lastWhitelistUpdatedBy: user.adminId,
-        lastWhitelistUpdatedAt: Date.now(),
-        whitelist: data.whitelistAddresses,
-      },
-      { new: true },
-    );
+    return await this.dataService.whitelist.create({
+      iaoEventId: data.iaoEventId,
+      walletAddress: data.whitelistAddresses
+    });
   }
 
   async checkWhitelist(data: CreateWhitelistDto) {
-    //check duplicate
-    const listAddress: any = [...new Set(data.whitelistAddresses)];
+    let listWalletAddress = [];
 
-    //check incorrect
-    for (const address of listAddress) {
-      if (!ethers.utils.isAddress(address))
+    for (const [i, obj] of data.whitelistAddresses.entries()) {
+      // check duplicate
+      const isAddress = listWalletAddress.find((e) => e === obj['address']);
+      if (isAddress) {
+        data.whitelistAddresses.splice(i, 1);
+      };
+
+      //check incorrect
+      if (!ethers.utils.isAddress(obj['address']))
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid wallet address');
-    }
 
-    data.whitelistAddresses = listAddress;
+      listWalletAddress.push(obj['address']);
+    }
   }
 
   async checkRegistrationParticipation(
