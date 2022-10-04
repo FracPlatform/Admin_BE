@@ -244,7 +244,7 @@ export class IaoEventService {
         },
       },
     );
-    if (update.modifyCount === 0)
+    if (update.modifiedCount === 0)
       throw ApiError('', 'Cannot update this IAO event');
     return id;
   }
@@ -281,8 +281,24 @@ export class IaoEventService {
     return id;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} iaoEvent`;
+  async remove(id: string, user: any) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId: id,
+      isDeleted: false,
+      onChainStatus: ON_CHAIN_STATUS.DRAFT,
+    });
+    if (!iaoEvent) throw ApiError('', 'Data no exists');
+    const update = await this.dataService.iaoEvent.updateOne(
+      {
+        iaoEventId: id,
+        isDeleted: false,
+        onChainStatus: ON_CHAIN_STATUS.DRAFT,
+      },
+      { $set: { isDeleted: true, isDisplay: false, updatedBy: user.adminId } },
+    );
+    if (update.modifiedCount === 0)
+      throw ApiError('', 'Cannot delete this IAO event');
+    return id;
   }
 
   async createWhitelist(user, data: CreateWhitelistDto) {
