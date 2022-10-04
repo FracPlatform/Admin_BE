@@ -23,6 +23,7 @@ import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
 import { CreateWhitelistDto } from './dto/create-whilist.dto';
+import { CheckTimeDTO } from './dto/check-time.dto';
 
 @Controller('iao-event')
 @ApiTags('IAO Event')
@@ -141,6 +142,22 @@ export class IaoEventController {
   async remove(@Param('id') id: string, @Req() req: Request) {
     try {
       const iaoEventId = await this.iaoEventService.remove(id, req.user);
+      return new ApiSuccessResponse().success(iaoEventId, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Post('check-time')
+  @ApiOperation({ summary: 'Check time IAO event' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async checkRegistrationParticipation(@Body() data: CheckTimeDTO) {
+    try {
+      const iaoEventId =
+        await this.iaoEventService.checkRegistrationParticipation(data);
       return new ApiSuccessResponse().success(iaoEventId, '');
     } catch (error) {
       throw error;
