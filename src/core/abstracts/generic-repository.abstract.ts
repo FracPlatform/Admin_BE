@@ -6,6 +6,8 @@ export abstract class IGenericRepository<T> {
   abstract getById(id: string);
 
   abstract create(item: T, options?: object);
+  
+  abstract insertMany(item: T[], options?: object);
 
   abstract updateById(id: string, item: T);
 
