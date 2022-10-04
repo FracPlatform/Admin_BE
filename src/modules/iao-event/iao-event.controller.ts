@@ -156,9 +156,9 @@ export class IaoEventController {
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async checkRegistrationParticipation(@Body() data: CheckTimeDTO) {
     try {
-      const iaoEventId =
+      const iaoEvent =
         await this.iaoEventService.checkRegistrationParticipation(data);
-      return new ApiSuccessResponse().success(iaoEventId, '');
+      return new ApiSuccessResponse().success(iaoEvent, '');
     } catch (error) {
       throw error;
     }
