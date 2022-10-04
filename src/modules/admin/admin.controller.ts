@@ -32,7 +32,7 @@ export class AdminController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get Detail Admin' })
   async getDetail(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id') id: string,
     @GetUser() user,
   ) {
     const data = await this.adminService.getDetail(id, user);
@@ -67,7 +67,7 @@ export class AdminController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Edit admin' })
   async update(
-    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('id') id: string,
     @Body() updateAdminDto: UpdateAdminDto,
     @GetUser() user,
   ) {
