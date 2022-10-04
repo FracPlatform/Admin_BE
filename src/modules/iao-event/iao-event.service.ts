@@ -44,7 +44,7 @@ export class IaoEventService {
       contractAddress: createIaoEventDto.FNFTcontractAddress,
       status: F_NFT_STATUS.ACTIVE,
     });
-    if (!fnft) throw ApiError('E4', 'F-NFT not exists');
+    if (!fnft) throw ApiError('E4', 'F-NFT not exists or deactive');
 
     const query: any = {
       $or: [
