@@ -30,6 +30,7 @@ export class IaoEventService {
     createIaoEventDto: CreateIaoEventDto,
     user: any,
   ): Promise<IAOEvent> {
+    let error = {};
     // validate whitelistAnnouncementTime
     const date = createIaoEventDto.participationStartTime.toString();
     const participationEndTime = new Date(date);
@@ -38,13 +39,23 @@ export class IaoEventService {
     );
     createIaoEventDto['participationEndTime'] = participationEndTime;
     if (createIaoEventDto.whitelistAnnouncementTime > participationEndTime)
-      throw ApiError('E23', 'Must <= Participation_end_time');
+      error['whitelistAnnouncementTime'] =
+        "Whitelist announcement time can't be earlier than Reference participation end time";
 
     const fnft = await this.dataService.fnft.findOne({
       contractAddress: createIaoEventDto.FNFTcontractAddress,
       status: F_NFT_STATUS.ACTIVE,
     });
-    if (!fnft) throw ApiError('E4', 'F-NFT not exists or deactive');
+    if (!fnft)
+      error['FNFTcontractAddress'] = 'F-NFT contractAddress is invalid';
+
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      FNFTcontractAddress: createIaoEventDto.FNFTcontractAddress,
+      status: IAO_EVENT_STATUS.ACTIVE,
+    });
+    if (iaoEvent)
+      error['FNFTcontractAddress'] =
+        'This F-NFT has been selected for another IAO event';
 
     const query: any = {
       $or: [
@@ -78,7 +89,10 @@ export class IaoEventService {
     });
 
     if (existsIAOEvent)
-      throw ApiError('E9', 'Must be unique among list of IAO event name');
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+
+    if (error) throw ApiError('', '', error);
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
@@ -233,7 +247,7 @@ export class IaoEventService {
       updateIaoEventDto,
       user,
     );
-    const update = await this.dataService.iaoEvent.updateOne(
+    await this.dataService.iaoEvent.updateOne(
       {
         iaoEventId: id,
         isDeleted: false,
@@ -245,8 +259,7 @@ export class IaoEventService {
         },
       },
     );
-    if (update.modifiedCount === 0)
-      throw ApiError('', 'Cannot update this IAO event');
+
     return id;
   }
 
