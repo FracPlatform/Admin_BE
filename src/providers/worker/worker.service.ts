@@ -53,6 +53,9 @@ export class WorkerService {
         case CONTRACT_EVENTS.CREATE_IAO_EVENT_ON_CHAIN:
           await this._handleCreateIaoEventOnChain(requestData);
           break;
+        case CONTRACT_EVENTS.DEACTIVE_F_NFT:
+          await this._handleDeactiveFNFT(requestData);
+          break;
       }
     } catch (err) {
       this.logger.debug(err.message, err.stack);
@@ -233,5 +236,14 @@ export class WorkerService {
     } finally {
       session.endSession();
     }
+  }
+
+  private async _handleDeactiveFNFT(requestData: WorkerDataDto) {
+    /**
+     * update status of F-NFT
+     * update status of iao request if create F-NFT from iao request
+     * update status of NFTs
+     * update status of asset items
+     */
   }
 }
