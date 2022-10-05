@@ -120,6 +120,7 @@ NftSchema.index(
     unique: true,
     partialFilterExpression: {
       assetId: { $type: 'string' },
+      deleted: false,
     },
   },
 );
