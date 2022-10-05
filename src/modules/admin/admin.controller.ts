@@ -16,7 +16,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) { }
 
   @Get()
-  @Roles(Role.SuperAdmin, Role.OWNER)
+  @Roles(Role.SuperAdmin, Role.OWNER, Role.HeadOfBD)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter Admins' })
   async findAll(
