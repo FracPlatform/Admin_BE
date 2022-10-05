@@ -99,6 +99,7 @@ export const CONTRACT_EVENTS = {
   MINT_F_NFT: 'MintFNFTEvent',
   CREATE_IAO_EVENT_ON_CHAIN: 'CreateIAOEventEvent',
   DEACTIVE_F_NFT: 'DeactivateFNFTEvent',
+  DEACTIVE_IAO_EVENT: 'DeactivateIAOEvent',
 };
 
 export enum CHAINID {

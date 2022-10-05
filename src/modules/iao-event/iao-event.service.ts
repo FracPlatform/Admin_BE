@@ -11,10 +11,10 @@ import {
   F_NFT_STATUS,
   IAOEvent,
   IAO_EVENT_STATUS,
-  IAO_REQUEST_STATUS,
-  ON_CHAIN_STATUS,
   IAO_EVENT_STAGE,
   VAULT_TYPE,
+  IAO_REQUEST_STATUS,
+  ON_CHAIN_STATUS,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -465,7 +465,8 @@ export class IaoEventService {
       iaoEvent.participationStartTime,
       iaoEvent.participationEndTime,
       iaoEvent.vaultType,
-      fnft.totalSupply - iaoEvent.totalSupply > iaoEvent.vaultUnlockThreshold,
+      fnft.totalSupply - iaoEvent.totalSupply >
+        (iaoEvent.vaultUnlockThreshold * fnft.totalSupply) / 100,
     );
     iaoEvent['currentStage'] = currentStage;
     const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
