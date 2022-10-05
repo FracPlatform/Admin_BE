@@ -97,7 +97,7 @@ export class IaoEventService {
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
 
-    if (error) throw ApiError('', '', error);
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
