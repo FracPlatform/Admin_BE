@@ -105,6 +105,8 @@ export class IaoEventService {
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
+    createIaoEventDto['availableSupply'] = fnft.totalSupply;
+    createIaoEventDto['tokenSymbol'] = fnft.tokenSymbol;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
 
     const session = await this.connection.startSession();
@@ -240,11 +242,11 @@ export class IaoEventService {
               {
                 $expr: {
                   $gte: [
-                    { $subtract: ['$fNftTotalSupply', '$totalSupply'] },
+                    { $subtract: ['$totalSupply', '$availableSupply'] },
                     {
                       $multiply: [
                         '$vaultUnlockThreshold',
-                        '$fNftTotalSupply',
+                        '$totalSupply',
                         0.01,
                       ],
                     },
@@ -252,6 +254,28 @@ export class IaoEventService {
                 },
               },
             ],
+          },
+        ],
+      });
+    }
+
+    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+      dateQuery.push({
+        $and: [
+          {
+            participationEndTime: {
+              $lte: new Date(),
+            },
+          },
+          {
+            $expr: {
+              $lt: [
+                { $subtract: ['$totalSupply', '$availableSupply'] },
+                {
+                  $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+                },
+              ],
+            },
           },
         ],
       });
@@ -288,24 +312,11 @@ export class IaoEventService {
     const agg = [];
     agg.push(
       {
-        $lookup: {
-          from: 'Fnft',
-          localField: 'FNFTcontractAddress',
-          foreignField: 'contractAddress',
-          as: 'fNft',
-        },
-      },
-      {
-        $unwind: '$fNft',
-      },
-      {
         $project: {
           iaoEventId: '$iaoEventId',
           createdAt: '$createdAt',
           iaoEventName: '$iaoEventName',
           vaultType: '$vaultType',
-          fNftSymbol: '$fNft.tokenSymbol',
-          fNftTotalSupply: '$fNft.totalSupply',
           registrationStartTime: '$registrationStartTime',
           registrationEndTime: '$registrationEndTime',
           participationStartTime: '$participationStartTime',
@@ -314,6 +325,8 @@ export class IaoEventService {
           status: '$status',
           FNFTcontractAddress: '$FNFTcontractAddress',
           totalSupply: '$totalSupply',
+          availableSupply: '$availableSupply',
+          tokenSymbol: '$tokenSymbol',
           vaultUnlockThreshold: '$vaultUnlockThreshold',
           isDeleted: '$isDeleted',
         },

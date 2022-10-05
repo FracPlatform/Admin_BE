@@ -28,6 +28,8 @@ export class CreateIAOEventEntity {
   updatedBy: string;
   createdBy: string;
   totalSupply: number;
+  availableSupply: number;
+  tokenSymbol: string;
 }
 
 export class IAOEventDetailEntity {
