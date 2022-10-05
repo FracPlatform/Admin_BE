@@ -245,5 +245,25 @@ export class WorkerService {
      * update status of NFTs
      * update status of asset items
      */
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      /**
+       * impelement code here
+       */
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.DEACTIVE_F_NFT,
+        requestData,
+        requestData.metadata.setBy,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }
