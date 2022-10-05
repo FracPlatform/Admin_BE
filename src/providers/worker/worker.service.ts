@@ -155,23 +155,38 @@ export class WorkerService {
      * Update status nft to 3(FRACTIONLIZED)
      * Update status asset item to 5(FRACTIONALIZED)
      */
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      /**
+       * impelement code here
+       */
+      const admin = await this.dataServices.admin.findOne({
+        walletAddress: requestData.metadata.mintBy,
+      });
 
-    const admin = await this.dataServices.admin.findOne({
-      walletAddress: requestData.metadata.mintBy,
-    });
-
-    await this.dataServices.fnft.findOneAndUpdate(
-      { fnftId: requestData.metadata.fnftId },
-      {
-        mintedStatus: F_NFT_MINTED_STATUS.MINTED,
-        contractAddress: requestData.metadata.fracTokenAddr,
-        fractionalizedBy: admin.adminId,
-        fractionalizedOn: new Date(),
-        txhash: requestData.transactionHash,
-      },
-    );
-
-    this.socketGateway.sendMessage(SOCKET_EVENT.MINT_F_NFT_EVENT, requestData);
+      await this.dataServices.fnft.findOneAndUpdate(
+        { fnftId: requestData.metadata.fnftId },
+        {
+          mintedStatus: F_NFT_MINTED_STATUS.MINTED,
+          contractAddress: requestData.metadata.fracTokenAddr,
+          fractionalizedBy: admin.adminId,
+          fractionalizedOn: new Date(),
+          txhash: requestData.transactionHash,
+        },
+      );
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.MINT_F_NFT_EVENT,
+        requestData,
+        requestData.metadata.mintBy,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   private async _handleCreateIaoEventOnChain(requestData: WorkerDataDto) {
