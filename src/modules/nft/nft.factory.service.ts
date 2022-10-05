@@ -4,6 +4,7 @@ import { CommonService } from 'src/common-service/common.service';
 import { CacheKeyName, PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
+import { FNFT_DECIMAL } from 'src/datalayer/model';
 import { NFT_STATUS } from 'src/datalayer/model/nft.model';
 import {
   NftDetailEntity,
@@ -73,7 +74,7 @@ export class NftBuilderService {
       name: body.name,
       description: body.description,
       image: body.previewUrl ? body.previewUrl : body.mediaUrl,
-      animation_url: body.mediaUrl || '',
+      animation_url: body.previewUrl ? body.mediaUrl : '',
       animation_type: '',
       external_url: '',
       attributes: [...body.metadata],
@@ -83,12 +84,12 @@ export class NftBuilderService {
         responseType: 'stream',
       });
       const { fileType } = await FileType.stream(response.data);
-      nftMetadata.animation_type = fileType;
+      nftMetadata.animation_type = fileType.ext;
     }
     return nftMetadata;
   }
 
-  convertNFTDetail(data: any) {
+  async convertNFTDetail(data: any) {
     const nftDetail: NftDetailEntity = {
       tokenId: data.tokenId,
       nftType: data.nftType,
@@ -110,6 +111,7 @@ export class NftBuilderService {
         tokenSymbol: data.fnft?.tokenSymbol,
         totalSupply: data.fnft?.totalSupply,
         contractAddress: data.fnft?.contractAddress,
+        decimals: FNFT_DECIMAL,
       },
       asset: {
         status: data.asset?.status,
@@ -138,6 +140,13 @@ export class NftBuilderService {
       fractionalizationTxHash: data.fnft?.txhash,
       fractionalizedAt: data.fnft?.fractionalizedOn,
     };
+    if (nftDetail.previewUrl) {
+      const response = await axios.get(nftDetail.mediaUrl, {
+        responseType: 'stream',
+      });
+      const { fileType } = await FileType.stream(response.data);
+      nftDetail.mediaType = fileType.ext;
+    }
     return nftDetail;
   }
 
@@ -154,7 +163,7 @@ export class NftBuilderService {
         responseType: 'stream',
       });
       const { fileType } = await FileType.stream(response.data);
-      nftMetadata.animation_type = fileType;
+      nftMetadata.animation_type = fileType.ext;
       nftMetadata.animation_url = updatedData.mediaUrl;
       nftMetadata.image = updatedData.previewUrl;
     }
