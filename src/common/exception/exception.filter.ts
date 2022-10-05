@@ -17,11 +17,33 @@ export class AllExceptionFilter extends BaseExceptionFilter {
       this.logger.debug(`Error ${request.method} ${request.originalUrl}`);
       this.logger.debug(exception.message, exception.stack);
     }
-    if (errorName === 'ValidationError' || errorName === 'MongoServerError') {
+    if (errorName === 'ValidationError') {
       response.status(400).json({
         statusCode: 400,
         message: exception['message'],
       });
+    } else if (errorName === 'MongoServerError') {
+      // duplicate unique exception
+      if (exception['code'] === 11000) {
+        const fields = Object.keys(exception['keyPattern']);
+        const messages = [];
+        fields.forEach((field) => {
+          messages.push(
+            `${field} already existed!`,
+          );
+        });
+        response.status(400).json({
+          code: '',
+          statusCode: 400,
+          message: messages,
+        });
+      } else {
+        response.status(400).json({
+          code: '',
+          statusCode: 400,
+          message: exception['message'],
+        });
+      }
     } else {
       if (process.env.LOG_MONITOR && !(exception instanceof HttpException)) {
         const realIp =

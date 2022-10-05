@@ -2,7 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from '../../common/api';
 import { CONTRACT_EVENTS, PREFIX_ID } from '../../common/constants';
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
-import { ADMIN_STATUS, F_NFT_MINTED_STATUS } from '../../datalayer/model';
+import {
+  ADMIN_STATUS,
+  F_NFT_MINTED_STATUS,
+  F_NFT_STATUS,
+  F_NFT_TYPE,
+  IAO_EVENT_STATUS,
+  ON_CHAIN_STATUS,
+} from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
 import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
@@ -11,6 +18,7 @@ import { NFT_STATUS } from 'src/datalayer/model/nft.model';
 import { ASSET_STATUS } from 'src/datalayer/model/asset.model';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { CommonService } from 'src/common-service/common.service';
 const jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -20,6 +28,7 @@ export class WorkerService {
   constructor(
     private readonly dataServices: IDataServices,
     private readonly socketGateway: SocketGateway,
+    private readonly commonService: CommonService,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -41,6 +50,15 @@ export class WorkerService {
         case CONTRACT_EVENTS.MINT_F_NFT:
           await this._handleMintFNFTEvent(requestData);
           break;
+        case CONTRACT_EVENTS.CREATE_IAO_EVENT_ON_CHAIN:
+          await this._handleCreateIaoEventOnChain(requestData);
+          break;
+        case CONTRACT_EVENTS.DEACTIVE_F_NFT:
+          await this._handleDeactiveFNFT(requestData);
+          break;
+        case CONTRACT_EVENTS.DEACTIVE_IAO_EVENT:
+          await this._handleDeactiveIaoEvent(requestData);
+          break;
       }
     } catch (err) {
       this.logger.debug(err.message, err.stack);
@@ -53,7 +71,7 @@ export class WorkerService {
     if (+requestData.metadata.role === Role.Deactive) {
       // deactive
       await this.dataServices.admin.findOneAndUpdate(
-        { walletAddress: requestData.metadata.addr },
+        { adminId: requestData.metadata.adminId },
         {
           status: ADMIN_STATUS.INACTIVE,
           lastUpdateBy: requestData.metadata.setBy,
@@ -62,11 +80,12 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEACTIVE_ADMIN_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     } else {
       // active
       await this.dataServices.admin.findOneAndUpdate(
-        { walletAddress: requestData.metadata.addr },
+        { adminId: requestData.metadata.adminId },
         {
           status: ADMIN_STATUS.ACTIVE,
           lastUpdateBy: requestData.metadata.setBy,
@@ -75,6 +94,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.ACTIVE_ADMIN_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     }
   }
@@ -138,22 +158,204 @@ export class WorkerService {
      * Update status nft to 3(FRACTIONLIZED)
      * Update status asset item to 5(FRACTIONALIZED)
      */
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      /**
+       * impelement code here
+       */
+      const admin = await this.dataServices.admin.findOne({
+        walletAddress: requestData.metadata.mintBy,
+      });
 
+      await this.dataServices.fnft.findOneAndUpdate(
+        { fnftId: requestData.metadata.fnftId },
+        {
+          mintedStatus: F_NFT_MINTED_STATUS.MINTED,
+          contractAddress: requestData.metadata.fracTokenAddr,
+          fractionalizedBy: admin.adminId,
+          fractionalizedOn: new Date(),
+          txhash: requestData.transactionHash,
+        },
+      );
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.MINT_F_NFT_EVENT,
+        requestData,
+        requestData.metadata.mintBy,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleCreateIaoEventOnChain(requestData: WorkerDataDto) {
     const admin = await this.dataServices.admin.findOne({
-      walletAddress: requestData.metadata.mintBy,
+      $regex: requestData.metadata.createdBy,
+      $options: 'i',
     });
 
-    await this.dataServices.fnft.findOneAndUpdate(
-      { fnftId: requestData.metadata.fnftId },
-      {
-        mintedStatus: F_NFT_MINTED_STATUS.MINTED,
-        contractAddress: requestData.metadata.fracTokenAddr,
-        fractionalizedBy: admin.adminId,
-        fractionalizedOn: new Date(),
-        txhash: requestData.transactionHash,
-      },
+    const iaoId = this.commonService.decodeHexToString(
+      requestData.metadata.iaoId,
     );
 
-    this.socketGateway.sendMessage(SOCKET_EVENT.MINT_F_NFT_EVENT, requestData);
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // update status,onChainStatus,create by iao event
+      await this.dataServices.iaoEvent.updateOne(
+        {
+          iaoEventId: iaoId,
+          status: IAO_EVENT_STATUS.ACTIVE,
+          onChainStatus: ON_CHAIN_STATUS.DRAFT,
+          isDeleted: false,
+        },
+        {
+          $set: {
+            onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+            createdOnChainAt: new Date(),
+            createdOnChainBy: admin.adminId,
+          },
+        },
+        { session },
+      );
+
+      // update asset status
+      const fnft = await this.dataServices.fnft.findOne({
+        contractAddress: requestData.metadata.fracTokenAddress,
+        status: F_NFT_STATUS.ACTIVE,
+      });
+      if (fnft.fnftType === F_NFT_TYPE.AUTO_IMPORT) {
+        const iaoRequest = await this.dataServices.iaoRequest.findOne({
+          iaoId: fnft.iaoRequestId,
+        });
+        let items: any = iaoRequest.items;
+        items = items.map((i) => {
+          return { itemId: i };
+        });
+        await this.dataServices.asset.updateMany(
+          { $or: items },
+          { $set: { status: ASSET_STATUS.IAO_EVENT } },
+          { session },
+        );
+      }
+
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.CREATE_IAO_EVENT_ON_CHAIN,
+        requestData,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleDeactiveFNFT(requestData: WorkerDataDto) {
+    /**
+     * update status of F-NFT
+     * update status of iao request if create F-NFT from iao request
+     * update status of NFTs
+     * update status of asset items
+     */
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      /**
+       * impelement code here
+       */
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.DEACTIVE_F_NFT,
+        requestData,
+        requestData.metadata.setBy,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleDeactiveIaoEvent(requestData: WorkerDataDto) {
+    /**
+     * update status of iao event
+     * update status of asset
+     */
+
+    const admin = await this.dataServices.admin.findOne({
+      $regex: requestData.metadata.caller,
+      $options: 'i',
+    });
+
+    const iaoId = this.commonService.decodeHexToString(
+      requestData.metadata.iaoId,
+    );
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // update status,onChainStatus,create by iao event
+      await this.dataServices.iaoEvent.updateOne(
+        {
+          iaoEventId: iaoId,
+          status: IAO_EVENT_STATUS.ACTIVE,
+          onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+          isDeleted: false,
+        },
+        {
+          $set: {
+            status: IAO_EVENT_STATUS.INACTIVE,
+            updatedAt: new Date(),
+            updatedBy: admin.fullname,
+          },
+        },
+        { session },
+      );
+
+      // update asset status
+      const iaoEvent = await this.dataServices.iaoEvent.findOne({
+        iaoEventId: iaoId,
+      });
+      const fnft = await this.dataServices.fnft.findOne({
+        contractAddress: iaoEvent.FNFTcontractAddress,
+        status: F_NFT_STATUS.ACTIVE,
+      });
+      if (fnft.fnftType === F_NFT_TYPE.AUTO_IMPORT) {
+        const iaoRequest = await this.dataServices.iaoRequest.findOne({
+          iaoId: fnft.iaoRequestId,
+        });
+        let items: any = iaoRequest.items;
+        items = items.map((i) => {
+          return { itemId: i };
+        });
+        await this.dataServices.asset.updateMany(
+          { $or: items },
+          { $set: { status: ASSET_STATUS.FRACTIONALIZED } },
+          { session },
+        );
+      }
+      //
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.DEACTIVE_IAO_EVENT,
+        requestData,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }

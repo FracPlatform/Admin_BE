@@ -115,20 +115,82 @@
           {
             "indexed": false,
             "internalType": "address",
-            "name": "addr",
+            "name": "fractTokenAddress",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "setBy",
+            "type": "address"
+          }
+        ],
+        "name": "DeactivateFNFTEvent",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "bytes",
+            "name": "iaoId",
+            "type": "bytes"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "caller",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "fnftAddr",
+            "type": "address"
+          }
+        ],
+        "name": "DeactivateIAOEvent",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "buyer",
             "type": "address"
           },
           {
             "indexed": false,
             "internalType": "uint256",
-            "name": "id",
+            "name": "fund",
             "type": "uint256"
           },
           {
             "indexed": false,
             "internalType": "uint256",
-            "name": "totalTokenAmount",
+            "name": "tokenAmount",
             "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "totalFundDeposited",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "totalFNFT",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "bytes",
+            "name": "iaoId",
+            "type": "bytes"
           },
           {
             "indexed": false,
@@ -362,6 +424,18 @@
             "indexed": false,
             "internalType": "string",
             "name": "setBy",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "caller",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "string",
+            "name": "adminId",
             "type": "string"
           }
         ],
@@ -622,6 +696,32 @@
       {
         "inputs": [
           {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "deactivateFNFT",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
+          }
+        ],
+        "name": "deactivateIAOEvent",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
             "internalType": "address[]",
             "name": "",
             "type": "address[]"
@@ -813,37 +913,17 @@
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
           }
         ],
-        "name": "getNFTsOfNFT",
+        "name": "iaoEventIsDeactivated",
         "outputs": [
           {
-            "internalType": "uint256[]",
+            "internalType": "bool",
             "name": "",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address[]",
-            "name": "",
-            "type": "address[]"
+            "type": "bool"
           }
         ],
         "stateMutability": "view",
@@ -945,6 +1025,44 @@
           }
         ],
         "name": "isMinted",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "isSellingInIAOEvent",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
+          }
+        ],
+        "name": "isSuccessful",
         "outputs": [
           {
             "internalType": "bool",
@@ -1148,6 +1266,11 @@
             "internalType": "string",
             "name": "setBy",
             "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "adminId",
+            "type": "string"
           }
         ],
         "name": "revokeAdmin",
@@ -1170,6 +1293,11 @@
           {
             "internalType": "string",
             "name": "setBy",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "adminId",
             "type": "string"
           }
         ],
@@ -1370,6 +1498,12 @@
             "": "(0) fractorId, (1) iaoId"
           }
         },
+        "deactivateFNFT(address)": {
+          "details": "deactivate the FNFT address of the FNFT contract"
+        },
+        "deactivateIAOEvent(bytes)": {
+          "details": "deactivate IAO event iaoId"
+        },
         "depositNFTs(address[],uint256[],uint256[],uint256[],bytes)": {
           "details": "depositNFTs fractor deposit NFTs to lock these NFTs ** Params **  addrs collection address  tokenIds tokenId  tokenTypes 0: ERC721, 1: ERC1155  amount NFT amount: If token type is ERC721, amount = 1"
         },
@@ -1400,14 +1534,14 @@
         "renounceOwnership()": {
           "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
         },
-        "revokeAdmin(address,string)": {
+        "revokeAdmin(address,string,string)": {
           "details": "revokeAdmin ** Params **",
           "params": {
             "addr": "address",
             "setBy": "set by "
           }
         },
-        "setAdmin(address,uint256,string)": {
+        "setAdmin(address,uint256,string,string)": {
           "details": "setAdmin ** Params **",
           "params": {
             "addr": "address",
@@ -1474,13 +1608,13 @@
     "compilationTarget": {
       "contracts/implementations/ImplementationV1.sol": "ImplementationV1"
     },
-    "evmVersion": "byzantium",
+    "evmVersion": "london",
     "libraries": {},
     "metadata": {
       "bytecodeHash": "ipfs"
     },
     "optimizer": {
-      "enabled": true,
+      "enabled": false,
       "runs": 200
     },
     "remappings": []
@@ -1527,27 +1661,27 @@
       ]
     },
     "contracts/common/Upgradeable.sol": {
-      "keccak256": "0xfea986910b6c39ecd8ec7a129c5e60bed76ef647258606d863f890c522b37de2",
+      "keccak256": "0xd05954abba5fb5288c2a398109343a391ed5ab6716e594f4fa047b7243bdc55e",
       "license": "MIT",
       "urls": [
-        "bzz-raw://0d0781c6e50aa594e53904da7d107e88698af0c43e03fb2265a258414f438cd5",
-        "dweb:/ipfs/QmcwVvgCg2JMgWRK9Bc9uE5sxy7VcfWnRxDcGwhvNS5bMy"
+        "bzz-raw://8bacc39fb29d7c1f74f54ab0f695eba1e842769a2d7c1d9f521e10aaa4136a95",
+        "dweb:/ipfs/QmNh8QGR1EVgphPeWESPsFafzL2LWxTCP8P3wuJ4LPNPyZ"
       ]
     },
     "contracts/implementations/Implementation.sol": {
-      "keccak256": "0x2b7e004236b02b6eb3268f23e3d24b17a0fef6dd44f0ca160724ca8af48366ea",
+      "keccak256": "0xc8dba1f37be69c7767750f04204a2c09c19004d07a12b254aea9ea0d9912d119",
       "license": "MIT",
       "urls": [
-        "bzz-raw://1b1a574666f1eaf42a0d404aa8e8ef63654e77c8c3ec20720c31d83c66fa9dc9",
-        "dweb:/ipfs/QmUdPZUm9NtoXv43v1bDp2u6vcRzeTUyYrsW8UCrK1eg6g"
+        "bzz-raw://dbcb0ac87cee4be7ed54e2e9e4c2170fe84fcff4ad11476e3fea98ff32331670",
+        "dweb:/ipfs/QmZ3vy16RwsbiPC1Te5wR8Dckcyc1gRX2RAcpx1E3kFcXQ"
       ]
     },
     "contracts/implementations/ImplementationV1.sol": {
-      "keccak256": "0x279e6f568e23318c9ab13fe18add1431edd4b711e0755c52d25994675ce7362d",
+      "keccak256": "0x3ff4987ade5a9fc1c71c90842d227dd99c65bcea4d9ea8cc78003d8098bf10d7",
       "license": "MIT",
       "urls": [
-        "bzz-raw://ac9d99ec802385790b003fcfa64eb243f76dd005aa82b5d7f15923f41673e2a5",
-        "dweb:/ipfs/QmUbgdWGHbfE4DUYfKM3sv52ZiJYJu65WynHEmZcQ2Fnfc"
+        "bzz-raw://099761ae8e58e812b60a788ab216eaa3a00af852f53dc2db14609f1d02607374",
+        "dweb:/ipfs/QmUoLw6JjajoCnqsKGHUCV8enDo2ZCCMEZRfG2a8UGPfey"
       ]
     }
   },

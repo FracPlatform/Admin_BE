@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type IAOEventDocument = IAOEvent & Document;
 
-export enum IAOEventStage {
+export enum IAO_EVENT_STAGE {
   UPCOMING = 1,
   REGISTER_NOW = 2,
   ON_SALE_SOON = 3,
@@ -128,7 +128,7 @@ export class IAOEvent {
   @Prop({ type: Number })
   onChainStatus: number;
 
-  @Prop({ type: Number, default: null })
+  @Prop({ type: Number, default: IAO_EVENT_STATUS.ACTIVE })
   status?: number;
 
   @Prop({ type: String })
@@ -151,6 +151,12 @@ export class IAOEvent {
 
   @Prop({ type: Number })
   totalSupply: number;
+
+  @Prop({ type: Number })
+  availableSupply: number;
+
+  @Prop({ type: String })
+  tokenSymbol: string;
 
   @Prop({ type: Boolean, default: false })
   isDeleted?: boolean;

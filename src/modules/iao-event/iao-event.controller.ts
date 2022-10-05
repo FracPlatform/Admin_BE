@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
@@ -19,13 +18,20 @@ import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { Request } from 'express';
+import { Request, response } from 'express';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
-import { CreateWhitelistDto, DeleteWhitelistDto, ExportWhitelistDto, FilterWhitelistDto } from './dto/whitelist.dto';
+import {
+  CreateWhitelistDto,
+  DeleteWhitelistDto,
+  FilterWhitelistDto,
+  ExportWhitelistDto,
+} from './dto/whitelist.dto';
 import { CheckTimeDTO } from './dto/check-time.dto';
+import { RolesGuard } from '../auth/guard/roles.guard';
+import { GetListIaoEventDto } from './dto/get-list-iao-event.dto';
 
 @Controller('iao-event')
 @ApiTags('IAO Event')
@@ -58,10 +64,7 @@ export class IaoEventController {
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter whitelist' })
-  async getListWhitelist(
-    @GetUser() user,
-    @Query() filter: FilterWhitelistDto
-  ) {
+  async getListWhitelist(@GetUser() user, @Query() filter: FilterWhitelistDto) {
     const data = await this.iaoEventService.getListWhitelist(user, filter);
     return new ApiSuccessResponse().success(data, '');
   }
@@ -114,8 +117,17 @@ export class IaoEventController {
   }
 
   @Get()
-  findAll() {
-    return this.iaoEventService.findAll();
+  @ApiOperation({ summary: 'Get list IAO events' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async findAll(@Query() filter: GetListIaoEventDto) {
+    try {
+      const responseData = await this.iaoEventService.finAll(filter);
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Get(':id')

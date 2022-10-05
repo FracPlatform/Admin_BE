@@ -51,6 +51,8 @@ export class IaoEventBuilderService {
       updatedBy: user.adminId,
       createdBy: user.adminId,
       totalSupply: createIaoEventDto['totalSupply'],
+      availableSupply: createIaoEventDto['availableSupply'],
+      tokenSymbol: createIaoEventDto['tokenSymbol'],
     };
   }
 
@@ -63,7 +65,7 @@ export class IaoEventBuilderService {
       iaoEventId: iaoEvent.iaoEventId,
       status: iaoEvent.status,
       onChainStatus: iaoEvent.onChainStatus,
-      currentStage: 1,
+      currentStage: iaoEvent['currentStage'],
       isDisplay: iaoEvent.isDisplay,
       chainId: iaoEvent.chainId,
       FNFTcontractAddress: iaoEvent.FNFTcontractAddress,
@@ -121,7 +123,7 @@ export class IaoEventBuilderService {
       registrationEndTime: iaoEvent.registrationEndTime,
       iaoEventDuration: iaoEvent.iaoEventDuration,
       participationStartTime: iaoEvent.participationStartTime,
-      iaoEventVaultType: iaoEvent.vaultType,
+      vaultType: iaoEvent.vaultType,
       acceptedCurrencyAddress: iaoEvent.acceptedCurrencyAddress,
       exchangeRate: iaoEvent.exchangeRate,
       percentageOffered: iaoEvent.percentageOffered,
@@ -135,6 +137,7 @@ export class IaoEventBuilderService {
       whitelistRegistrationUrl: iaoEvent.whitelistRegistrationUrl,
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
+      updatedAt: new Date(),
     };
   }
 

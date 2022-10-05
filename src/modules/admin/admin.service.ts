@@ -1,17 +1,26 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpStatus,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
 import { ObjectId } from 'mongodb';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { CreateAdminDto, FilterAdminDto, UpdateAdminDto } from './dto/admin.dto';
+import {
+  CreateAdminDto,
+  FilterAdminDto,
+  UpdateAdminDto,
+} from './dto/admin.dto';
 import { ListDocument } from 'src/common/common-type';
 import { AdminBuilderService } from './admin.factory.service';
 import { ApiError } from 'src/common/api';
 import * as randomatic from 'randomatic';
 import { Role } from '../auth/role.enum';
-import { ADMIN_STATUS } from 'src/datalayer/model';
+import { Admin, ADMIN_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class AdminService {
@@ -37,9 +46,24 @@ export class AdminService {
     }
 
     if (filter.role) {
+      this._validateFilterRole(user, filter.role);
       const filterRoles = filter.role.split(',');
       const roles: any = filterRoles.map((e) => parseInt(e));
       query['role'] = { $in: roles };
+    } else {
+      if (user.role === Role.HeadOfBD) {
+        query['role'] = { $in: [Role.HeadOfBD, Role.FractorBD, Role.MasterBD] };
+      } else {
+        query['role'] = {
+          $in: [
+            Role.SuperAdmin,
+            Role.OperationAdmin,
+            Role.HeadOfBD,
+            Role.FractorBD,
+            Role.MasterBD,
+          ],
+        };
+      }
     }
 
     if (filter.status) {
@@ -116,7 +140,9 @@ export class AdminService {
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Email or walletAddress already exists');
 
       // create referral
-      const referral = [Role.FractorBD, Role.MasterBD].includes(data.role) ? await this.randomReferal() : null;
+      const referral = [Role.FractorBD, Role.MasterBD].includes(data.role)
+        ? await this.randomReferal()
+        : null;
 
       const adminObj = await this.adminBuilderService.createAdmin(
         data,
@@ -132,7 +158,7 @@ export class AdminService {
     } catch (error) {
       await session.abortTransaction();
       this.logger.debug(error.message);
-      throw ApiError('', error.message);
+      throw error;
     } finally {
       session.endSession();
     }
@@ -146,11 +172,18 @@ export class AdminService {
     };
 
     const currentAdmin = await this.dataServices.admin.findOne(filter);
-    if (!currentAdmin) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+    if (!currentAdmin)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    if (currentAdmin.role == Role.OWNER && user.role !== Role.OWNER)
+      throw new ForbiddenException('Forbidden');
 
     if (data.email) {
-      const isEmail = await this.dataServices.admin.findOne({ email: data.email });
-      if (isEmail) throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
+      const isEmail = await this.dataServices.admin.findOne({
+        email: data.email,
+      });
+      if (isEmail)
+        throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
     }
 
     const updateAdminObj = await this.adminBuilderService.updateAddmin(
@@ -158,10 +191,14 @@ export class AdminService {
       user.adminId,
     );
 
-    return await this.dataServices.admin.findOneAndUpdate({
-      ...filter,
-      updatedAt: currentAdmin['updatedAt'],
-    }, updateAdminObj, { new: true });
+    return await this.dataServices.admin.findOneAndUpdate(
+      {
+        ...filter,
+        updatedAt: currentAdmin['updatedAt'],
+      },
+      updateAdminObj,
+      { new: true },
+    );
   }
 
   async getDetail(id: string, user: any) {
@@ -171,16 +208,27 @@ export class AdminService {
     };
 
     const currentAdmin = await this.dataServices.admin.findOne(filter);
-    if (!currentAdmin) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+    if (!currentAdmin)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
 
     // create adminIds
     let adminIds = [currentAdmin.createBy, currentAdmin.lastUpdateBy];
     adminIds = [...new Set(adminIds)];
 
-    const relatedAdminList = await this.dataServices.admin.findMany({ adminId: { $in: adminIds } }, { adminId: 1, fullname: 1 });
-    if (!relatedAdminList.length) throw ApiError(ErrorCode.DEFAULT_ERROR, 'related Admin List not already exists');
+    const relatedAdminList = await this.dataServices.admin.findMany(
+      { adminId: { $in: adminIds } },
+      { adminId: 1, fullname: 1 },
+    );
+    if (!relatedAdminList.length)
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'related Admin List not already exists',
+      );
 
-    return await this.adminBuilderService.convertAdminDetail(currentAdmin, relatedAdminList);
+    return await this.adminBuilderService.convertAdminDetail(
+      currentAdmin,
+      relatedAdminList,
+    );
   }
 
   async getInforAdmin(id: string) {
@@ -191,7 +239,8 @@ export class AdminService {
     };
 
     const currentAdmin = await this.dataServices.admin.findOne(filter);
-    if (!currentAdmin) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+    if (!currentAdmin)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
 
     return await this.adminBuilderService.createInformationAdmin(currentAdmin);
   }
@@ -202,5 +251,56 @@ export class AdminService {
     if (!userExisted) return referral;
 
     return await this.randomReferal();
+  }
+
+  async deleteAdmin(caller: Admin, adminId: string) {
+    const admin = await this.dataServices.admin.findOne({ adminId: adminId });
+    if (admin.role === Role.SuperAdmin && caller.role !== Role.OWNER) {
+      throw new ForbiddenException(
+        'Only owner contract can delete Super Admin',
+      );
+    }
+    if (admin.role === Role.OWNER) {
+      throw ApiError('', 'Not found admin');
+    }
+    await this.dataServices.admin.updateOne(
+      { adminId: adminId },
+      {
+        $set: {
+          deleted: true,
+        },
+      },
+    );
+    return;
+  }
+
+  private _validateFilterRole(user: any, filterRoles: string) {
+    if (user.role === Role.HeadOfBD) {
+      const roles = filterRoles.split(',');
+
+      roles.forEach((role) => {
+        if (
+          ![
+            Role.SuperAdmin.toString(),
+            Role.OperationAdmin.toString(),
+            Role.HeadOfBD.toString(),
+            Role.FractorBD.toString(),
+            Role.MasterBD.toString(),
+          ].includes(role)
+        ) {
+          throw ApiError(ErrorCode.INVALID_DATA, 'role is invalid');
+        }
+      });
+
+      if (
+        roles.includes(Role.OWNER.toString()) ||
+        roles.includes(Role.SuperAdmin.toString()) ||
+        roles.includes(Role.OperationAdmin.toString())
+      ) {
+        throw new ForbiddenException(
+          "You can't filter admin role: Super Admin, Operation Admin",
+        );
+      }
+    }
   }
 }
