@@ -415,8 +415,8 @@ export class IaoEventService {
     // check Iao-event
     await this.checkIaoEvent(iaoEventId);
 
-    let filter = { iaoEventId, deleted: false };
-    let option = {};
+    const filter = { iaoEventId, deleted: false };
+    const option = {};
 
     if (data.isClearAll) {
       option['deleted'] = true;
