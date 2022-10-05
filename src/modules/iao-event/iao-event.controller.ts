@@ -11,6 +11,7 @@ import {
   HttpCode,
   HttpStatus,
   Put,
+  Query,
 } from '@nestjs/common';
 import { IaoEventService } from './iao-event.service';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -22,7 +23,7 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
-import { CreateWhitelistDto } from './dto/create-whilist.dto';
+import { CreateWhitelistDto, DeleteWhitelistDto, FilterWhitelistDto } from './dto/whitelist.dto';
 import { CheckTimeDTO } from './dto/check-time.dto';
 
 @Controller('iao-event')
@@ -51,11 +52,24 @@ export class IaoEventController {
     }
   }
 
+  @Get('/whitelist')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Filter whitelist' })
+  async getListWhitelist(
+    @GetUser() user,
+    @Query() filter: FilterWhitelistDto
+  ) {
+    const data = await this.iaoEventService.getListWhitelist(user, filter);
+    return new ApiSuccessResponse().success(data, '');
+  }
+
   @Post('/whitelist')
   @UseGuards(JwtAuthGuard)
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a whitelist"' })
+  @ApiOperation({ summary: 'Create a whitelist' })
   async createWhitelist(
     @Body() createWhitelistDto: CreateWhitelistDto,
     @GetUser() user,
@@ -65,6 +79,24 @@ export class IaoEventController {
       createWhitelistDto,
     );
     return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Delete('/whitelist/:iaoEventId')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Edit record in whitelist' })
+  async removeWhitelist(
+    @Param('iaoEventId') iaoEventId: string,
+    @Query() deleteWhitelistDto: DeleteWhitelistDto,
+    @GetUser() user,
+  ) {
+    const response = await this.iaoEventService.removeWhitelist(
+      iaoEventId,
+      user,
+      deleteWhitelistDto,
+    );
+    return new ApiSuccessResponse().success(response, '');
   }
 
   @Get()

@@ -22,7 +22,10 @@ export class Whitelist {
   iaoEventId: string;
 
   @Prop({ type: Array })
-  walletAddress: Address[];
+  whiteListAddresses: Address[];
+
+  @Prop({ type: Boolean, default: false })
+  deleted: boolean;
 }
 
 export const WhitelistSchema = SchemaFactory.createForClass(Whitelist);
