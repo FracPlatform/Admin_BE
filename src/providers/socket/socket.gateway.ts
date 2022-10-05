@@ -36,6 +36,6 @@ export class SocketGateway
   sendMessage(event: any, data: any, caller?: string) {
     const room = caller ? `${event}_${caller}` : event;
     this.server.emit(room, data);
-    this.logger.log(`Send event=${event}, data=${JSON.stringify(data)}`);
+    this.logger.log(`Send event=${room}, data=${JSON.stringify(data)}`);
   }
 }
