@@ -63,7 +63,7 @@ export class IaoEventBuilderService {
       iaoEventId: iaoEvent.iaoEventId,
       status: iaoEvent.status,
       onChainStatus: iaoEvent.onChainStatus,
-      currentStage: 1,
+      currentStage: iaoEvent['currentStage'],
       isDisplay: iaoEvent.isDisplay,
       chainId: iaoEvent.chainId,
       FNFTcontractAddress: iaoEvent.FNFTcontractAddress,
