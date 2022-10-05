@@ -282,7 +282,7 @@ export class NftService {
         itemId: body.assetId,
       });
       if (!assetItem) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid asset');
-      if (assetItem.status < ASSET_STATUS.IAO_APPROVED)
+      if (assetItem.status !== ASSET_STATUS.IAO_APPROVED)
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid asset');
     }
     if (body.assetType) {
