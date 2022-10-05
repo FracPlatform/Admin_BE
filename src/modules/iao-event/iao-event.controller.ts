@@ -12,6 +12,7 @@ import {
   HttpStatus,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import { IaoEventService } from './iao-event.service';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -23,7 +24,7 @@ import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { GetUser } from '../auth/get-user.decorator';
-import { CreateWhitelistDto, DeleteWhitelistDto, FilterWhitelistDto } from './dto/whitelist.dto';
+import { CreateWhitelistDto, DeleteWhitelistDto, ExportWhitelistDto, FilterWhitelistDto } from './dto/whitelist.dto';
 import { CheckTimeDTO } from './dto/check-time.dto';
 
 @Controller('iao-event')
@@ -63,6 +64,19 @@ export class IaoEventController {
   ) {
     const data = await this.iaoEventService.getListWhitelist(user, filter);
     return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Get('/export-whitelist')
+  @UseGuards(JwtAuthGuard)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Export whitelist' })
+  async exportWhitelist(
+    @GetUser() user,
+    @Query() filter: ExportWhitelistDto,
+    @Res() res: Response,
+  ) {
+    return await this.iaoEventService.exportWhitelist(user, filter, res);
   }
 
   @Post('/whitelist')

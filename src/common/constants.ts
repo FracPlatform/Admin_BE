@@ -104,3 +104,5 @@ export enum CHAINID {
   BSC_MAINNET = 56,
   BSC_TESTNET = 97,
 }
+
+export const CVS_NAME = '[Frac]_IAOwhitelist_';
