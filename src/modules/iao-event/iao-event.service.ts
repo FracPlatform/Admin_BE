@@ -336,7 +336,7 @@ export class IaoEventService {
 
         return 0;
       });
-    };
+    }
 
     // offset && limit
     whiteListAddresses = whiteListAddresses.slice(
