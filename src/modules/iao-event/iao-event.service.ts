@@ -1,27 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
+import { ethers } from 'ethers';
+import { get } from 'lodash';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
+import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   F_NFT_STATUS,
   IAOEvent,
-  ON_CHAIN_STATUS,
-  IAO_REQUEST_STATUS,
   IAO_EVENT_STATUS,
+  IAO_REQUEST_STATUS,
+  ON_CHAIN_STATUS,
 } from 'src/datalayer/model';
+import { ListDocument } from '../iao-request/iao-request.service';
+import { CheckTimeDTO } from './dto/check-time.dto';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
+import { GetListIaoEventDto } from './dto/get-list-iao-event.dto';
+import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import {
   CreateWhitelistDto,
   DeleteWhitelistDto,
   FilterWhitelistDto,
 } from './dto/whitelist.dto';
-import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
-import { ethers } from 'ethers';
-import { CheckTimeDTO } from './dto/check-time.dto';
-import { ListDocument } from '../iao-request/iao-request.service';
 
 @Injectable()
 export class IaoEventService {
@@ -127,8 +130,126 @@ export class IaoEventService {
     }
   }
 
-  findAll() {
-    return `This action returns all iaoEvent`;
+  async finAll(filter: GetListIaoEventDto) {
+    const query = { isDeleted: false };
+    const dateQuery = [];
+    if (filter.keyword) {
+      query['$or'] = [
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          iaoEventId: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          fNftSymbol: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          FNFTcontractAddress: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    }
+    if (filter.registrationFromDate) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(filter.registrationFromDate),
+        },
+      });
+    }
+    if (filter.registrationToDate) {
+      dateQuery.push({
+        registrationEndTime: {
+          $lte: new Date(filter.registrationToDate),
+        },
+      });
+    }
+    if (filter.particicationFromDate) {
+      dateQuery.push({
+        participationStartTime: {
+          $gte: new Date(filter.particicationFromDate),
+        },
+      });
+    }
+    if (filter.particicationToDate) {
+      dateQuery.push({
+        participationEndTime: {
+          $lte: new Date(filter.particicationFromDate),
+        },
+      });
+    }
+    if (dateQuery.length) query['$and'] = dateQuery;
+    const agg = [];
+    agg.push(
+      {
+        $lookup: {
+          from: 'Fnft',
+          localField: 'FNFTcontractAddress',
+          foreignField: 'contractAddress',
+          as: 'fNft',
+        },
+      },
+      {
+        $unwind: '$fNft',
+      },
+      {
+        $project: {
+          iaoEventId: '$iaoEventId',
+          createdAt: '$createdAt',
+          iaoEventName: '$iaoEventName',
+          vaultType: '$vaultType',
+          fNftSymbol: '$fNft.tokenSymbol',
+          registrationStartTime: '$registrationStartTime',
+          registrationEndTime: '$registrationEndTime',
+          participationStartTime: '$participationStartTime',
+          participationEndTime: '$participationEndTime',
+          onChainStatus: '$onChainStatus',
+          status: '$status',
+          FNFTcontractAddress: '$FNFTcontractAddress',
+          isDeleted: '$isDeleted',
+        },
+      },
+      {
+        $match: query,
+      },
+    );
+
+    let sort: any = { $sort: {} };
+    if (filter.sortField && filter.sortType) {
+      sort['$sort'][filter.sortField] = filter.sortType;
+    } else {
+      sort = { $sort: { createdAt: -1 } };
+    }
+    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
+    agg.push({
+      $facet: {
+        count: [{ $count: 'count' }],
+        data: dataReturnFilter,
+      },
+    });
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || 10 });
+    const dataQuery = await this.dataService.iaoEvent.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+    const data = get(dataQuery, [0, 'data']);
+    const count = get(dataQuery, [0, 'count', 0, 'count']) || 0;
+
+    return {
+      totalDocs: count,
+      docs: data,
+    };
   }
 
   async findOne(id: string) {
