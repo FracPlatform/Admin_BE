@@ -1,35 +1,51 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { IaoRequestService } from './iao-request.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { DetailIAORequestDto, FilterIAORequestDto } from './dto/filter-iao-request.dto';
+import {
+  DetailIAORequestDto,
+  FilterIAORequestDto,
+} from './dto/filter-iao-request.dto';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { ApiError } from 'src/common/api';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Request } from 'express';
 import { EditReviewComment } from './dto/edit-review-comment.dto';
+import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/role.enum';
+import { FilterDocumentDto } from '../asset/dto/filter-document.dto';
+import { ErrorCode } from 'src/common/constants';
+import {
+  CreateDocumentItemDto,
+  UpdateDocumentItemDto,
+} from '../asset/dto/documentItem.dto';
+import { GetUser } from '../auth/get-user.decorator';
+import { ParseObjectIdPipe } from 'src/common/validation/parse-objectid.pipe';
+import { RolesGuard } from '../auth/guard/roles.guard';
 
 @Controller('iao-request')
 @ApiTags('IAO Request')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth()
 export class IaoRequestController {
   constructor(private readonly iaoRequestService: IaoRequestService) {}
 
   @Get()
   @ApiOperation({ summary: 'List IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async findAll(@Query() filter: FilterIAORequestDto, @Req() req: Request) {
     const data = await this.iaoRequestService.findAll(filter, req.user);
     return new ApiSuccessResponse().success(data, '');
@@ -38,15 +54,17 @@ export class IaoRequestController {
   @Get(':requestId')
   @ApiOperation({ summary: 'IAO request detail' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async findOne(
     @Param('requestId') requestId: string,
     @Query() filter: DetailIAORequestDto,
     @Req() req: Request,
   ) {
     try {
-      const data = await this.iaoRequestService.findOne(requestId, req.user, filter);
+      const data = await this.iaoRequestService.findOne(
+        requestId,
+        req.user,
+        filter,
+      );
       return new ApiSuccessResponse().success(data, '');
     } catch (error) {
       throw ApiError('', 'Get iao request detail error');
@@ -56,8 +74,6 @@ export class IaoRequestController {
   @Post('first-approve')
   @ApiOperation({ summary: 'First approve IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async firstApproveIaoRequest(
     @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
     @Req() req: Request,
@@ -76,8 +92,6 @@ export class IaoRequestController {
   @Post('second-approve')
   @ApiOperation({ summary: 'Second approve IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async secondApproveIaoRequest(
     @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
     @Req() req: Request,
@@ -96,8 +110,6 @@ export class IaoRequestController {
   @Post('first-reject')
   @ApiOperation({ summary: 'First reject IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async firstRejectIaoRequest(
     @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
     @Req() req: Request,
@@ -116,8 +128,6 @@ export class IaoRequestController {
   @Post('second-reject')
   @ApiOperation({ summary: 'Second reject IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async secondRejectIaoRequest(
     @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
     @Req() req: Request,
@@ -136,8 +146,6 @@ export class IaoRequestController {
   @Post('change-to-draft')
   @ApiOperation({ summary: 'Change to draft IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async changeToDraftIaoRequest(
     @Body() approveIaoRequestDTO: ApproveIaoRequestDTO,
     @Req() req: Request,
@@ -156,8 +164,6 @@ export class IaoRequestController {
   @Post('edit-review-comment')
   @ApiOperation({ summary: 'Edit review comment IAO request' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   async EditReviewComment(
     @Body() editReviewComment: EditReviewComment,
     @Req() req: Request,
@@ -171,5 +177,91 @@ export class IaoRequestController {
     } catch (error) {
       throw ApiError('', error);
     }
+  }
+
+  @Get('search-document-items/:id')
+  @ApiOperation({ summary: 'Search documents in IAO request' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
+  async searchDocument(
+    @Param('id') id: string,
+    @Query() filterDocument: FilterDocumentDto,
+  ) {
+    try {
+      const responseData = await this.iaoRequestService.searchDocument(
+        id,
+        filterDocument,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, error.message);
+    }
+  }
+
+  @Post('add-document-items/:id')
+  @ApiOperation({ summary: 'Create documentItem for IAO request' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
+  async addDocumentItem(
+    @Body() createDocumentItemDto: CreateDocumentItemDto,
+    @GetUser() user,
+    @Param('id') id: string,
+  ) {
+    const data = await this.iaoRequestService.addDocumentItem(
+      user,
+      createDocumentItemDto,
+      id,
+    );
+    return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Put('edit-document-items/:iaoRequestId/:docId')
+  @ApiOperation({ summary: 'Edit documentItem for IAO request' })
+  @Roles(
+    Role.FractorBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+  )
+  async editDocumentItem(
+    @Param('iaoRequestId') id: string,
+    @Param('docId', ParseObjectIdPipe) docId: string,
+    @Body() updateDocumentItemDto: UpdateDocumentItemDto,
+    @GetUser() user,
+  ) {
+    const data = await this.iaoRequestService.editDocumentItem(
+      user,
+      id,
+      docId,
+      updateDocumentItemDto,
+    );
+    return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Delete('delete-document-items/:iaoRequestId/:docId')
+  @ApiOperation({ summary: 'Delete documentItem for IAO request' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async deleteDocumentItem(
+    @Param('iaoRequestId') id: string,
+    @Param('docId', ParseObjectIdPipe) docId: string,
+    @GetUser() user,
+  ) {
+    const data = await this.iaoRequestService.deleteDocumentItem(
+      user,
+      id,
+      docId,
+    );
+    return new ApiSuccessResponse().success(data, '');
   }
 }

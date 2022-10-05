@@ -4,6 +4,8 @@ import {
   IAORequest,
   IAO_REQUEST_STATUS,
 } from 'src/datalayer/model';
+import { DocumentItemEntity } from 'src/entity';
+import { CreateDocumentItemDto } from '../asset/dto/documentItem.dto';
 import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 
 @Injectable()
@@ -60,5 +62,36 @@ export class IaoRequestBuilderService {
       comment: dto.comment,
       createdAt: new Date(),
     };
+  }
+
+  async createDocumentItem(data: CreateDocumentItemDto, size, uploadBy) {
+    const documentItem: DocumentItemEntity = {
+      name: data.name,
+      description: data.description || '',
+      fileUrl: data.fileUrl,
+      size,
+      uploadBy,
+    };
+    return documentItem;
+  }
+
+  async convertDocumentItem(data: any, user: any) {
+    const documentItem: DocumentItemEntity = {
+      name: data.name,
+      description: data.description,
+      fileUrl: data.fileUrl,
+      size: data.size,
+      uploadBy: data.uploadBy,
+      display: data.display,
+      _id: data._id,
+      updatedAt: data.updatedAt,
+      createdAt: data.createdAt,
+      uploaderAdmin: {
+        _id: user._id,
+        email: user.email,
+        fullname: user.fullname,
+      },
+    };
+    return documentItem;
   }
 }

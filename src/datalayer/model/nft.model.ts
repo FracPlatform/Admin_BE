@@ -119,7 +119,6 @@ NftSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      status: { $gte: 2 },
       assetId: { $type: 'string' },
     },
   },
