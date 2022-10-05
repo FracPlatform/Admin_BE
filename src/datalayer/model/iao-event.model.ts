@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type IAOEventDocument = IAOEvent & Document;
 
-export enum IAOEventStage {
+export enum IAO_EVENT_STAGE {
   UPCOMING = 1,
   REGISTER_NOW = 2,
   ON_SALE_SOON = 3,
