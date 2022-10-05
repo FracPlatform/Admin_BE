@@ -152,6 +152,12 @@ export class IAOEvent {
   @Prop({ type: Number })
   totalSupply: number;
 
+  @Prop({ type: Number })
+  availableSupply: number;
+
+  @Prop({ type: String })
+  tokenSymbol: string;
+
   @Prop({ type: Boolean, default: false })
   isDeleted?: boolean;
 }

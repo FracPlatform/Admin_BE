@@ -1,29 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
+import { ethers } from 'ethers';
+import { get } from 'lodash';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
+import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   F_NFT_STATUS,
   IAOEvent,
-  ON_CHAIN_STATUS,
-  IAO_REQUEST_STATUS,
   IAO_EVENT_STATUS,
   IAO_EVENT_STAGE,
   VAULT_TYPE,
+  IAO_REQUEST_STATUS,
+  ON_CHAIN_STATUS,
 } from 'src/datalayer/model';
+import { ListDocument } from '../iao-request/iao-request.service';
+import { CheckTimeDTO } from './dto/check-time.dto';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
+import { GetListIaoEventDto } from './dto/get-list-iao-event.dto';
+import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import {
   CreateWhitelistDto,
   DeleteWhitelistDto,
   FilterWhitelistDto,
 } from './dto/whitelist.dto';
-import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
-import { ethers } from 'ethers';
-import { CheckTimeDTO } from './dto/check-time.dto';
-import { ListDocument } from '../iao-request/iao-request.service';
 
 @Injectable()
 export class IaoEventService {
@@ -102,6 +105,8 @@ export class IaoEventService {
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
+    createIaoEventDto['availableSupply'] = fnft.totalSupply;
+    createIaoEventDto['tokenSymbol'] = fnft.tokenSymbol;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
 
     const session = await this.connection.startSession();
@@ -129,8 +134,246 @@ export class IaoEventService {
     }
   }
 
-  findAll() {
-    return `This action returns all iaoEvent`;
+  async finAll(filter: GetListIaoEventDto) {
+    const query = { isDeleted: false };
+    const dateQuery = [];
+    if (filter.keyword) {
+      query['$or'] = [
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          iaoEventId: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          fNftSymbol: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          FNFTcontractAddress: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    }
+    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(),
+        },
+      });
+    }
+    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
+      dateQuery.push(
+        {
+          registrationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          registrationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
+      dateQuery.push(
+        {
+          registrationEndTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationStartTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+      dateQuery.push(
+        {
+          participationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+      dateQuery.push({
+        $or: [
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.NON_VAULT,
+              },
+            ],
+          },
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.VAULT,
+              },
+              {
+                $expr: {
+                  $gte: [
+                    { $subtract: ['$totalSupply', '$availableSupply'] },
+                    {
+                      $multiply: [
+                        '$vaultUnlockThreshold',
+                        '$totalSupply',
+                        0.01,
+                      ],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+      dateQuery.push({
+        $and: [
+          {
+            participationEndTime: {
+              $lte: new Date(),
+            },
+          },
+          {
+            $expr: {
+              $lt: [
+                { $subtract: ['$totalSupply', '$availableSupply'] },
+                {
+                  $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }
+    if (filter.registrationFromDate) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(filter.registrationFromDate),
+        },
+      });
+    }
+    if (filter.registrationToDate) {
+      dateQuery.push({
+        registrationEndTime: {
+          $lte: new Date(filter.registrationToDate),
+        },
+      });
+    }
+    if (filter.particicationFromDate) {
+      dateQuery.push({
+        participationStartTime: {
+          $gte: new Date(filter.particicationFromDate),
+        },
+      });
+    }
+    if (filter.particicationToDate) {
+      dateQuery.push({
+        participationEndTime: {
+          $lte: new Date(filter.particicationFromDate),
+        },
+      });
+    }
+    if (dateQuery.length) query['$and'] = dateQuery;
+    const agg = [];
+    agg.push(
+      {
+        $project: {
+          iaoEventId: '$iaoEventId',
+          createdAt: '$createdAt',
+          iaoEventName: '$iaoEventName',
+          vaultType: '$vaultType',
+          registrationStartTime: '$registrationStartTime',
+          registrationEndTime: '$registrationEndTime',
+          participationStartTime: '$participationStartTime',
+          participationEndTime: '$participationEndTime',
+          onChainStatus: '$onChainStatus',
+          status: '$status',
+          FNFTcontractAddress: '$FNFTcontractAddress',
+          totalSupply: '$totalSupply',
+          availableSupply: '$availableSupply',
+          tokenSymbol: '$tokenSymbol',
+          vaultUnlockThreshold: '$vaultUnlockThreshold',
+          isDeleted: '$isDeleted',
+        },
+      },
+      {
+        $match: query,
+      },
+    );
+
+    let sort: any = { $sort: {} };
+    if (filter.sortField && filter.sortType) {
+      sort['$sort'][filter.sortField] = filter.sortType;
+    } else {
+      sort = { $sort: { createdAt: -1 } };
+    }
+    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
+    agg.push({
+      $facet: {
+        count: [{ $count: 'count' }],
+        data: dataReturnFilter,
+      },
+    });
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || 10 });
+    const dataQuery = await this.dataService.iaoEvent.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+    const data = get(dataQuery, [0, 'data']);
+    const count = get(dataQuery, [0, 'count', 0, 'count']) || 0;
+
+    const finalData = data.map((iaoEvent) => ({
+      ...iaoEvent,
+      stage: this.checkCurrentStage(
+        iaoEvent.registrationStartTime,
+        iaoEvent.registrationEndTime,
+        iaoEvent.participationStartTime,
+        iaoEvent.participationEndTime,
+        iaoEvent.vaultType,
+        iaoEvent.fNftTotalSupply - iaoEvent.totalSupply >=
+          (iaoEvent.vaultUnlockThreshold * iaoEvent.fNftTotalSupply) / 100,
+      ),
+    }));
+
+    return {
+      totalDocs: count,
+      docs: finalData,
+    };
   }
 
   async findOne(id: string) {

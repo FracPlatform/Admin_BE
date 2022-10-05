@@ -51,6 +51,8 @@ export class IaoEventBuilderService {
       updatedBy: user.adminId,
       createdBy: user.adminId,
       totalSupply: createIaoEventDto['totalSupply'],
+      availableSupply: createIaoEventDto['availableSupply'],
+      tokenSymbol: createIaoEventDto['tokenSymbol'],
     };
   }
 
