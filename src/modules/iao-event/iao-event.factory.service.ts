@@ -121,7 +121,7 @@ export class IaoEventBuilderService {
       registrationEndTime: iaoEvent.registrationEndTime,
       iaoEventDuration: iaoEvent.iaoEventDuration,
       participationStartTime: iaoEvent.participationStartTime,
-      iaoEventVaultType: iaoEvent.vaultType,
+      vaultType: iaoEvent.vaultType,
       acceptedCurrencyAddress: iaoEvent.acceptedCurrencyAddress,
       exchangeRate: iaoEvent.exchangeRate,
       percentageOffered: iaoEvent.percentageOffered,
@@ -135,6 +135,7 @@ export class IaoEventBuilderService {
       whitelistRegistrationUrl: iaoEvent.whitelistRegistrationUrl,
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
+      updatedAt: new Date(),
     };
   }
 
