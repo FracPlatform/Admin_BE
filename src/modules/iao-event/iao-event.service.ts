@@ -21,6 +21,7 @@ import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
 import { ethers } from 'ethers';
 import { CheckTimeDTO } from './dto/check-time.dto';
+import { ListDocument } from '../iao-request/iao-request.service';
 
 @Injectable()
 export class IaoEventService {
@@ -323,17 +324,19 @@ export class IaoEventService {
     );
 
     // sort deposited
-    whiteListAddresses = whiteListAddresses.sort((n1, n2) => {
-      if (n1.deposited > n2.deposited) {
-        return filter.sortType;
-      }
+    if (filter.sortField && filter.sortType) {
+      whiteListAddresses = whiteListAddresses.sort((n1, n2) => {
+        if (n1[filter.sortField] > n2[filter.sortField]) {
+          return filter.sortType;
+        }
 
-      if (n1.deposited < n2.deposited) {
-        return -filter.sortType;
-      }
+        if (n1[filter.sortField] < n2[filter.sortField]) {
+          return -filter.sortType;
+        }
 
-      return 0;
-    });
+        return 0;
+      });
+    };
 
     // offset && limit
     whiteListAddresses = whiteListAddresses.slice(
@@ -342,10 +345,9 @@ export class IaoEventService {
     );
 
     return {
-      iaoEventId: currertWhitelist.iaoEventId,
-      whiteListAddresses,
-      totalAddress,
-    };
+      totalDocs: totalAddress,
+      docs: whiteListAddresses || [],
+    } as ListDocument;
   }
 
   async createWhitelist(user, data: CreateWhitelistDto) {
@@ -364,7 +366,7 @@ export class IaoEventService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
 
     // check whitelist
-    await this.checkWhitelist(data);
+    await this.checkAddressInWhitelist(data);
 
     return await this.dataService.whitelist.create({
       iaoEventId: data.iaoEventId,
@@ -380,14 +382,11 @@ export class IaoEventService {
     if (!currentIaoEvent)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
 
-    if (currentIaoEvent.onChainStatus !== ON_CHAIN_STATUS.ON_CHAIN)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Status invalid');
-
     if (currentIaoEvent.whitelistAnnouncementTime.getTime() <= Date.now())
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Now > Participation start time');
   }
 
-  async checkWhitelist(data: CreateWhitelistDto) {
+  async checkAddressInWhitelist(data: CreateWhitelistDto) {
     const listWalletAddress = [];
 
     for (const [i, obj] of data.whitelistAddresses.entries()) {
