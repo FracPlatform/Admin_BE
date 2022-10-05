@@ -58,4 +58,5 @@ export class NftDetailEntity {
   fractionalizationTxHash: string;
   fnft: object;
   asset: object;
+  mediaType?: string;
 }
