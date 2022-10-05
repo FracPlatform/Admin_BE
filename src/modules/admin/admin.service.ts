@@ -159,7 +159,7 @@ export class AdminService {
     } catch (error) {
       await session.abortTransaction();
       this.logger.debug(error.message);
-      throw ApiError('', error.message);
+      throw error;
     } finally {
       session.endSession();
     }
