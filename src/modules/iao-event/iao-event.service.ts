@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { ApiError } from 'src/common/api';
-import { ErrorCode } from 'src/common/constants';
+import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   F_NFT_STATUS,
@@ -12,11 +12,16 @@ import {
   IAO_EVENT_STATUS,
 } from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
-import { CreateWhitelistDto } from './dto/create-whilist.dto';
+import {
+  CreateWhitelistDto,
+  DeleteWhitelistDto,
+  FilterWhitelistDto,
+} from './dto/whitelist.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
 import { ethers } from 'ethers';
 import { CheckTimeDTO } from './dto/check-time.dto';
+import { ListDocument } from '../iao-request/iao-request.service';
 
 @Injectable()
 export class IaoEventService {
@@ -30,6 +35,7 @@ export class IaoEventService {
     createIaoEventDto: CreateIaoEventDto,
     user: any,
   ): Promise<IAOEvent> {
+    const error = {};
     // validate whitelistAnnouncementTime
     const date = createIaoEventDto.participationStartTime.toString();
     const participationEndTime = new Date(date);
@@ -38,13 +44,23 @@ export class IaoEventService {
     );
     createIaoEventDto['participationEndTime'] = participationEndTime;
     if (createIaoEventDto.whitelistAnnouncementTime > participationEndTime)
-      throw ApiError('E23', 'Must <= Participation_end_time');
+      error['whitelistAnnouncementTime'] =
+        "Whitelist announcement time can't be earlier than Reference participation end time";
 
     const fnft = await this.dataService.fnft.findOne({
       contractAddress: createIaoEventDto.FNFTcontractAddress,
       status: F_NFT_STATUS.ACTIVE,
     });
-    if (!fnft) throw ApiError('E4', 'F-NFT not exists or deactive');
+    if (!fnft)
+      error['FNFTcontractAddress'] = 'F-NFT contractAddress is invalid';
+
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      FNFTcontractAddress: createIaoEventDto.FNFTcontractAddress,
+      status: IAO_EVENT_STATUS.ACTIVE,
+    });
+    if (iaoEvent)
+      error['FNFTcontractAddress'] =
+        'This F-NFT has been selected for another IAO event';
 
     const query: any = {
       $or: [
@@ -78,7 +94,10 @@ export class IaoEventService {
     });
 
     if (existsIAOEvent)
-      throw ApiError('E9', 'Must be unique among list of IAO event name');
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
@@ -233,7 +252,7 @@ export class IaoEventService {
       updateIaoEventDto,
       user,
     );
-    const update = await this.dataService.iaoEvent.updateOne(
+    await this.dataService.iaoEvent.updateOne(
       {
         iaoEventId: id,
         isDeleted: false,
@@ -245,8 +264,7 @@ export class IaoEventService {
         },
       },
     );
-    if (update.modifiedCount === 0)
-      throw ApiError('', 'Cannot update this IAO event');
+
     return id;
   }
 
@@ -302,48 +320,133 @@ export class IaoEventService {
     return id;
   }
 
+  async getListWhitelist(user: any, filter: FilterWhitelistDto) {
+    const currertWhitelist = await this.dataService.whitelist.findOne({
+      iaoEventId: filter.iaoEventId,
+      deleted: false,
+    });
+    if (!currertWhitelist)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId not already exists');
+
+    const totalAddress = currertWhitelist.whiteListAddresses.length;
+
+    // search data
+    const dataRegex = new RegExp(filter.wallet, 'i');
+    let whiteListAddresses = currertWhitelist.whiteListAddresses.filter((i) =>
+      dataRegex.test(i.walletAddress),
+    );
+
+    // sort deposited
+    if (filter.sortField && filter.sortType) {
+      whiteListAddresses = whiteListAddresses.sort((n1, n2) => {
+        if (n1[filter.sortField] > n2[filter.sortField]) {
+          return filter.sortType;
+        }
+
+        if (n1[filter.sortField] < n2[filter.sortField]) {
+          return -filter.sortType;
+        }
+
+        return 0;
+      });
+    }
+
+    // offset && limit
+    whiteListAddresses = whiteListAddresses.slice(
+      filter.offset || DEFAULT_OFFET,
+      filter.limit || DEFAULT_LIMIT,
+    );
+
+    return {
+      totalDocs: totalAddress,
+      docs: whiteListAddresses || [],
+    } as ListDocument;
+  }
+
   async createWhitelist(user, data: CreateWhitelistDto) {
     if (!data.whitelistAddresses.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'whitelistAddresses is empty');
 
-    const filter = { iaoEventId: data.iaoEventId, deleted: false };
+    // check Iao-event
+    await this.checkIaoEvent(data.iaoEventId);
+
+    // check iaoEventId in whitelist
+    const isIaoEventId = await this.dataService.whitelist.findOne({
+      iaoEventId: data.iaoEventId,
+      deleted: false,
+    });
+    if (isIaoEventId)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
+
+    // check whitelist
+    await this.checkAddressInWhitelist(data);
+
+    return await this.dataService.whitelist.create({
+      iaoEventId: data.iaoEventId,
+      whiteListAddresses: data.whitelistAddresses,
+      deleted: false,
+    });
+  }
+
+  async checkIaoEvent(iaoEventId: string) {
+    const filter = { iaoEventId, deleted: false };
 
     const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
     if (!currentIaoEvent)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
 
-    if (currentIaoEvent.onChainStatus !== ON_CHAIN_STATUS.ON_CHAIN)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Status invalid');
-
-    // check whitelist
-    await this.checkWhitelist(data);
-
-    return await this.dataService.iaoEvent.findOneAndUpdate(
-      {
-        ...filter,
-        onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
-        updatedAt: currentIaoEvent['updatedAt'],
-      },
-      {
-        lastWhitelistUpdatedBy: user.adminId,
-        lastWhitelistUpdatedAt: Date.now(),
-        whitelist: data.whitelistAddresses,
-      },
-      { new: true },
-    );
+    if (currentIaoEvent.whitelistAnnouncementTime.getTime() <= Date.now())
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Now > Participation start time');
   }
 
-  async checkWhitelist(data: CreateWhitelistDto) {
-    //check duplicate
-    const listAddress: any = [...new Set(data.whitelistAddresses)];
+  async checkAddressInWhitelist(data: CreateWhitelistDto) {
+    const listWalletAddress = [];
 
-    //check incorrect
-    for (const address of listAddress) {
-      if (!ethers.utils.isAddress(address))
+    for (const [i, obj] of data.whitelistAddresses.entries()) {
+      // check duplicate
+      const isAddress = listWalletAddress.find(
+        (e) => e === obj['walletAddress'],
+      );
+      if (isAddress) {
+        data.whitelistAddresses.splice(i, 1);
+      }
+
+      //check incorrect
+      if (!ethers.utils.isAddress(obj['walletAddress']))
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid wallet address');
+
+      listWalletAddress.push(obj['walletAddress']);
+    }
+  }
+
+  async removeWhitelist(
+    iaoEventId: string,
+    user: any,
+    data: DeleteWhitelistDto,
+  ) {
+    // check Iao-event
+    await this.checkIaoEvent(iaoEventId);
+
+    const filter = { iaoEventId, deleted: false };
+    const option = {};
+
+    if (data.isClearAll) {
+      option['deleted'] = true;
+    } else {
+      if (!data.walletAddress)
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'walletAddress should not be empty',
+        );
+
+      filter['whiteListAddresses.walletAddress'] = data.walletAddress;
+      option['$pull'] = {
+        whiteListAddresses: { walletAddress: data.walletAddress },
+      };
     }
 
-    data.whitelistAddresses = listAddress;
+    //delete a record or all
+    return await this.dataService.whitelist.updateOne(filter, option);
   }
 
   async checkRegistrationParticipation(
