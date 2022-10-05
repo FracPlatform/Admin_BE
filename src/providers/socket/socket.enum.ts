@@ -8,4 +8,5 @@ export enum SOCKET_EVENT {
   DEACTIVE_ADMIN_EVENT = 'deactive-admin-event',
   MINT_NFT_EVENT = 'mint-nft-event',
   MINT_F_NFT_EVENT = 'mint-f-nft-event',
+  CREATE_IAO_EVENT_ON_CHAIN = 'create-iao-event-on-chain',
 }

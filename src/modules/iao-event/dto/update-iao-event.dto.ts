@@ -52,7 +52,7 @@ export class UpdateIaoEventDto extends CreateIaoEventDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString({ message: 'E2' })
+  @IsString()
   @MaxLength(MAXLENGTH_CONTRACT_ADDRESS)
   @IsEthereumAddress({ message: 'E2' })
   FNFTcontractAddress: string;

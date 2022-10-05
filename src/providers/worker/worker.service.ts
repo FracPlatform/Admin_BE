@@ -2,7 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from '../../common/api';
 import { CONTRACT_EVENTS, PREFIX_ID } from '../../common/constants';
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
-import { ADMIN_STATUS, F_NFT_MINTED_STATUS } from '../../datalayer/model';
+import {
+  ADMIN_STATUS,
+  F_NFT_MINTED_STATUS,
+  F_NFT_STATUS,
+  F_NFT_TYPE,
+  IAO_EVENT_STATUS,
+  ON_CHAIN_STATUS,
+} from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
 import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
@@ -11,6 +18,7 @@ import { NFT_STATUS } from 'src/datalayer/model/nft.model';
 import { ASSET_STATUS } from 'src/datalayer/model/asset.model';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { CommonService } from 'src/common-service/common.service';
 const jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -20,6 +28,7 @@ export class WorkerService {
   constructor(
     private readonly dataServices: IDataServices,
     private readonly socketGateway: SocketGateway,
+    private readonly commonService: CommonService,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -40,6 +49,9 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.MINT_F_NFT:
           await this._handleMintFNFTEvent(requestData);
+          break;
+        case CONTRACT_EVENTS.CREATE_IAO_EVENT_ON_CHAIN:
+          await this._handleCreateIaoEventOnChain(requestData);
           break;
       }
     } catch (err) {
@@ -155,5 +167,69 @@ export class WorkerService {
     );
 
     this.socketGateway.sendMessage(SOCKET_EVENT.MINT_F_NFT_EVENT, requestData);
+  }
+
+  private async _handleCreateIaoEventOnChain(requestData: WorkerDataDto) {
+    const admin = await this.dataServices.admin.findOne({
+      walletAddress: requestData.metadata.createdBy,
+    });
+
+    const iaoId = this.commonService.decodeHexToString(
+      requestData.metadata.iaoId,
+    );
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      // update status,onChainStatus,create by iao event
+      await this.dataServices.iaoEvent.updateOne(
+        {
+          iaoEventId: iaoId,
+          status: IAO_EVENT_STATUS.ACTIVE,
+          onChainStatus: ON_CHAIN_STATUS.DRAFT,
+          isDeleted: false,
+        },
+        {
+          $set: {
+            onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
+            createdOnChainAt: new Date(),
+            createdOnChainBy: admin.adminId,
+          },
+        },
+        { session },
+      );
+
+      // update asset status
+      const fnft = await this.dataServices.fnft.findOne({
+        contractAddress: requestData.metadata.fracTokenAddress,
+        status: F_NFT_STATUS.ACTIVE,
+      });
+      if (fnft.fnftType === F_NFT_TYPE.AUTO_IMPORT) {
+        const iaoRequest = await this.dataServices.iaoRequest.findOne({
+          iaoId: fnft.iaoRequestId,
+        });
+        let items: any = iaoRequest.items;
+        items = items.map((i) => {
+          return { itemId: i };
+        });
+        await this.dataServices.asset.updateMany(
+          { $or: items },
+          { $set: { status: ASSET_STATUS.IAO_EVENT } },
+          { session },
+        );
+      }
+
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.CREATE_IAO_EVENT_ON_CHAIN,
+        requestData,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }
