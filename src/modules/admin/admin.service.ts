@@ -20,7 +20,7 @@ import { AdminBuilderService } from './admin.factory.service';
 import { ApiError } from 'src/common/api';
 import * as randomatic from 'randomatic';
 import { Role } from '../auth/role.enum';
-import { ADMIN_STATUS } from 'src/datalayer/model';
+import { Admin, ADMIN_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class AdminService {
@@ -159,7 +159,7 @@ export class AdminService {
     } catch (error) {
       await session.abortTransaction();
       this.logger.debug(error.message);
-      throw ApiError('', error.message);
+      throw error;
     } finally {
       session.endSession();
     }
@@ -252,6 +252,27 @@ export class AdminService {
     if (!userExisted) return referral;
 
     return await this.randomReferal();
+  }
+
+  async deleteAdmin(caller: Admin, adminId: string) {
+    const admin = await this.dataServices.admin.findOne({ adminId: adminId });
+    if (admin.role === Role.SuperAdmin && caller.role !== Role.OWNER) {
+      throw new ForbiddenException(
+        'Only owner contract can delete Super Admin',
+      );
+    }
+    if (admin.role === Role.OWNER) {
+      throw ApiError('', 'Not found admin');
+    }
+    await this.dataServices.admin.updateOne(
+      { adminId: adminId },
+      {
+        $set: {
+          deleted: true,
+        },
+      },
+    );
+    return;
   }
 
   private _validateFilterRole(user: any, filterRoles: string) {

@@ -53,6 +53,9 @@ export class WorkerService {
         case CONTRACT_EVENTS.CREATE_IAO_EVENT_ON_CHAIN:
           await this._handleCreateIaoEventOnChain(requestData);
           break;
+        case CONTRACT_EVENTS.DEACTIVE_F_NFT:
+          await this._handleDeactiveFNFT(requestData);
+          break;
       }
     } catch (err) {
       this.logger.debug(err.message, err.stack);
@@ -74,6 +77,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEACTIVE_ADMIN_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     } else {
       // active
@@ -87,6 +91,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.ACTIVE_ADMIN_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     }
   }
@@ -150,23 +155,38 @@ export class WorkerService {
      * Update status nft to 3(FRACTIONLIZED)
      * Update status asset item to 5(FRACTIONALIZED)
      */
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      /**
+       * impelement code here
+       */
+      const admin = await this.dataServices.admin.findOne({
+        walletAddress: requestData.metadata.mintBy,
+      });
 
-    const admin = await this.dataServices.admin.findOne({
-      walletAddress: requestData.metadata.mintBy,
-    });
-
-    await this.dataServices.fnft.findOneAndUpdate(
-      { fnftId: requestData.metadata.fnftId },
-      {
-        mintedStatus: F_NFT_MINTED_STATUS.MINTED,
-        contractAddress: requestData.metadata.fracTokenAddr,
-        fractionalizedBy: admin.adminId,
-        fractionalizedOn: new Date(),
-        txhash: requestData.transactionHash,
-      },
-    );
-
-    this.socketGateway.sendMessage(SOCKET_EVENT.MINT_F_NFT_EVENT, requestData);
+      await this.dataServices.fnft.findOneAndUpdate(
+        { fnftId: requestData.metadata.fnftId },
+        {
+          mintedStatus: F_NFT_MINTED_STATUS.MINTED,
+          contractAddress: requestData.metadata.fracTokenAddr,
+          fractionalizedBy: admin.adminId,
+          fractionalizedOn: new Date(),
+          txhash: requestData.transactionHash,
+        },
+      );
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.MINT_F_NFT_EVENT,
+        requestData,
+        requestData.metadata.mintBy,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   private async _handleCreateIaoEventOnChain(requestData: WorkerDataDto) {
@@ -224,6 +244,35 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.CREATE_IAO_EVENT_ON_CHAIN,
         requestData,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleDeactiveFNFT(requestData: WorkerDataDto) {
+    /**
+     * update status of F-NFT
+     * update status of iao request if create F-NFT from iao request
+     * update status of NFTs
+     * update status of asset items
+     */
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      /**
+       * impelement code here
+       */
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.DEACTIVE_F_NFT,
+        requestData,
+        requestData.metadata.setBy,
       );
     } catch (error) {
       await session.abortTransaction();

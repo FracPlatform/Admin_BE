@@ -7,7 +7,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { IAOEventStage } from 'src/datalayer/model';
+import { IAO_EVENT_STAGE } from 'src/datalayer/model';
 
 export class GetListIaoEventDto {
   @ApiProperty({ required: false })
@@ -17,7 +17,7 @@ export class GetListIaoEventDto {
   @MaxLength(256)
   keyword: string;
 
-  @IsEnum(IAOEventStage)
+  @IsEnum(IAO_EVENT_STAGE)
   @IsOptional()
   @ApiProperty({
     required: false,
@@ -26,7 +26,7 @@ export class GetListIaoEventDto {
       '1 => Upcomming, 2 => Register now, 3 => On sale soon, 4 => On sale, 5 => Completed, 6 => Failed',
   })
   @Type(() => Number)
-  stage: IAOEventStage;
+  stage: IAO_EVENT_STAGE;
 
   @IsString()
   @IsOptional()

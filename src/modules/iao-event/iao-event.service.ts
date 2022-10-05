@@ -13,6 +13,8 @@ import {
   IAO_EVENT_STATUS,
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
+  IAO_EVENT_STAGE,
+  VAULT_TYPE,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -100,7 +102,7 @@ export class IaoEventService {
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
 
-    if (error) throw ApiError('', '', error);
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
     createIaoEventDto['totalSupply'] = fnft.totalSupply;
     createIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
@@ -161,6 +163,99 @@ export class IaoEventService {
         },
       ];
     }
+    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(),
+        },
+      });
+    }
+    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
+      dateQuery.push(
+        {
+          registrationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          registrationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
+      dateQuery.push(
+        {
+          registrationEndTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationStartTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+      dateQuery.push(
+        {
+          participationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+      dateQuery.push({
+        $or: [
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.NON_VAULT,
+              },
+            ],
+          },
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.VAULT,
+              },
+              {
+                $expr: {
+                  $gte: [
+                    { $subtract: ['$fNftTotalSupply', '$totalSupply'] },
+                    {
+                      $multiply: [
+                        '$vaultUnlockThreshold',
+                        '$fNftTotalSupply',
+                        0.01,
+                      ],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      });
+    }
     if (filter.registrationFromDate) {
       dateQuery.push({
         registrationStartTime: {
@@ -210,6 +305,7 @@ export class IaoEventService {
           iaoEventName: '$iaoEventName',
           vaultType: '$vaultType',
           fNftSymbol: '$fNft.tokenSymbol',
+          fNftTotalSupply: '$fNft.totalSupply',
           registrationStartTime: '$registrationStartTime',
           registrationEndTime: '$registrationEndTime',
           participationStartTime: '$participationStartTime',
@@ -217,6 +313,8 @@ export class IaoEventService {
           onChainStatus: '$onChainStatus',
           status: '$status',
           FNFTcontractAddress: '$FNFTcontractAddress',
+          totalSupply: '$totalSupply',
+          vaultUnlockThreshold: '$vaultUnlockThreshold',
           isDeleted: '$isDeleted',
         },
       },
@@ -246,9 +344,22 @@ export class IaoEventService {
     const data = get(dataQuery, [0, 'data']);
     const count = get(dataQuery, [0, 'count', 0, 'count']) || 0;
 
+    const finalData = data.map((iaoEvent) => ({
+      ...iaoEvent,
+      stage: this.checkCurrentStage(
+        iaoEvent.registrationStartTime,
+        iaoEvent.registrationEndTime,
+        iaoEvent.participationStartTime,
+        iaoEvent.participationEndTime,
+        iaoEvent.vaultType,
+        iaoEvent.fNftTotalSupply - iaoEvent.totalSupply >=
+          (iaoEvent.vaultUnlockThreshold * iaoEvent.fNftTotalSupply) / 100,
+      ),
+    }));
+
     return {
       totalDocs: count,
-      docs: data,
+      docs: finalData,
     };
   }
 
@@ -348,7 +459,15 @@ export class IaoEventService {
         ? createdOnChainBy.fullname
         : null;
     }
-
+    const currentStage = this.checkCurrentStage(
+      iaoEvent.registrationStartTime,
+      iaoEvent.registrationEndTime,
+      iaoEvent.participationStartTime,
+      iaoEvent.participationEndTime,
+      iaoEvent.vaultType,
+      fnft.totalSupply - iaoEvent.totalSupply > iaoEvent.vaultUnlockThreshold,
+    );
+    iaoEvent['currentStage'] = currentStage;
     const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
       iaoEvent,
       fnft,
@@ -664,5 +783,37 @@ export class IaoEventService {
       status: IAO_EVENT_STATUS.ACTIVE,
     });
     return iaoEventList;
+  }
+
+  checkCurrentStage(
+    registrationStartTime: Date,
+    registrationEndTime: Date,
+    participationStartTime: Date,
+    participationEndTime: Date,
+    type: number,
+    vaultUnlockThreshold?: boolean,
+  ) {
+    const nowDate = new Date();
+    let currentStage = IAO_EVENT_STAGE.UPCOMING;
+    if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
+      currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
+    else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
+      currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
+    else if (
+      nowDate >= participationStartTime &&
+      nowDate < participationEndTime
+    )
+      currentStage = IAO_EVENT_STAGE.ON_SALE;
+    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else if (
+      nowDate >= participationEndTime &&
+      type === VAULT_TYPE.NON_VAULT &&
+      vaultUnlockThreshold
+    )
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else currentStage = IAO_EVENT_STAGE.FAILED;
+
+    return currentStage;
   }
 }

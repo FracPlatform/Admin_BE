@@ -33,8 +33,9 @@ export class SocketGateway
     this.logger.log(`Client connected: ${client.id}`);
   }
 
-  sendMessage(event: any, data: any) {
-    this.server.emit(event, data);
-    this.logger.log(`Send event=${event}, data=${JSON.stringify(data)}`);
+  sendMessage(event: any, data: any, caller?: string) {
+    const room = caller ? `${event}_${caller}` : event;
+    this.server.emit(room, data);
+    this.logger.log(`Send event=${room}, data=${JSON.stringify(data)}`);
   }
 }
