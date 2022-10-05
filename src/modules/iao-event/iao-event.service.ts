@@ -30,7 +30,7 @@ export class IaoEventService {
     createIaoEventDto: CreateIaoEventDto,
     user: any,
   ): Promise<IAOEvent> {
-    let error = {};
+    const error = {};
     // validate whitelistAnnouncementTime
     const date = createIaoEventDto.participationStartTime.toString();
     const participationEndTime = new Date(date);
