@@ -10,6 +10,8 @@ import {
   ON_CHAIN_STATUS,
   IAO_REQUEST_STATUS,
   IAO_EVENT_STATUS,
+  IAO_EVENT_STAGE,
+  VAULT_TYPE,
 } from 'src/datalayer/model';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import {
@@ -227,7 +229,15 @@ export class IaoEventService {
         ? createdOnChainBy.fullname
         : null;
     }
-
+    const currentStage = this.checkCurrentStage(
+      iaoEvent.registrationStartTime,
+      iaoEvent.registrationEndTime,
+      iaoEvent.participationStartTime,
+      iaoEvent.participationEndTime,
+      iaoEvent.vaultType,
+      fnft.totalSupply - iaoEvent.totalSupply > iaoEvent.vaultUnlockThreshold,
+    );
+    iaoEvent['currentStage'] = currentStage;
     const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
       iaoEvent,
       fnft,
@@ -543,5 +553,37 @@ export class IaoEventService {
       status: IAO_EVENT_STATUS.ACTIVE,
     });
     return iaoEventList;
+  }
+
+  checkCurrentStage(
+    registrationStartTime: Date,
+    registrationEndTime: Date,
+    participationStartTime: Date,
+    participationEndTime: Date,
+    type: number,
+    vaultUnlockThreshold?: boolean,
+  ) {
+    const nowDate = new Date();
+    let currentStage = IAO_EVENT_STAGE.UPCOMING;
+    if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
+      currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
+    else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
+      currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
+    else if (
+      nowDate >= participationStartTime &&
+      nowDate < participationEndTime
+    )
+      currentStage = IAO_EVENT_STAGE.ON_SALE;
+    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else if (
+      nowDate >= participationEndTime &&
+      type === VAULT_TYPE.NON_VAULT &&
+      vaultUnlockThreshold
+    )
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else currentStage = IAO_EVENT_STAGE.FAILED;
+
+    return currentStage;
   }
 }
