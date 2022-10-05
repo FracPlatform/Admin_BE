@@ -235,7 +235,8 @@ export class IaoEventService {
       iaoEvent.participationStartTime,
       iaoEvent.participationEndTime,
       iaoEvent.vaultType,
-      fnft.totalSupply - iaoEvent.totalSupply > iaoEvent.vaultUnlockThreshold,
+      fnft.totalSupply - iaoEvent.totalSupply >
+        (iaoEvent.vaultUnlockThreshold * fnft.totalSupply) / 100,
     );
     iaoEvent['currentStage'] = currentStage;
     const iaoEventDetail = this.iaoEventBuilderService.getIaoEventDetail(
