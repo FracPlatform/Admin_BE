@@ -68,7 +68,7 @@ export class WorkerService {
     if (+requestData.metadata.role === Role.Deactive) {
       // deactive
       await this.dataServices.admin.findOneAndUpdate(
-        { walletAddress: requestData.metadata.addr },
+        { adminId: requestData.metadata.adminId },
         {
           status: ADMIN_STATUS.INACTIVE,
           lastUpdateBy: requestData.metadata.setBy,
@@ -82,7 +82,7 @@ export class WorkerService {
     } else {
       // active
       await this.dataServices.admin.findOneAndUpdate(
-        { walletAddress: requestData.metadata.addr },
+        { adminId: requestData.metadata.adminId },
         {
           status: ADMIN_STATUS.ACTIVE,
           lastUpdateBy: requestData.metadata.setBy,
