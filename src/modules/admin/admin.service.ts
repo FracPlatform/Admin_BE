@@ -33,7 +33,6 @@ export class AdminService {
   ) {}
 
   async getListAdmin(user: any, filter: FilterAdminDto) {
-    this._validateFilterRole(user, filter.role);
     const query: any = {
       _id: { $ne: new ObjectId(user._id) },
       deleted: false,
@@ -47,9 +46,24 @@ export class AdminService {
     }
 
     if (filter.role) {
+      this._validateFilterRole(user, filter.role);
       const filterRoles = filter.role.split(',');
       const roles: any = filterRoles.map((e) => parseInt(e));
       query['role'] = { $in: roles };
+    } else {
+      if (user.role === Role.HeadOfBD) {
+        query['role'] = { $in: [Role.HeadOfBD, Role.FractorBD, Role.MasterBD] };
+      } else {
+        query['role'] = {
+          $in: [
+            Role.SuperAdmin,
+            Role.OperationAdmin,
+            Role.HeadOfBD,
+            Role.FractorBD,
+            Role.MasterBD,
+          ],
+        };
+      }
     }
 
     if (filter.status) {
