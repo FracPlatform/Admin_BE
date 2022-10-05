@@ -115,20 +115,57 @@
           {
             "indexed": false,
             "internalType": "address",
-            "name": "addr",
+            "name": "fractTokenAddress",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "setBy",
+            "type": "address"
+          }
+        ],
+        "name": "DeactivateFNFTEvent",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "buyer",
             "type": "address"
           },
           {
             "indexed": false,
             "internalType": "uint256",
-            "name": "id",
+            "name": "fund",
             "type": "uint256"
           },
           {
             "indexed": false,
             "internalType": "uint256",
-            "name": "totalTokenAmount",
+            "name": "tokenAmount",
             "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "totalFundDeposited",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "totalFNFT",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "bytes",
+            "name": "iaoId",
+            "type": "bytes"
           },
           {
             "indexed": false,
@@ -363,6 +400,12 @@
             "internalType": "string",
             "name": "setBy",
             "type": "string"
+          },
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "caller",
+            "type": "address"
           }
         ],
         "name": "SetAdminEvent",
@@ -622,6 +665,19 @@
       {
         "inputs": [
           {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "deactivateFNFT",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
             "internalType": "address[]",
             "name": "",
             "type": "address[]"
@@ -813,45 +869,6 @@
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "tokenId",
-            "type": "uint256"
-          }
-        ],
-        "name": "getNFTsOfNFT",
-        "outputs": [
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address[]",
-            "name": "",
-            "type": "address[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
             "internalType": "bytes",
             "name": "",
             "type": "bytes"
@@ -945,6 +962,25 @@
           }
         ],
         "name": "isMinted",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
+          }
+        ],
+        "name": "isSuccessful",
         "outputs": [
           {
             "internalType": "bool",
@@ -1370,6 +1406,9 @@
             "": "(0) fractorId, (1) iaoId"
           }
         },
+        "deactivateFNFT(address)": {
+          "details": "deactivate the FNFT address of the FNFT contract"
+        },
         "depositNFTs(address[],uint256[],uint256[],uint256[],bytes)": {
           "details": "depositNFTs fractor deposit NFTs to lock these NFTs ** Params **  addrs collection address  tokenIds tokenId  tokenTypes 0: ERC721, 1: ERC1155  amount NFT amount: If token type is ERC721, amount = 1"
         },
@@ -1474,13 +1513,13 @@
     "compilationTarget": {
       "contracts/implementations/ImplementationV1.sol": "ImplementationV1"
     },
-    "evmVersion": "byzantium",
+    "evmVersion": "london",
     "libraries": {},
     "metadata": {
       "bytecodeHash": "ipfs"
     },
     "optimizer": {
-      "enabled": true,
+      "enabled": false,
       "runs": 200
     },
     "remappings": []
@@ -1527,27 +1566,27 @@
       ]
     },
     "contracts/common/Upgradeable.sol": {
-      "keccak256": "0xfea986910b6c39ecd8ec7a129c5e60bed76ef647258606d863f890c522b37de2",
+      "keccak256": "0xb4b2e1c7ea1b3432302481d34de6f25f5ee92d7e235b07f207e514874b83dbdc",
       "license": "MIT",
       "urls": [
-        "bzz-raw://0d0781c6e50aa594e53904da7d107e88698af0c43e03fb2265a258414f438cd5",
-        "dweb:/ipfs/QmcwVvgCg2JMgWRK9Bc9uE5sxy7VcfWnRxDcGwhvNS5bMy"
+        "bzz-raw://27619f29ef2b1daeac9cc93efdde141a0f9655ba7c3be128ccd729f9fa773524",
+        "dweb:/ipfs/QmQQxWPRLFXuntuwxGY9v6AM5yr3vCzqAXUxoR6rQQ9GGm"
       ]
     },
     "contracts/implementations/Implementation.sol": {
-      "keccak256": "0x2b7e004236b02b6eb3268f23e3d24b17a0fef6dd44f0ca160724ca8af48366ea",
+      "keccak256": "0xd7adc9814edd5687ecc3f9bf85ac4678129b667b952cdb107717f8cfdd1b93eb",
       "license": "MIT",
       "urls": [
-        "bzz-raw://1b1a574666f1eaf42a0d404aa8e8ef63654e77c8c3ec20720c31d83c66fa9dc9",
-        "dweb:/ipfs/QmUdPZUm9NtoXv43v1bDp2u6vcRzeTUyYrsW8UCrK1eg6g"
+        "bzz-raw://aa8b39e79b9a1399da1d66fe76ff1855c7d6be60758d618a265dc2aa1a6c9c5e",
+        "dweb:/ipfs/QmPfGLPSswjeEBUMfe72NMzoYohFfo1KMJ3h4PWK51Vz9h"
       ]
     },
     "contracts/implementations/ImplementationV1.sol": {
-      "keccak256": "0x279e6f568e23318c9ab13fe18add1431edd4b711e0755c52d25994675ce7362d",
+      "keccak256": "0xaaef86de28c387c2641c9131403fbac394e70479c0edc3c94ab57af19fa8f768",
       "license": "MIT",
       "urls": [
-        "bzz-raw://ac9d99ec802385790b003fcfa64eb243f76dd005aa82b5d7f15923f41673e2a5",
-        "dweb:/ipfs/QmUbgdWGHbfE4DUYfKM3sv52ZiJYJu65WynHEmZcQ2Fnfc"
+        "bzz-raw://5d6654ba41330fde4d461fa1297a968d1c6b97cd89a72ba28568b9cdf34a7304",
+        "dweb:/ipfs/QmVNUnQKtsPb5C3MSojAKeP29TTTVRvALRVVceF3BuP8v8"
       ]
     }
   },
