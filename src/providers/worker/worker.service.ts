@@ -183,7 +183,7 @@ export class WorkerService {
 
     try {
       // update status,onChainStatus,create by iao event
-      const updateIaoEvent = await this.dataServices.iaoEvent.updateOne(
+      await this.dataServices.iaoEvent.updateOne(
         {
           iaoEventId: iaoId,
           status: IAO_EVENT_STATUS.ACTIVE,
@@ -213,7 +213,7 @@ export class WorkerService {
         items = items.map((i) => {
           return { itemId: i };
         });
-        const updateAsset = await this.dataServices.asset.updateMany(
+        await this.dataServices.asset.updateMany(
           { $or: items },
           { $set: { status: ASSET_STATUS.IAO_EVENT } },
           { session },

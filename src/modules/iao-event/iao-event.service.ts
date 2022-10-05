@@ -266,7 +266,7 @@ export class IaoEventService {
       updateIaoEventDto,
       user,
     );
-    const update = await this.dataService.iaoEvent.updateOne(
+    await this.dataService.iaoEvent.updateOne(
       {
         iaoEventId: id,
         isDeleted: false,
