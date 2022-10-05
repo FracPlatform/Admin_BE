@@ -74,6 +74,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEACTIVE_ADMIN_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     } else {
       // active
@@ -87,6 +88,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.ACTIVE_ADMIN_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     }
   }
