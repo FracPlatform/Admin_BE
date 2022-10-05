@@ -52,9 +52,17 @@ export class AdminService {
       query['role'] = { $in: roles };
     } else {
       if (user.role === Role.HeadOfBD) {
-        query['role'] = { $in: [3, 4, 5] };
+        query['role'] = { $in: [Role.HeadOfBD, Role.FractorBD, Role.MasterBD] };
       } else {
-        query['role'] = { $in: [1, 2, 3, 4, 5] };
+        query['role'] = {
+          $in: [
+            Role.SuperAdmin,
+            Role.OperationAdmin,
+            Role.HeadOfBD,
+            Role.FractorBD,
+            Role.MasterBD,
+          ],
+        };
       }
     }
 
