@@ -55,22 +55,8 @@ AdminSchema.plugin(paginate);
 AdminSchema.plugin(aggregatePaginate);
 AdminSchema.index({ adminId: 1 });
 AdminSchema.index(
-  { email: 1, deleted: 1, status: 1 },
+  { walletAddress: 1 },
   {
     unique: true,
-    partialFilterExpression: {
-      deleted: { $eq: false },
-      status: { $eq: 1 },
-    },
-  },
-);
-AdminSchema.index(
-  { walletAddress: 1, deleted: 1, status: 1 },
-  {
-    unique: true,
-    partialFilterExpression: {
-      deleted: { $eq: false },
-      status: { $eq: 1 },
-    },
   },
 );

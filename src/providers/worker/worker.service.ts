@@ -168,6 +168,7 @@ export class WorkerService {
           fractionalizedOn: new Date(),
           txhash: requestData.transactionHash,
         },
+        { session: session },
       );
 
       const nfts = await this.dataServices.nft.findMany(
@@ -177,27 +178,23 @@ export class WorkerService {
         },
       );
 
-      const tokkenIds = currentFnft.items;
+      const tokenIds = currentFnft.items;
       const assetIds = nfts.filter((x) => x.assetId).map((x) => x.assetId);
 
-      const promiseAll = [];
-
-      promiseAll.push(
-        this.dataServices.nft.updateMany(
-          { tokenId: { $in: tokkenIds } },
-          { $set: { status: NFT_STATUS.FRACTIONLIZED } },
-        ),
-      );
-      promiseAll.push(
-        this.dataServices.asset.updateMany(
-          { itemId: { $in: assetIds } },
-          { $set: { status: ASSET_STATUS.FRACTIONALIZED } },
-        ),
+      await this.dataServices.nft.updateMany(
+        { tokenId: { $in: tokenIds } },
+        { $set: { status: NFT_STATUS.FRACTIONLIZED } },
+        { session: session },
       );
 
-      await Promise.all(promiseAll);
+      await this.dataServices.asset.updateMany(
+        { itemId: { $in: assetIds } },
+        { $set: { status: ASSET_STATUS.FRACTIONALIZED } },
+        { session: session },
+      );
 
       await session.commitTransaction();
+
       this.socketGateway.sendMessage(
         SOCKET_EVENT.MINT_F_NFT_EVENT,
         requestData,
