@@ -784,7 +784,10 @@ export class IaoRequestService {
       throw 'You do not have permission for this action';
     if (!iaoRequest) throw 'No data exists';
     if (!iaoRequest.firstReviewer) throw 'The first review not exists';
-    if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
+    if (iaoRequest.secondReviewer) {
+      if (iaoRequest.secondReviewer.adminId !== user.adminId)
+        throw 'This IAO request is approved';
+    }
 
     if (
       iaoRequest.firstReviewer &&
