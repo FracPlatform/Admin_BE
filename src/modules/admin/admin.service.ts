@@ -133,12 +133,11 @@ export class AdminService {
 
     try {
       const admin = await this.dataServices.admin.findOne({
-        email: data.email,
-        walletAddress: data.walletAddress,
+        $or: [{ email: data.email }, { walletAddress: data.walletAddress }],
         deleted: false,
       });
       if (admin)
-        throw ApiError(ErrorCode.EMAIL_EXISTED, 'Email already exists');
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Email or walletAddress already exists');
 
       // create referral
       const referral = [Role.FractorBD, Role.MasterBD].includes(data.role)

@@ -73,3 +73,10 @@ export class DeleteWhitelistDto {
   @IsString()
   walletAddress: string;
 }
+
+export class ExportWhitelistDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  iaoEventId: string;
+}

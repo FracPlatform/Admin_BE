@@ -3,8 +3,15 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { ethers } from 'ethers';
 import { get } from 'lodash';
 import mongoose from 'mongoose';
+const XLSX = require('xlsx');
+import moment = require('moment');
 import { ApiError } from 'src/common/api';
-import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
+import {
+  CVS_NAME,
+  DEFAULT_LIMIT,
+  DEFAULT_OFFET,
+  ErrorCode,
+} from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
@@ -24,6 +31,7 @@ import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import {
   CreateWhitelistDto,
   DeleteWhitelistDto,
+  ExportWhitelistDto,
   FilterWhitelistDto,
 } from './dto/whitelist.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
@@ -579,8 +587,7 @@ export class IaoEventService {
       iaoEventId: filter.iaoEventId,
       deleted: false,
     });
-    if (!currertWhitelist)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId not already exists');
+    if (!currertWhitelist) return { totalDocs: 0, docs: [] } as ListDocument;
 
     const totalAddress = currertWhitelist.whiteListAddresses.length;
 
@@ -605,11 +612,12 @@ export class IaoEventService {
       });
     }
 
+    const offset = filter.offset ? filter.offset - 1 : DEFAULT_OFFET;
+
+    const limit = offset + (filter.limit || DEFAULT_LIMIT);
+
     // offset && limit
-    whiteListAddresses = whiteListAddresses.slice(
-      filter.offset || DEFAULT_OFFET,
-      filter.limit || DEFAULT_LIMIT,
-    );
+    whiteListAddresses = whiteListAddresses.slice(offset, limit);
 
     return {
       totalDocs: totalAddress,
@@ -632,45 +640,44 @@ export class IaoEventService {
     if (isIaoEventId)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
 
-    // check whitelist
-    await this.checkAddressInWhitelist(data);
+    // set data whitelist
+    const whiteListAddresses = await this.checkAddressInWhitelist(data);
 
     return await this.dataService.whitelist.create({
       iaoEventId: data.iaoEventId,
-      whiteListAddresses: data.whitelistAddresses,
+      whiteListAddresses,
       deleted: false,
     });
   }
 
   async checkIaoEvent(iaoEventId: string) {
-    const filter = { iaoEventId, deleted: false };
+    const filter = { iaoEventId, isDeleted: false };
 
     const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
     if (!currentIaoEvent)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
 
-    if (currentIaoEvent.whitelistAnnouncementTime.getTime() <= Date.now())
+    if (currentIaoEvent.whitelistAnnouncementTime.getTime() < Date.now())
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Now > Participation start time');
   }
 
   async checkAddressInWhitelist(data: CreateWhitelistDto) {
-    const listWalletAddress = [];
+    const whiteListAddresses = [];
+    const dataInput: any = [...new Set(data.whitelistAddresses)];
 
-    for (const [i, obj] of data.whitelistAddresses.entries()) {
-      // check duplicate
-      const isAddress = listWalletAddress.find(
-        (e) => e === obj['walletAddress'],
-      );
-      if (isAddress) {
-        data.whitelistAddresses.splice(i, 1);
-      }
-
+    for (const walletAddress of dataInput) {
       //check incorrect
-      if (!ethers.utils.isAddress(obj['walletAddress']))
+      if (!ethers.utils.isAddress(walletAddress))
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid wallet address');
 
-      listWalletAddress.push(obj['walletAddress']);
+      whiteListAddresses.push({
+        walletAddress,
+        deposited: 0,
+        purchased: 0,
+      });
     }
+
+    return whiteListAddresses;
   }
 
   async removeWhitelist(
@@ -701,6 +708,46 @@ export class IaoEventService {
 
     //delete a record or all
     return await this.dataService.whitelist.updateOne(filter, option);
+  }
+
+  async exportWhitelist(user: any, data: ExportWhitelistDto, res: any) {
+    const filter = { iaoEventId: data.iaoEventId, isDeleted: false };
+
+    const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
+    if (!currentIaoEvent)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    if (currentIaoEvent.whitelistAnnouncementTime.getTime() >= Date.now())
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Now <= Participation start time',
+      );
+
+    const currentWhiltelist = await this.dataService.whitelist.findOne({
+      iaoEventId: data.iaoEventId,
+      deleted: false,
+    });
+    if (!currentWhiltelist)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
+
+    const headings = [
+      ['Wallet address', 'Deposited (USDT)', 'Purchased (GEM1)'],
+    ];
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(currentWhiltelist.whiteListAddresses, {
+      origin: 'A2',
+      skipHeader: true,
+      header: ['walletAddress', 'deposited', 'purchased'],
+    });
+
+    XLSX.utils.sheet_add_aoa(ws, headings, { origin: 'A1' });
+    XLSX.utils.book_append_sheet(wb, ws);
+
+    const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
+    res.attachment(`${CVS_NAME}${moment().format('DDMMYY')}.csv`);
+
+    return res.status(200).send(buffer);
   }
 
   async checkRegistrationParticipation(
