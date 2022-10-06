@@ -589,13 +589,15 @@ export class IaoEventService {
     });
     if (!currertWhitelist) return { totalDocs: 0, docs: [] } as ListDocument;
 
-    const totalAddress = currertWhitelist.whiteListAddresses.length;
+    const totalAllAddress = currertWhitelist.whiteListAddresses.length;
 
     // search data
     const dataRegex = new RegExp(filter.wallet, 'i');
     let whiteListAddresses = currertWhitelist.whiteListAddresses.filter((i) =>
       dataRegex.test(i.walletAddress),
     );
+
+    const totalSearchAddress = whiteListAddresses.length;
 
     // sort deposited
     if (filter.sortField && filter.sortType) {
@@ -612,7 +614,7 @@ export class IaoEventService {
       });
     }
 
-    const offset = filter.offset ? filter.offset - 1 : DEFAULT_OFFET;
+    const offset = filter.offset ? filter.offset : DEFAULT_OFFET;
 
     const limit = offset + (filter.limit || DEFAULT_LIMIT);
 
@@ -620,7 +622,8 @@ export class IaoEventService {
     whiteListAddresses = whiteListAddresses.slice(offset, limit);
 
     return {
-      totalDocs: totalAddress,
+      totalDocs: totalSearchAddress,
+      metadata: { totalAllDocs: totalAllAddress },
       docs: whiteListAddresses || [],
     } as ListDocument;
   }
@@ -632,16 +635,21 @@ export class IaoEventService {
     // check Iao-event
     await this.checkIaoEvent(data.iaoEventId);
 
+    // set data whitelist
+    const whiteListAddresses = await this.checkAddressInWhitelist(data);
+
     // check iaoEventId in whitelist
-    const isIaoEventId = await this.dataService.whitelist.findOne({
+    const currentWhitelist = await this.dataService.whitelist.findOne({
       iaoEventId: data.iaoEventId,
       deleted: false,
     });
-    if (isIaoEventId)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
-
-    // set data whitelist
-    const whiteListAddresses = await this.checkAddressInWhitelist(data);
+    if (currentWhitelist) {
+      return await this.dataService.whitelist.findOneAndUpdate(
+        { iaoEventId: currentWhitelist.iaoEventId },
+        { $set: { whiteListAddresses } },
+        { new: true },
+      );
+    }
 
     return await this.dataService.whitelist.create({
       iaoEventId: data.iaoEventId,

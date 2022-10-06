@@ -8,6 +8,7 @@ import {
   F_NFT_STATUS,
   F_NFT_TYPE,
   IAO_EVENT_STATUS,
+  IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
 } from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
@@ -276,20 +277,42 @@ export class WorkerService {
   }
 
   private async _handleDeactiveFNFT(requestData: WorkerDataDto) {
-    /**
-     * update status of F-NFT
-     * update status of iao request if create F-NFT from iao request
-     * update status of NFTs
-     * update status of asset items
-     */
-
     const session = await this.connection.startSession();
     session.startTransaction();
 
     try {
-      /**
-       * impelement code here
-       */
+      const currentFnft = await this.dataServices.fnft.findOneAndUpdate(
+        { fnftId: requestData.metadata.fnftId },
+        {
+          status: F_NFT_STATUS.INACTIVE,
+        },
+        { session: session },
+      );
+
+      const nfts = await this.dataServices.nft.findMany(
+        { tokenId: { $in: currentFnft.items } },
+        {
+          assetId: 1,
+        },
+      );
+
+      const tokenIds = currentFnft.items;
+      const assetIds = nfts.filter((x) => x.assetId).map((x) => x.assetId);
+
+      await this.dataServices.nft.updateMany(
+        { tokenId: { $in: tokenIds } },
+        { $set: { status: NFT_STATUS.MINTED } },
+        { session: session },
+      );
+
+      if (assetIds.length > 0) {
+        await this.dataServices.asset.updateMany(
+          { itemId: { $in: assetIds } },
+          { $set: { status: ASSET_STATUS.CONVERTED_TO_NFT } },
+          { session: session },
+        );
+      }
+
       await session.commitTransaction();
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEACTIVE_F_NFT,
