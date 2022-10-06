@@ -48,7 +48,7 @@ export class NftService {
         },
       ];
     }
-    if (filter.assetType) query['assetType'] = filter.assetType;
+    if (filter.assetType) query['assetType.assetTypeId'] = filter.assetType;
     if (filter.assetCategory) {
       switch (filter.assetCategory) {
         case ASSET_CATEGORY.PHYSICAL:
@@ -97,8 +97,9 @@ export class NftService {
             },
             {
               $project: {
+                _id: 0,
                 name: 1,
-                media: 1,
+                assetTypeId: 1,
               },
             },
           ],
