@@ -36,6 +36,7 @@ const ufs = require('url-file-size');
 
 export interface ListDocument {
   docs?: any[];
+  metadata?: object;
   totalDocs?: number;
 }
 
