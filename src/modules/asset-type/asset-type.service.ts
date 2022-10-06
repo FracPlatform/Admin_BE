@@ -291,8 +291,8 @@ export class AssetTypeService {
     );
     if (
       editedSpecification.newSpecification.label.en &&
-      toEditSpecification.label.en.toUpperCase() !==
-        editedSpecification.newSpecification.label.en.toUpperCase()
+      toEditSpecification.label?.en?.toUpperCase() !==
+        editedSpecification.newSpecification.label?.en?.toUpperCase()
     ) {
       await this.checkDuplicateSpecification(params, {
         lang: LANGUAGE.EN,
@@ -301,8 +301,8 @@ export class AssetTypeService {
     }
     if (
       editedSpecification.newSpecification.label.ja &&
-      toEditSpecification.label.ja.toUpperCase() !==
-        editedSpecification.newSpecification.label.ja.toUpperCase()
+      toEditSpecification.label?.ja?.toUpperCase() !==
+        editedSpecification.newSpecification.label?.ja?.toUpperCase()
     ) {
       await this.checkDuplicateSpecification(params, {
         lang: LANGUAGE.JA,
@@ -311,8 +311,8 @@ export class AssetTypeService {
     }
     if (
       editedSpecification.newSpecification.label.cn &&
-      toEditSpecification.label.cn.toUpperCase() !==
-        editedSpecification.newSpecification.label.cn.toUpperCase()
+      toEditSpecification.label?.cn?.toUpperCase() !==
+        editedSpecification.newSpecification.label?.cn?.toUpperCase()
     ) {
       await this.checkDuplicateSpecification(params, {
         lang: LANGUAGE.CN,

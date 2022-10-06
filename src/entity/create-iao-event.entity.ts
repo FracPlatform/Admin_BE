@@ -84,3 +84,44 @@ export class IAOEventDetailEntity {
   lastWhitelistUpdatedAt: Date;
   lastWhitelistUpdatedBy: string;
 }
+
+export class ExportedIAOEventEntity {
+  iaoEventId: string;
+  iaoEventDuration: string;
+  registrationStartTime: Date;
+  registrationEndTime: Date;
+  participationStartTime: Date;
+  participationEndTime: Date;
+  iaoEventName: string;
+  vaultType: number;
+  chainId: number;
+  FNFTcontractAddress: string;
+  tokenSymbol: string;
+  totalSupply: number;
+  fNftDecimals: number;
+  iaoRequestId: string;
+  acceptedCurrencyAddress: string;
+  acceptedCurrencySymbol: string;
+  exchangeRate: number;
+  assetValuation: number;
+  IAOOffered: number;
+  IAOOfferedToken: number;
+  vaultUnlockThreshold: number;
+  vaultUnlockThresholdToken: number;
+  display: boolean;
+  numberOfItems: number;
+  assetName: string;
+  assetCategory: string;
+  assetType: string;
+  allocationType: number;
+  hardCapPerUser: number;
+  whitelistAnnouncementTime: Date;
+  createdBy: object;
+  createdOn: Date;
+  createdOnChainBy: object;
+  createdOnChainOn: Date;
+  updatedBy: object;
+  updatedOn: Date;
+  lastWhitelistUpdatedBy: object;
+  lastWhitlistUpdatedOn: Date;
+}

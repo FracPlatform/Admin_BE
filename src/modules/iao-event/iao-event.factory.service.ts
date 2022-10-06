@@ -5,6 +5,7 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { FNFT_DECIMAL, ON_CHAIN_STATUS } from 'src/datalayer/model';
 import {
   CreateIAOEventEntity,
+  ExportedIAOEventEntity,
   IAOEventDetailEntity,
 } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -153,5 +154,12 @@ export class IaoEventBuilderService {
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
     };
+  }
+
+  convertExportedEvents(data: any[]) {
+    // const exportedEvents: ExportedIAOEventEntity[] = data.map((event) => (
+    //   {
+    //   }
+    // ))
   }
 }

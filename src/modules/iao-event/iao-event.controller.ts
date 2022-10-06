@@ -130,6 +130,20 @@ export class IaoEventController {
     }
   }
 
+  @Get('export-events')
+  @ApiOperation({ summary: 'Export IAO event' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async exportIaoEvent() {
+    try {
+      return await this.iaoEventService.exportIaoEvent();
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'get IAO event detail' })
   @HttpCode(HttpStatus.OK)

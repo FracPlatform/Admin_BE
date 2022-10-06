@@ -10,7 +10,7 @@ const abiDecoder = require('abi-decoder');
 const contract721Abi = require('./contract/erc721.json');
 const contract1155Abi = require('./contract/erc1155.json');
 const contractProxyAbi = require('./contract/proxy.json');
-
+const contract20Abi = require('./contract/erc20.json');
 export class Web3ETH implements IWeb3API {
   private readonly logger = new Logger(Web3ETH.name);
 
@@ -18,6 +18,7 @@ export class Web3ETH implements IWeb3API {
   private contract721: Contract;
   private contract1155: Contract;
   private contractProxy: Contract;
+  private contract20: Contract;
 
   constructor() {
     if (!this.web3Instance) {
@@ -25,7 +26,7 @@ export class Web3ETH implements IWeb3API {
     }
   }
 
-  private async setProvider() {
+  private async setProvider(contract20Address?: string) {
     while (true) {
       const rpcUrl = Utils.getRandom(process.env.CHAIN_RPC_URL.split(','));
       this.logger.debug(
@@ -54,6 +55,13 @@ export class Web3ETH implements IWeb3API {
       contractProxyAbi.output.abi,
       process.env.CONTRACT_PROXY,
     );
+
+    if (contract20Address) {
+      this.contract20 = new this.web3Instance.eth.Contract(
+        contract20Abi.output.abi,
+        contract20Address,
+      );
+    }
 
     abiDecoder.addABI(contractProxyAbi.output.abi);
   }
@@ -112,6 +120,11 @@ export class Web3ETH implements IWeb3API {
   public async getContractInstance() {
     await this.setProvider();
     return this.contractProxy;
+  }
+
+  public async getContract20Instance(contract20Address: string) {
+    await this.setProvider(contract20Address);
+    return this.contract20;
   }
 
   public toChecksumAddress(address: string) {

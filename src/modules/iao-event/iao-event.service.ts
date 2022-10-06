@@ -384,6 +384,78 @@ export class IaoEventService {
     };
   }
 
+  async exportIaoEvent() {
+    const dataQuery = await this.dataService.iaoEvent.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+        },
+      },
+      {
+        $lookup: {
+          from: 'IAORequest',
+          localField: 'iaoRequestId',
+          foreignField: 'iaoId',
+          as: 'iaoRequest',
+        },
+      },
+      {
+        $unwind: {
+          path: '$iaoRequest',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdBy',
+          foreignField: 'adminId',
+          as: 'createdByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$createdByAdmin',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'updatedBy',
+          foreignField: 'adminId',
+          as: 'updatedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$updatedByAdmin',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'lastWhitelistUpdatedBy',
+          foreignField: 'adminId',
+          as: 'lastWhitelistUpdatedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$lastWhitelistUpdatedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Asset',
+          localField: 'iaoRequest.items',
+          foreignField: 'itemId',
+          as: 'iaoRequest.items',
+        },
+      },
+    ]);
+    return dataQuery;
+  }
+
   async findOne(id: string) {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
