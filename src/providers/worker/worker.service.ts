@@ -187,11 +187,13 @@ export class WorkerService {
         { session: session },
       );
 
-      await this.dataServices.asset.updateMany(
-        { itemId: { $in: assetIds } },
-        { $set: { status: ASSET_STATUS.FRACTIONALIZED } },
-        { session: session },
-      );
+      if (assetIds.length > 0) {
+        await this.dataServices.asset.updateMany(
+          { itemId: { $in: assetIds } },
+          { $set: { status: ASSET_STATUS.FRACTIONALIZED } },
+          { session: session },
+        );
+      }
 
       await session.commitTransaction();
 
