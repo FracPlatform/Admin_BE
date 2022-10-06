@@ -22,6 +22,7 @@ import {
   VAULT_TYPE,
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
+  IAO_EVENT_TYPE,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -762,12 +763,14 @@ export class IaoEventService {
     return res.status(200).send(buffer);
   }
 
-  async checkRegistrationParticipation(
-    checkTimeDTO: CheckTimeDTO,
-  ): Promise<Array<IAOEvent>> {
-    const query = { $or: [] };
+  async checkRegistrationParticipation(checkTimeDTO: CheckTimeDTO) {
+    const queryRegistrationStartTime = { $or: [] };
+    const queryRegistrationEndTime = { $or: [] };
+    const queryParticipationStartTime = { $or: [] };
+    const queryParticipationEndTime = { $or: [] };
+
     // check with registrationStartTime
-    query['$or'].push(
+    queryRegistrationStartTime['$or'].push(
       {
         registrationStartTime: {
           $lte: checkTimeDTO.date,
@@ -788,7 +791,7 @@ export class IaoEventService {
       },
     );
     // check with registrationEndTime
-    query['$or'].push(
+    queryRegistrationEndTime['$or'].push(
       {
         registrationEndTime: {
           $lte: checkTimeDTO.date,
@@ -809,7 +812,7 @@ export class IaoEventService {
       },
     );
     // check with participationStartTime
-    query['$or'].push(
+    queryParticipationStartTime['$or'].push(
       {
         participationStartTime: {
           $lte: checkTimeDTO.date,
@@ -830,7 +833,7 @@ export class IaoEventService {
       },
     );
     // check with participationEndTime
-    query['$or'].push(
+    queryParticipationEndTime['$or'].push(
       {
         participationEndTime: {
           $lte: checkTimeDTO.date,
@@ -851,11 +854,84 @@ export class IaoEventService {
       },
     );
 
-    const iaoEventList = await this.dataService.iaoEvent.findMany({
-      ...query,
+    let iaoEventList = [];
+
+    const iaoEventListRegistrationStartTime =
+      this.dataService.iaoEvent.findMany({
+        ...queryRegistrationStartTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      });
+    const iaoEventListRegistrationEndTime = this.dataService.iaoEvent.findMany({
+      ...queryRegistrationEndTime,
       status: IAO_EVENT_STATUS.ACTIVE,
     });
+    const iaoEventListParticipationStartTime =
+      this.dataService.iaoEvent.findMany({
+        ...queryParticipationStartTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      });
+    const iaoEventListParticipationEndTime = this.dataService.iaoEvent.findMany(
+      {
+        ...queryParticipationEndTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      },
+    );
+
+    let [getRegisStart, getRegisEnd, getParStart, getParEnd]: any =
+      await Promise.all([
+        iaoEventListRegistrationStartTime,
+        iaoEventListRegistrationEndTime,
+        iaoEventListParticipationStartTime,
+        iaoEventListParticipationEndTime,
+      ]);
+
+    getRegisStart = this.convertIaoEventToCheckTime(
+      getRegisStart,
+      IAO_EVENT_TYPE.REGIS_START,
+    );
+    getRegisEnd = this.convertIaoEventToCheckTime(
+      getRegisEnd,
+      IAO_EVENT_TYPE.REGIS_END,
+    );
+    getParStart = this.convertIaoEventToCheckTime(
+      getParStart,
+      IAO_EVENT_TYPE.PARTICI_START,
+    );
+    getParEnd = this.convertIaoEventToCheckTime(
+      getParEnd,
+      IAO_EVENT_TYPE.PARTICI_END,
+    );
+
+    iaoEventList = iaoEventList.concat(
+      getRegisStart,
+      getRegisEnd,
+      getParStart,
+      getParEnd,
+    );
+    iaoEventList.sort((obj, _obj) => obj.date - _obj.date);
+
     return iaoEventList;
+  }
+
+  convertIaoEventToCheckTime(iao: any, type: any) {
+    return iao.map((iao: any) => {
+      const { iaoEventName, eventPhotoUrl, iaoEventId } = iao;
+      const obj: any = {
+        iaoEventName,
+        eventPhotoUrl,
+        iaoEventId,
+        eventType: type,
+      };
+      if (type === IAO_EVENT_TYPE.REGIS_START)
+        obj.date = iao.registrationStartTime;
+      if (type === IAO_EVENT_TYPE.REGIS_END) obj.date = iao.registrationEndTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_START)
+        obj.date = iao.participationStartTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_END)
+        obj.date = iao.registrationEndTime;
+
+      return obj;
+    });
   }
 
   checkCurrentStage(
