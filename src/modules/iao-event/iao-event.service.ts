@@ -566,9 +566,13 @@ export class IaoEventService {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
-      onChainStatus: ON_CHAIN_STATUS.DRAFT,
     });
     if (!iaoEvent) throw ApiError('', 'Data no exists');
+
+    if (iaoEvent.onChainStatus === ON_CHAIN_STATUS.ON_CHAIN) {
+      throw ApiError('', "Can't delete iao event have status on chain");
+    }
+
     const update = await this.dataService.iaoEvent.updateOne(
       {
         iaoEventId: id,
