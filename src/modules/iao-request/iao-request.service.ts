@@ -1036,7 +1036,6 @@ export class IaoRequestService {
         },
       },
     );
-    console.log(id);
 
     if (!updatedIao)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit document');
