@@ -152,23 +152,14 @@ export class WorkerService {
   }
 
   private async _handleMintFNFTEvent(requestData: WorkerDataDto) {
-    /**
-     * Update mintedStatus of f-nft in db to 1(MINTED)
-     *   contract address, fractionalized by, fractionalized on, tx hash
-     * Update status nft to 3(FRACTIONLIZED)
-     * Update status asset item to 5(FRACTIONALIZED)
-     */
     const session = await this.connection.startSession();
     session.startTransaction();
     try {
-      /**
-       * impelement code here
-       */
       const admin = await this.dataServices.admin.findOne({
         walletAddress: requestData.metadata.mintBy,
       });
 
-      await this.dataServices.fnft.findOneAndUpdate(
+      const currentFnft = await this.dataServices.fnft.findOneAndUpdate(
         { fnftId: requestData.metadata.fnftId },
         {
           mintedStatus: F_NFT_MINTED_STATUS.MINTED,
@@ -178,6 +169,34 @@ export class WorkerService {
           txhash: requestData.transactionHash,
         },
       );
+
+      const nfts = await this.dataServices.nft.findMany(
+        { tokenId: { $in: currentFnft.items } },
+        {
+          assetId: 1,
+        },
+      );
+
+      const tokkenIds = currentFnft.items;
+      const assetIds = nfts.filter((x) => x.assetId).map((x) => x.assetId);
+
+      let promiseAll = [];
+
+      promiseAll.push(
+        this.dataServices.nft.updateMany(
+          { tokenId: { $in: tokkenIds } },
+          { $set: { status: NFT_STATUS.FRACTIONLIZED } },
+        ),
+      );
+      promiseAll.push(
+        this.dataServices.asset.updateMany(
+          { itemId: { $in: assetIds } },
+          { $set: { status: ASSET_STATUS.FRACTIONALIZED } },
+        ),
+      );
+
+      await Promise.all(promiseAll);
+
       await session.commitTransaction();
       this.socketGateway.sendMessage(
         SOCKET_EVENT.MINT_F_NFT_EVENT,
