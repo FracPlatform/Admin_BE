@@ -11,17 +11,17 @@ import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 @Injectable()
 export class IaoRequestBuilderService {
   createIaoRequestDetail(iaos, isGetNft): IAORequest {
-    if (!isGetNft) {
-      // format documents
-      const documentsArray = [];
-      for (const item of iaos[0].items) {
-        item.documents = item.documents.map((doc) => {
-          return { ...doc, itemId: item._id };
-        });
-        documentsArray.push(...item.documents);
-      }
-      iaos[0]['documents'] = documentsArray;
-    }
+    // if (!isGetNft) {
+    //   // format documents
+    //   const documentsArray = [];
+    //   for (const item of iaos[0].items) {
+    //     item.documents = item.documents.map((doc) => {
+    //       return { ...doc, itemId: item._id };
+    //     });
+    //     documentsArray.push(...item.documents);
+    //   }
+    //   iaos[0]['documents'] = documentsArray;
+    // }
     // format reviewer
     iaos[0]['firstReviewer'] = {
       ...iaos[0]['firstReviewer'],
