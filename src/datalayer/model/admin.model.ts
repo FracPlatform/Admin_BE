@@ -8,7 +8,7 @@ export type AdminDocument = Admin & Document;
 
 export enum ADMIN_STATUS {
   ACTIVE = 1,
-  INACTIVE = 2,
+  INACTIVE = 0,
 }
 
 @Schema({
