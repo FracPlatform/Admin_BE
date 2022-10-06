@@ -282,7 +282,7 @@ export class WorkerService {
 
     try {
       const currentFnft = await this.dataServices.fnft.findOneAndUpdate(
-        { fnftId: requestData.metadata.fnftId },
+        { contractAddress: requestData.metadata.fractTokenAddress },
         {
           status: F_NFT_STATUS.INACTIVE,
         },
