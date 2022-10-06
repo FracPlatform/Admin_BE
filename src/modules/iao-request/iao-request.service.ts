@@ -195,7 +195,10 @@ export class IaoRequestService {
 
     agg.push(
       {
-        $unwind: '$items',
+        $unwind: {
+          path: '$items',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $lookup: {
@@ -229,6 +232,7 @@ export class IaoRequestService {
           ownerId: { $first: '$ownerId' },
           usdPrice: { $first: '$usdPrice' },
           sizeOfItem: { $first: '$sizeOfItem' },
+          iaoId: { $first: '$iaoId' },
           items: { $push: '$item' },
           fractor: { $first: '$fractor' },
           requestId: { $first: '$iaoId' },
