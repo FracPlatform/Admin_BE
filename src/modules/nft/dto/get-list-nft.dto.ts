@@ -19,7 +19,6 @@ export class GetListNftDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
   @MaxLength(256)
   keyword: string;
 

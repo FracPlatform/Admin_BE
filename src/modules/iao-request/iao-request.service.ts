@@ -523,6 +523,7 @@ export class IaoRequestService {
         firstReviewer: { $first: '$firstReviewer' },
         _secondReviewer: { $first: '$_secondReviewer' },
         secondReviewer: { $first: '$secondReviewer' },
+        documents: { $first: '$documents' },
         createdAt: { $first: '$createdAt' },
         updatedAt: { $first: '$updatedAt' },
         updatedBy: { $first: '$updatedBy' },
@@ -1020,6 +1021,7 @@ export class IaoRequestService {
 
     const iao = await this.dataService.iaoRequest.findOne(filter);
     if (!iao) throw ApiError('', `Id of IAO request is invalid`);
+
     const updatedIao = await this.dataService.iaoRequest.findOneAndUpdate(
       {
         iaoId: id,
@@ -1034,6 +1036,7 @@ export class IaoRequestService {
         },
       },
     );
+
     if (!updatedIao)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit document');
     return { success: true };
