@@ -180,7 +180,7 @@ export class WorkerService {
       const tokkenIds = currentFnft.items;
       const assetIds = nfts.filter((x) => x.assetId).map((x) => x.assetId);
 
-      let promiseAll = [];
+      const promiseAll = [];
 
       promiseAll.push(
         this.dataServices.nft.updateMany(
