@@ -3,8 +3,6 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { ethers } from 'ethers';
 import { get } from 'lodash';
 import mongoose from 'mongoose';
-const XLSX = require('xlsx');
-import moment = require('moment');
 import { ApiError } from 'src/common/api';
 import {
   CVS_NAME,
@@ -17,11 +15,11 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   F_NFT_STATUS,
   IAOEvent,
-  IAO_EVENT_STATUS,
   IAO_EVENT_STAGE,
-  VAULT_TYPE,
+  IAO_EVENT_STATUS,
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
+  VAULT_TYPE,
   IAO_EVENT_TYPE,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
@@ -36,6 +34,8 @@ import {
   FilterWhitelistDto,
 } from './dto/whitelist.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
+const XLSX = require('xlsx');
+import moment = require('moment');
 
 @Injectable()
 export class IaoEventService {
@@ -383,6 +383,191 @@ export class IaoEventService {
       totalDocs: count,
       docs: finalData,
     };
+  }
+
+  async exportIaoEvent(res: any) {
+    const dataQuery = await this.dataService.iaoEvent.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+        },
+      },
+      {
+        $lookup: {
+          from: 'IAORequest',
+          localField: 'iaoRequestId',
+          foreignField: 'iaoId',
+          as: 'iaoRequest',
+        },
+      },
+      {
+        $unwind: {
+          path: '$iaoRequest',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdBy',
+          foreignField: 'adminId',
+          as: 'createdByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$createdByAdmin',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'updatedBy',
+          foreignField: 'adminId',
+          as: 'updatedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$updatedByAdmin',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'lastWhitelistUpdatedBy',
+          foreignField: 'adminId',
+          as: 'lastWhitelistUpdatedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$lastWhitelistUpdatedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdOnChainBy',
+          foreignField: 'adminId',
+          as: 'createdOnChainByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$createdOnChainByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Asset',
+          localField: 'iaoRequest.items',
+          foreignField: 'itemId',
+          as: 'iaoRequest.items',
+        },
+      },
+    ]);
+    const assetTypes = await this.dataService.assetTypes.findMany({});
+    const finalData = this.iaoEventBuilderService.convertExportedEvents(
+      dataQuery,
+      assetTypes,
+    );
+
+    const headings = [
+      [
+        'Event ID',
+        'Event duration (days)',
+        'Registration Start Time',
+        'Registration End Time',
+        'Participation Start Time',
+        'Participation End Time',
+        'Event Name',
+        'Event Type',
+        'Chain',
+        'F-NFT Contract Address',
+        'F-NFT Symbol',
+        'F-NFT Total Supply',
+        'F-NFT Decimals',
+        'IAO Request ID',
+        'Currency Contract Address',
+        'Currency Symbol',
+        'Exchange Rate',
+        'Asset Valuation',
+        'IAO Offer (%)',
+        'IAO Offer (amt)',
+        'Vault Unlock Threshold (%)',
+        'Vault Unlock Threshold (amt)',
+        'Display on Trader Web',
+        'Number of items',
+        'Asset name',
+        'Asset category',
+        'Asset type',
+        'Allocation Type',
+        'Hard cap per user (%)',
+        'Hard cap per user (amt)',
+        'Whitelist Announcement Time',
+        'Created by',
+        'Created on',
+        'Created on chain by',
+        'Created on chain on',
+        'Last update by',
+        'Last update on',
+        'Last Whitelist update by',
+        'Last Whitelist update on',
+      ],
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(finalData, {
+      origin: 'A2',
+      skipHeader: true,
+      header: [
+        'iaoEventId',
+        'iaoEventDuration',
+        'registrationStartTime',
+        'registrationEndTime',
+        'participationStartTime',
+        'participationEndTime',
+        'iaoEventName',
+        'vaultType',
+        'chainId',
+        'FNFTcontractAddress',
+        'tokenSymbol',
+        'totalSupply',
+        'fNftDecimals',
+        'iaoRequestId',
+        'acceptedCurrencyAddress',
+        'acceptedCurrencySymbol',
+        'exchangeRate',
+        'assetValuation',
+        'IAOOffered',
+        'IAOOfferedToken',
+        'vaultUnlockThreshold',
+        'vaultUnlockThresholdToken',
+        'display',
+        'numberOfItems',
+        'assetName',
+        'assetCategory',
+        'assetType',
+        'allocationType',
+        'hardCapPerUser',
+        'whitelistAnnouncementTime',
+        'createdBy',
+        'createdOn',
+        'createdOnChainBy',
+        'createdOnChainOn',
+        'updatedBy',
+        'updatedOn',
+        'lastWhitelistUpdatedBy',
+        'lastWhitelistUpdatedOn',
+      ],
+    });
+    XLSX.utils.sheet_add_aoa(ws, headings, { origin: 'A1' });
+    XLSX.utils.book_append_sheet(wb, ws);
+    const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
+    res.attachment(`${CVS_NAME.IAO_EVENT}${moment().format('DDMMYY')}.csv`);
+
+    return res.status(200).send(buffer);
   }
 
   async findOne(id: string) {
@@ -758,7 +943,7 @@ export class IaoEventService {
     XLSX.utils.book_append_sheet(wb, ws);
 
     const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
-    res.attachment(`${CVS_NAME}${moment().format('DDMMYY')}.csv`);
+    res.attachment(`${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
 
     return res.status(200).send(buffer);
   }

@@ -107,4 +107,7 @@ export enum CHAINID {
   BSC_TESTNET = 97,
 }
 
-export const CVS_NAME = '[Frac]_IAOwhitelist_';
+export enum CVS_NAME {
+  WHITELIST = '[Frac]_IAOwhitelist_',
+  IAO_EVENT = '[Frac]_IAOeventlist_',
+}

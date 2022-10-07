@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import moment = require('moment');
 import { PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { FNFT_DECIMAL, ON_CHAIN_STATUS } from 'src/datalayer/model';
 import {
   CreateIAOEventEntity,
+  ExportedIAOEventEntity,
   IAOEventDetailEntity,
 } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -153,5 +155,76 @@ export class IaoEventBuilderService {
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
     };
+  }
+
+  convertExportedEvents(data: any[], assetTypes: any[]) {
+    const exportedEvents: ExportedIAOEventEntity[] = data.map((event) => {
+      return {
+        iaoEventId: event.iaoEventId,
+        iaoEventDuration: event.iaoEventDuration,
+        registrationStartTime: Utils.formatDate(event.registrationStartTime),
+        registrationEndTime: Utils.formatDate(event.registrationEndTime),
+        participationStartTime: Utils.formatDate(event.participationStartTime),
+        participationEndTime: Utils.formatDate(event.participationEndTime),
+        iaoEventName: event.iaoEventName.en,
+        vaultType: event.vaultType === 1 ? 'Vault' : 'Non-Vault',
+        chainId: 'BSC',
+        FNFTcontractAddress: event.FNFTcontractAddress,
+        tokenSymbol: event.tokenSymbol,
+        totalSupply: event.totalSupply,
+        fNftDecimals: FNFT_DECIMAL,
+        iaoRequestId: event.iaoRequestId,
+        acceptedCurrencyAddress: event.acceptedCurrencyAddress,
+        acceptedCurrencySymbol: event.acceptedCurrencySymbol,
+        exchangeRate: event.exchangeRate,
+        assetValuation: event.exchangeRate * event.totalSupply,
+        IAOOffered: event.iaoRequest.percentOffered,
+        IAOOfferedToken:
+          (event.iaoRequest.percentOffered * event.totalSupply) / 100,
+        vaultUnlockThreshold: event.vaultUnlockThreshold,
+        vaultUnlockThresholdToken:
+          (event.vaultUnlockThreshold * event.totalSupply) / 100,
+        display: event.isDisplay,
+        numberOfItems: event.iaoRequest.items.length,
+        assetName:
+          event.iaoRequest.items.length === 1
+            ? event.iaoRequest.items[0]?.name
+            : '',
+        assetCategory:
+          event.iaoRequest.items.length === 1
+            ? event.iaoRequest.items[0]?.category
+            : '',
+        assetType:
+          event.iaoRequest.items.length === 1
+            ? assetTypes.find(
+                (assetType) =>
+                  assetType._id.toString() ===
+                  event.iaoRequest.items[0].typeId.toString(),
+              ).name.en
+            : '',
+        allocationType: 'FCFS',
+        hardCapPerUser: event.hardCapPerUser,
+        whitelistAnnouncementTime: Utils.formatDate(
+          event.whitelistAnnouncementTime,
+        ),
+        createdBy: `${event.createdByAdmin?.adminId} - ${event.createdByAdmin?.fullname}`,
+        createdOn: Utils.formatDate(event.createdAt),
+        createdOnChainBy: event.createdOnChainByAdmin
+          ? `${event.createdOnChainByAdmin?.adminId} - ${event.createdOnChainByAdmin?.fullname}`
+          : '',
+        createdOnChainOn: event.createdOnChainAt
+          ? Utils.formatDate(event.createdOnChainAt)
+          : '',
+        updatedBy: `${event.updatedByAdmin?.adminId} - ${event.updatedByAdmin?.fullname}`,
+        updatedOn: Utils.formatDate(event.updatedAt),
+        lastWhitelistUpdatedBy: event.lastWhitelistUpdatedByAdmin
+          ? `${event.lastWhitelistUpdatedByAdmin?.adminId} - ${event.lastWhitelistUpdatedByAdmin?.fullname}`
+          : '',
+        lastWhitelistUpdatedOn: event.lastWhitelistUpdatedAt
+          ? Utils.formatDate(event.lastWhitelistUpdatedAt)
+          : '',
+      };
+    });
+    return exportedEvents;
   }
 }
