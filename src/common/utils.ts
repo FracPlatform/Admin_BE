@@ -340,4 +340,12 @@ export class Utils {
   public static formatDate(date: Date) {
     return moment(date).format('MM/DD/YYYY HH:mm:ss');
   }
+
+  public static async getCurrencySymbol(currencyAddress) {
+    const contract20 = await new Web3ETH().getContract20Instance(
+      currencyAddress,
+    );
+    const currencySymbol = await contract20.methods.symbol().call();
+    return currencySymbol;
+  }
 }

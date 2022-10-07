@@ -130,6 +130,8 @@ export class NftService {
           asset: '$asset',
           status: '$status',
           deleted: '$deleted',
+          mediaUrl: '$mediaUrl',
+          previewUrl: '$previewUrl',
         },
       },
       { $match: query },

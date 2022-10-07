@@ -160,6 +160,9 @@ export class IAOEvent {
 
   @Prop({ type: Boolean, default: false })
   isDeleted?: boolean;
+
+  @Prop({ type: String })
+  acceptedCurrencySymbol: string;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);
