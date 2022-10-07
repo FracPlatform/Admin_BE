@@ -340,4 +340,14 @@ export class Utils {
   public static formatDate(date: Date) {
     return moment(date).format('MM/DD/YYYY HH:mm:ss');
   }
+
+  public static addDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() + hours));
+  }
+
+  public static subtractDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() - hours));
+  }
 }
