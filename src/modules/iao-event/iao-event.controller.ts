@@ -136,9 +136,9 @@ export class IaoEventController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
-  async exportIaoEvent() {
+  async exportIaoEvent(@Res() res: Response) {
     try {
-      return await this.iaoEventService.exportIaoEvent();
+      return await this.iaoEventService.exportIaoEvent(res);
     } catch (error) {
       throw error;
     }

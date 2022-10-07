@@ -88,13 +88,13 @@ export class IAOEventDetailEntity {
 export class ExportedIAOEventEntity {
   iaoEventId: string;
   iaoEventDuration: string;
-  registrationStartTime: Date;
-  registrationEndTime: Date;
-  participationStartTime: Date;
-  participationEndTime: Date;
+  registrationStartTime: string;
+  registrationEndTime: string;
+  participationStartTime: string;
+  participationEndTime: string;
   iaoEventName: string;
-  vaultType: number;
-  chainId: number;
+  vaultType: string;
+  chainId: string;
   FNFTcontractAddress: string;
   tokenSymbol: string;
   totalSupply: number;
@@ -113,15 +113,15 @@ export class ExportedIAOEventEntity {
   assetName: string;
   assetCategory: string;
   assetType: string;
-  allocationType: number;
+  allocationType: string;
   hardCapPerUser: number;
-  whitelistAnnouncementTime: Date;
-  createdBy: object;
-  createdOn: Date;
-  createdOnChainBy: object;
-  createdOnChainOn: Date;
-  updatedBy: object;
-  updatedOn: Date;
-  lastWhitelistUpdatedBy: object;
-  lastWhitlistUpdatedOn: Date;
+  whitelistAnnouncementTime: string;
+  createdBy: string;
+  createdOn: string;
+  createdOnChainBy: string;
+  createdOnChainOn: string;
+  updatedBy: string;
+  updatedOn: string;
+  lastWhitelistUpdatedBy: string;
+  lastWhitelistUpdatedOn: string;
 }
