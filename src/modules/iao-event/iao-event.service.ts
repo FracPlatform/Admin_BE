@@ -960,18 +960,18 @@ export class IaoEventService {
       {
         registrationStartTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         registrationStartTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
@@ -981,18 +981,18 @@ export class IaoEventService {
       {
         registrationEndTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         registrationEndTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
@@ -1002,18 +1002,18 @@ export class IaoEventService {
       {
         participationStartTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         participationStartTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
@@ -1023,18 +1023,18 @@ export class IaoEventService {
       {
         participationEndTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         participationEndTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },

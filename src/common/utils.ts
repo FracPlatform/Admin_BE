@@ -341,6 +341,16 @@ export class Utils {
     return moment(date).format('MM/DD/YYYY HH:mm:ss');
   }
 
+  public static addDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() + hours));
+  }
+
+  public static subtractDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() - hours));
+  }
+  
   public static async getCurrencySymbol(currencyAddress) {
     const contract20 = await new Web3ETH().getContract20Instance(
       currencyAddress,
