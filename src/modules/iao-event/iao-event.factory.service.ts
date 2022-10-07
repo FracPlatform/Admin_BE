@@ -1,9 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import moment = require('moment');
-import { PREFIX_ID } from 'src/common/constants';
+import {
+  ALLOCATION_TYPE_BY_ID,
+  ASSET_CATEGORY_BY_ID,
+  CHAIN_NAME_BY_ID,
+  PREFIX_ID,
+  VAULT_TYPE_BY_ID,
+} from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { FNFT_DECIMAL, ON_CHAIN_STATUS } from 'src/datalayer/model';
+import {
+  CategoryType,
+  FNFT_DECIMAL,
+  ON_CHAIN_STATUS,
+} from 'src/datalayer/model';
 import {
   CreateIAOEventEntity,
   ExportedIAOEventEntity,
@@ -21,6 +31,9 @@ export class IaoEventBuilderService {
     user: any,
     session,
   ): Promise<CreateIAOEventEntity> {
+    const currencySymbol = await Utils.getCurrencySymbol(
+      createIaoEventDto.acceptedCurrencyAddress,
+    );
     return {
       iaoEventId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
@@ -38,6 +51,7 @@ export class IaoEventBuilderService {
       participationEndTime: createIaoEventDto['participationEndTime'],
       vaultType: createIaoEventDto.vaultType,
       acceptedCurrencyAddress: createIaoEventDto.acceptedCurrencyAddress,
+      acceptedCurrencySymbol: currencySymbol,
       exchangeRate: createIaoEventDto.exchangeRate,
       percentageOffered: createIaoEventDto.percentageOffered,
       vaultUnlockThreshold: createIaoEventDto.vaultUnlockThreshold,
@@ -159,6 +173,16 @@ export class IaoEventBuilderService {
 
   convertExportedEvents(data: any[], assetTypes: any[]) {
     const exportedEvents: ExportedIAOEventEntity[] = data.map((event) => {
+      let assetCategory = '';
+      if (event.iaoRequest.items.length === 1) {
+        assetCategory =
+          ASSET_CATEGORY_BY_ID[event.iaoRequest.items[0]?.category];
+        if (event.iaoRequest.items[0].category === CategoryType.VIRTUAL) {
+          if (event.iaoRequest.items[0].isMintNFT)
+            assetCategory = `${assetCategory} (NFT)`;
+          else assetCategory = `${assetCategory} (Non-NFT)`;
+        }
+      }
       return {
         iaoEventId: event.iaoEventId,
         iaoEventDuration: event.iaoEventDuration,
@@ -167,8 +191,8 @@ export class IaoEventBuilderService {
         participationStartTime: Utils.formatDate(event.participationStartTime),
         participationEndTime: Utils.formatDate(event.participationEndTime),
         iaoEventName: event.iaoEventName.en,
-        vaultType: event.vaultType === 1 ? 'Vault' : 'Non-Vault',
-        chainId: 'BSC',
+        vaultType: VAULT_TYPE_BY_ID[event.vaultType],
+        chainId: CHAIN_NAME_BY_ID[event.chainId],
         FNFTcontractAddress: event.FNFTcontractAddress,
         tokenSymbol: event.tokenSymbol,
         totalSupply: event.totalSupply,
@@ -178,9 +202,8 @@ export class IaoEventBuilderService {
         acceptedCurrencySymbol: event.acceptedCurrencySymbol,
         exchangeRate: event.exchangeRate,
         assetValuation: event.exchangeRate * event.totalSupply,
-        IAOOffered: event.iaoRequest.percentOffered,
-        IAOOfferedToken:
-          (event.iaoRequest.percentOffered * event.totalSupply) / 100,
+        IAOOffered: event.percentageOffered,
+        IAOOfferedToken: (event.percentageOffered * event.totalSupply) / 100,
         vaultUnlockThreshold: event.vaultUnlockThreshold,
         vaultUnlockThresholdToken:
           (event.vaultUnlockThreshold * event.totalSupply) / 100,
@@ -190,10 +213,7 @@ export class IaoEventBuilderService {
           event.iaoRequest.items.length === 1
             ? event.iaoRequest.items[0]?.name
             : '',
-        assetCategory:
-          event.iaoRequest.items.length === 1
-            ? event.iaoRequest.items[0]?.category
-            : '',
+        assetCategory,
         assetType:
           event.iaoRequest.items.length === 1
             ? assetTypes.find(
@@ -202,8 +222,9 @@ export class IaoEventBuilderService {
                   event.iaoRequest.items[0].typeId.toString(),
               ).name.en
             : '',
-        allocationType: 'FCFS',
+        allocationType: ALLOCATION_TYPE_BY_ID[event.allocationType],
         hardCapPerUser: event.hardCapPerUser,
+        hardCapPerUserToken: (event.hardCapPerUser * event.totalSupply) / 100,
         whitelistAnnouncementTime: Utils.formatDate(
           event.whitelistAnnouncementTime,
         ),

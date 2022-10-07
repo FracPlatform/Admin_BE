@@ -551,6 +551,7 @@ export class IaoEventService {
         'assetType',
         'allocationType',
         'hardCapPerUser',
+        'hardCapPerUserToken',
         'whitelistAnnouncementTime',
         'createdBy',
         'createdOn',

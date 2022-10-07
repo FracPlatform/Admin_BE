@@ -91,7 +91,7 @@ export class Nft {
   @Prop({ type: String })
   name: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, required: false, default: '' })
   description: string;
 
   @Prop({ type: String })
