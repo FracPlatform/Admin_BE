@@ -328,16 +328,6 @@ export class FractorService {
     data: UpdateFractorDto,
   ) {
     if (
-      !fractor.isBlocked &&
-      Object.keys(data).includes('deactivationComment')
-    ) {
-      throw ApiError(
-        '',
-        "Can't edit deactivation comment of fractor is active",
-      );
-    }
-
-    if (
       fractor.isBlocked &&
       !Object.keys(data).includes('deactivationComment')
     ) {
