@@ -42,8 +42,8 @@ export class AdminController {
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get Detail Admin' })
-  async getDetail(@Param('id') id: string, @GetUser() user) {
-    const data = await this.adminService.getDetail(id, user);
+  async getDetail(@Param('id') id: string) {
+    const data = await this.adminService.getDetail(id);
     return new ApiSuccessResponse().success(data, '');
   }
 

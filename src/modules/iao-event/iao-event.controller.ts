@@ -18,7 +18,7 @@ import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { Request, response } from 'express';
+import { Request } from 'express';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';

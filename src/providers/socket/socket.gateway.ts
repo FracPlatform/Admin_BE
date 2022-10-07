@@ -29,7 +29,7 @@ export class SocketGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  async handleConnection(client: Socket, ...args: any[]) {
+  async handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
   }
 

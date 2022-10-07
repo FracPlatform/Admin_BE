@@ -10,7 +10,7 @@ import { ApproveIaoRequestDTO } from './dto/approve-iao-request.dto';
 
 @Injectable()
 export class IaoRequestBuilderService {
-  createIaoRequestDetail(iaos, isGetNft): IAORequest {
+  createIaoRequestDetail(iaos): IAORequest {
     // if (!isGetNft) {
     //   // format documents
     //   const documentsArray = [];
