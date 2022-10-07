@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import moment = require('moment');
 import {
   ALLOCATION_TYPE_BY_ID,
   ASSET_CATEGORY_BY_ID,

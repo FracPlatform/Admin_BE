@@ -36,8 +36,8 @@ export class FnftController {
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'get Detail f-nft' })
-  async getDetail(@Param('id') id: string, @GetUser() user) {
-    const data = await this.fnftService.getDetail(id, user);
+  async getDetail(@Param('id') id: string) {
+    const data = await this.fnftService.getDetail(id);
     return new ApiSuccessResponse().success(data, '');
   }
 

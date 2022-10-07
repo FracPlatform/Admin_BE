@@ -540,7 +540,6 @@ export class IaoRequestService {
     if (iaos.length === 0) throw 'No data exists';
     const iao = this.iaoRequestBuilderService.createIaoRequestDetail(
       iaos,
-      filter.isGetNft,
     );
     return iao;
   }
