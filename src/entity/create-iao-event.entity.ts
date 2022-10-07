@@ -13,6 +13,7 @@ export class CreateIAOEventEntity {
   participationEndTime: any;
   vaultType: number;
   acceptedCurrencyAddress: string;
+  acceptedCurrencySymbol: string;
   exchangeRate: number;
   percentageOffered: number;
   vaultUnlockThreshold: number;
@@ -115,6 +116,7 @@ export class ExportedIAOEventEntity {
   assetType: string;
   allocationType: string;
   hardCapPerUser: number;
+  hardCapPerUserToken: number;
   whitelistAnnouncementTime: string;
   createdBy: string;
   createdOn: string;
