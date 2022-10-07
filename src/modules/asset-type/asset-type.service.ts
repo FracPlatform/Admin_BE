@@ -131,7 +131,7 @@ export class AssetTypeService {
         { session },
       );
       await session.commitTransaction();
-      return { success: true };
+      return { ...createAssetTypeBody, assetTypeId };
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -290,7 +290,7 @@ export class AssetTypeService {
         specification['_id'].toString() === editedSpecification.id,
     );
     if (
-      editedSpecification.newSpecification.label.en &&
+      editedSpecification.newSpecification.label?.en &&
       toEditSpecification.label?.en?.toUpperCase() !==
         editedSpecification.newSpecification.label?.en?.toUpperCase()
     ) {
@@ -300,7 +300,7 @@ export class AssetTypeService {
       });
     }
     if (
-      editedSpecification.newSpecification.label.ja &&
+      editedSpecification.newSpecification.label?.ja &&
       toEditSpecification.label?.ja?.toUpperCase() !==
         editedSpecification.newSpecification.label?.ja?.toUpperCase()
     ) {
@@ -310,7 +310,7 @@ export class AssetTypeService {
       });
     }
     if (
-      editedSpecification.newSpecification.label.cn &&
+      editedSpecification.newSpecification.label?.cn &&
       toEditSpecification.label?.cn?.toUpperCase() !==
         editedSpecification.newSpecification.label?.cn?.toUpperCase()
     ) {

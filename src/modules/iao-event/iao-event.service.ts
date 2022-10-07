@@ -20,6 +20,7 @@ import {
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
   VAULT_TYPE,
+  IAO_EVENT_TYPE,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -751,9 +752,13 @@ export class IaoEventService {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
-      onChainStatus: ON_CHAIN_STATUS.DRAFT,
     });
     if (!iaoEvent) throw ApiError('', 'Data no exists');
+
+    if (iaoEvent.onChainStatus === ON_CHAIN_STATUS.ON_CHAIN) {
+      throw ApiError('', "Can't delete iao event have status on chain");
+    }
+
     const update = await this.dataService.iaoEvent.updateOne(
       {
         iaoEventId: id,
@@ -774,13 +779,15 @@ export class IaoEventService {
     });
     if (!currertWhitelist) return { totalDocs: 0, docs: [] } as ListDocument;
 
-    const totalAddress = currertWhitelist.whiteListAddresses.length;
+    const totalAllAddress = currertWhitelist.whiteListAddresses.length;
 
     // search data
     const dataRegex = new RegExp(filter.wallet, 'i');
     let whiteListAddresses = currertWhitelist.whiteListAddresses.filter((i) =>
       dataRegex.test(i.walletAddress),
     );
+
+    const totalSearchAddress = whiteListAddresses.length;
 
     // sort deposited
     if (filter.sortField && filter.sortType) {
@@ -797,7 +804,7 @@ export class IaoEventService {
       });
     }
 
-    const offset = filter.offset ? filter.offset - 1 : DEFAULT_OFFET;
+    const offset = filter.offset ? filter.offset : DEFAULT_OFFET;
 
     const limit = offset + (filter.limit || DEFAULT_LIMIT);
 
@@ -805,7 +812,8 @@ export class IaoEventService {
     whiteListAddresses = whiteListAddresses.slice(offset, limit);
 
     return {
-      totalDocs: totalAddress,
+      totalDocs: totalSearchAddress,
+      metadata: { totalAllDocs: totalAllAddress },
       docs: whiteListAddresses || [],
     } as ListDocument;
   }
@@ -817,16 +825,21 @@ export class IaoEventService {
     // check Iao-event
     await this.checkIaoEvent(data.iaoEventId);
 
+    // set data whitelist
+    const whiteListAddresses = await this.checkAddressInWhitelist(data);
+
     // check iaoEventId in whitelist
-    const isIaoEventId = await this.dataService.whitelist.findOne({
+    const currentWhitelist = await this.dataService.whitelist.findOne({
       iaoEventId: data.iaoEventId,
       deleted: false,
     });
-    if (isIaoEventId)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
-
-    // set data whitelist
-    const whiteListAddresses = await this.checkAddressInWhitelist(data);
+    if (currentWhitelist) {
+      return await this.dataService.whitelist.findOneAndUpdate(
+        { iaoEventId: currentWhitelist.iaoEventId },
+        { $set: { whiteListAddresses } },
+        { new: true },
+      );
+    }
 
     return await this.dataService.whitelist.create({
       iaoEventId: data.iaoEventId,
@@ -935,12 +948,14 @@ export class IaoEventService {
     return res.status(200).send(buffer);
   }
 
-  async checkRegistrationParticipation(
-    checkTimeDTO: CheckTimeDTO,
-  ): Promise<Array<IAOEvent>> {
-    const query = { $or: [] };
+  async checkRegistrationParticipation(checkTimeDTO: CheckTimeDTO) {
+    const queryRegistrationStartTime = { $or: [] };
+    const queryRegistrationEndTime = { $or: [] };
+    const queryParticipationStartTime = { $or: [] };
+    const queryParticipationEndTime = { $or: [] };
+
     // check with registrationStartTime
-    query['$or'].push(
+    queryRegistrationStartTime['$or'].push(
       {
         registrationStartTime: {
           $lte: checkTimeDTO.date,
@@ -961,7 +976,7 @@ export class IaoEventService {
       },
     );
     // check with registrationEndTime
-    query['$or'].push(
+    queryRegistrationEndTime['$or'].push(
       {
         registrationEndTime: {
           $lte: checkTimeDTO.date,
@@ -982,7 +997,7 @@ export class IaoEventService {
       },
     );
     // check with participationStartTime
-    query['$or'].push(
+    queryParticipationStartTime['$or'].push(
       {
         participationStartTime: {
           $lte: checkTimeDTO.date,
@@ -1003,7 +1018,7 @@ export class IaoEventService {
       },
     );
     // check with participationEndTime
-    query['$or'].push(
+    queryParticipationEndTime['$or'].push(
       {
         participationEndTime: {
           $lte: checkTimeDTO.date,
@@ -1024,11 +1039,84 @@ export class IaoEventService {
       },
     );
 
-    const iaoEventList = await this.dataService.iaoEvent.findMany({
-      ...query,
+    let iaoEventList = [];
+
+    const iaoEventListRegistrationStartTime =
+      this.dataService.iaoEvent.findMany({
+        ...queryRegistrationStartTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      });
+    const iaoEventListRegistrationEndTime = this.dataService.iaoEvent.findMany({
+      ...queryRegistrationEndTime,
       status: IAO_EVENT_STATUS.ACTIVE,
     });
+    const iaoEventListParticipationStartTime =
+      this.dataService.iaoEvent.findMany({
+        ...queryParticipationStartTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      });
+    const iaoEventListParticipationEndTime = this.dataService.iaoEvent.findMany(
+      {
+        ...queryParticipationEndTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      },
+    );
+
+    let [getRegisStart, getRegisEnd, getParStart, getParEnd]: any =
+      await Promise.all([
+        iaoEventListRegistrationStartTime,
+        iaoEventListRegistrationEndTime,
+        iaoEventListParticipationStartTime,
+        iaoEventListParticipationEndTime,
+      ]);
+
+    getRegisStart = this.convertIaoEventToCheckTime(
+      getRegisStart,
+      IAO_EVENT_TYPE.REGIS_START,
+    );
+    getRegisEnd = this.convertIaoEventToCheckTime(
+      getRegisEnd,
+      IAO_EVENT_TYPE.REGIS_END,
+    );
+    getParStart = this.convertIaoEventToCheckTime(
+      getParStart,
+      IAO_EVENT_TYPE.PARTICI_START,
+    );
+    getParEnd = this.convertIaoEventToCheckTime(
+      getParEnd,
+      IAO_EVENT_TYPE.PARTICI_END,
+    );
+
+    iaoEventList = iaoEventList.concat(
+      getRegisStart,
+      getRegisEnd,
+      getParStart,
+      getParEnd,
+    );
+    iaoEventList.sort((obj, _obj) => obj.date - _obj.date);
+
     return iaoEventList;
+  }
+
+  convertIaoEventToCheckTime(iao: any, type: any) {
+    return iao.map((iao: any) => {
+      const { iaoEventName, eventPhotoUrl, iaoEventId } = iao;
+      const obj: any = {
+        iaoEventName,
+        eventPhotoUrl,
+        iaoEventId,
+        eventType: type,
+      };
+      if (type === IAO_EVENT_TYPE.REGIS_START)
+        obj.date = iao.registrationStartTime;
+      if (type === IAO_EVENT_TYPE.REGIS_END) obj.date = iao.registrationEndTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_START)
+        obj.date = iao.participationStartTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_END)
+        obj.date = iao.registrationEndTime;
+
+      return obj;
+    });
   }
 
   checkCurrentStage(
