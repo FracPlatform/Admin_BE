@@ -172,6 +172,16 @@ export class WorkerService {
         { session: session },
       );
 
+      if (currentFnft.iaoRequestId) {
+        await this.dataServices.iaoRequest.findOneAndUpdate(
+          { iaoId: currentFnft.iaoRequestId },
+          {
+            status: IAO_REQUEST_STATUS.CLOSED,
+          },
+          { session: session },
+        );
+      }
+
       const nfts = await this.dataServices.nft.findMany(
         { tokenId: { $in: currentFnft.items } },
         {
@@ -288,6 +298,16 @@ export class WorkerService {
         },
         { session: session },
       );
+
+      if (currentFnft.iaoRequestId) {
+        await this.dataServices.iaoRequest.findOneAndUpdate(
+          { iaoId: currentFnft.iaoRequestId },
+          {
+            status: IAO_REQUEST_STATUS.APPROVED_B,
+          },
+          { session: session },
+        );
+      }
 
       const nfts = await this.dataServices.nft.findMany(
         { tokenId: { $in: currentFnft.items } },
