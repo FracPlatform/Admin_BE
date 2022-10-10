@@ -50,6 +50,26 @@ export class S3Service {
     return metadataUrl;
   }
 
+  async uploadS3(buffer, mimetype, name) {
+    const s3 = this.getS3();
+    const params: S3.PutObjectRequest = {
+      Bucket: process.env.AWS_BUCKET,
+      Key: String(name),
+      Body: buffer,
+      ContentType: mimetype,
+      ACL: 'public-read',
+    };
+    return new Promise<string>((resolve, reject) => {
+      s3.upload(params, (err, data) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve(data['Location']);
+      });
+    });
+  }
+
   getS3() {
     return new S3({
       accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID,
