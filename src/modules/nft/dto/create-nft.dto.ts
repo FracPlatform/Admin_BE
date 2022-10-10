@@ -83,6 +83,7 @@ export class CreateNftDto {
   name: string;
 
   @IsString()
-  @ApiProperty({ type: String })
+  @IsOptional()
+  @ApiProperty({ type: String, required: false })
   description: string;
 }

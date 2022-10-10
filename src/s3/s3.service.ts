@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 import 'dotenv/config';
 import { ApiError } from 'src/common/api';
@@ -6,6 +6,7 @@ import { FILE_PRESIGN_URL, PresignUrlDto } from './dto/s3.dto';
 
 @Injectable()
 export class S3Service {
+  private readonly logger = new Logger(S3Service.name);
   async getPresignedUrl(presignUrlDto: PresignUrlDto, user: any) {
     const nameArr = presignUrlDto.name.split('.');
     const fileExt = nameArr[nameArr.length - 1];
@@ -43,6 +44,7 @@ export class S3Service {
     const s3 = this.getS3();
     s3.putObject(data, (err, data) => {
       if (err) throw err;
+      this.logger.debug(data);
     });
     const metadataUrl = `${
       process.env.AWS_S3_URL

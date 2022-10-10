@@ -107,4 +107,25 @@ export enum CHAINID {
   BSC_TESTNET = 97,
 }
 
-export const CVS_NAME = '[Frac]_IAOwhitelist_';
+export enum CVS_NAME {
+  WHITELIST = '[Frac]_IAOwhitelist_',
+  IAO_EVENT = '[Frac]_IAOeventlist_',
+}
+
+export const VAULT_TYPE_BY_ID = {
+  1: 'Vault',
+  2: 'Non-Vault',
+};
+
+export const CHAIN_NAME_BY_ID = {
+  97: 'BSC',
+};
+
+export const ALLOCATION_TYPE_BY_ID = {
+  1: 'FCFS',
+};
+
+export const ASSET_CATEGORY_BY_ID = {
+  physical: 'Physical Asset',
+  virtual: 'Digital Asset',
+};

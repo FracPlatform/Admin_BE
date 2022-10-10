@@ -196,7 +196,10 @@ export class IaoRequestService {
 
     agg.push(
       {
-        $unwind: '$items',
+        $unwind: {
+          path: '$items',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $lookup: {
@@ -230,6 +233,7 @@ export class IaoRequestService {
           ownerId: { $first: '$ownerId' },
           usdPrice: { $first: '$usdPrice' },
           sizeOfItem: { $first: '$sizeOfItem' },
+          iaoId: { $first: '$iaoId' },
           items: { $push: '$item' },
           fractor: { $first: '$fractor' },
           requestId: { $first: '$iaoId' },
@@ -536,7 +540,6 @@ export class IaoRequestService {
     if (iaos.length === 0) throw 'No data exists';
     const iao = this.iaoRequestBuilderService.createIaoRequestDetail(
       iaos,
-      filter.isGetNft,
     );
     return iao;
   }
@@ -780,7 +783,10 @@ export class IaoRequestService {
       throw 'You do not have permission for this action';
     if (!iaoRequest) throw 'No data exists';
     if (!iaoRequest.firstReviewer) throw 'The first review not exists';
-    if (iaoRequest.secondReviewer) throw 'This IAO request is approved';
+    if (iaoRequest.secondReviewer) {
+      if (iaoRequest.secondReviewer.adminId !== user.adminId)
+        throw 'This IAO request is approved';
+    }
 
     if (
       iaoRequest.firstReviewer &&

@@ -3,8 +3,6 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { ethers } from 'ethers';
 import { get } from 'lodash';
 import mongoose from 'mongoose';
-const XLSX = require('xlsx');
-import moment = require('moment');
 import { ApiError } from 'src/common/api';
 import {
   CVS_NAME,
@@ -17,11 +15,12 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   F_NFT_STATUS,
   IAOEvent,
-  IAO_EVENT_STATUS,
   IAO_EVENT_STAGE,
-  VAULT_TYPE,
+  IAO_EVENT_STATUS,
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
+  VAULT_TYPE,
+  IAO_EVENT_TYPE,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -36,6 +35,8 @@ import {
 } from './dto/whitelist.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
 import { S3Service } from 'src/s3/s3.service';
+const XLSX = require('xlsx');
+import moment = require('moment');
 
 @Injectable()
 export class IaoEventService {
@@ -338,6 +339,8 @@ export class IaoEventService {
           availableSupply: '$availableSupply',
           tokenSymbol: '$tokenSymbol',
           vaultUnlockThreshold: '$vaultUnlockThreshold',
+          eventPhotoUrl: '$eventPhotoUrl',
+          eventBannerUrl: '$eventBannerUrl',
           isDeleted: '$isDeleted',
         },
       },
@@ -384,6 +387,192 @@ export class IaoEventService {
       totalDocs: count,
       docs: finalData,
     };
+  }
+
+  async exportIaoEvent(res: any) {
+    const dataQuery = await this.dataService.iaoEvent.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+        },
+      },
+      {
+        $lookup: {
+          from: 'IAORequest',
+          localField: 'iaoRequestId',
+          foreignField: 'iaoId',
+          as: 'iaoRequest',
+        },
+      },
+      {
+        $unwind: {
+          path: '$iaoRequest',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdBy',
+          foreignField: 'adminId',
+          as: 'createdByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$createdByAdmin',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'updatedBy',
+          foreignField: 'adminId',
+          as: 'updatedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$updatedByAdmin',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'lastWhitelistUpdatedBy',
+          foreignField: 'adminId',
+          as: 'lastWhitelistUpdatedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$lastWhitelistUpdatedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'createdOnChainBy',
+          foreignField: 'adminId',
+          as: 'createdOnChainByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$createdOnChainByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Asset',
+          localField: 'iaoRequest.items',
+          foreignField: 'itemId',
+          as: 'iaoRequest.items',
+        },
+      },
+    ]);
+    const assetTypes = await this.dataService.assetTypes.findMany({});
+    const finalData = this.iaoEventBuilderService.convertExportedEvents(
+      dataQuery,
+      assetTypes,
+    );
+
+    const headings = [
+      [
+        'Event ID',
+        'Event duration (days)',
+        'Registration Start Time',
+        'Registration End Time',
+        'Participation Start Time',
+        'Participation End Time',
+        'Event Name',
+        'Event Type',
+        'Chain',
+        'F-NFT Contract Address',
+        'F-NFT Symbol',
+        'F-NFT Total Supply',
+        'F-NFT Decimals',
+        'IAO Request ID',
+        'Currency Contract Address',
+        'Currency Symbol',
+        'Exchange Rate',
+        'Asset Valuation',
+        'IAO Offer (%)',
+        'IAO Offer (amt)',
+        'Vault Unlock Threshold (%)',
+        'Vault Unlock Threshold (amt)',
+        'Display on Trader Web',
+        'Number of items',
+        'Asset name',
+        'Asset category',
+        'Asset type',
+        'Allocation Type',
+        'Hard cap per user (%)',
+        'Hard cap per user (amt)',
+        'Whitelist Announcement Time',
+        'Created by',
+        'Created on',
+        'Created on chain by',
+        'Created on chain on',
+        'Last update by',
+        'Last update on',
+        'Last Whitelist update by',
+        'Last Whitelist update on',
+      ],
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(finalData, {
+      origin: 'A2',
+      skipHeader: true,
+      header: [
+        'iaoEventId',
+        'iaoEventDuration',
+        'registrationStartTime',
+        'registrationEndTime',
+        'participationStartTime',
+        'participationEndTime',
+        'iaoEventName',
+        'vaultType',
+        'chainId',
+        'FNFTcontractAddress',
+        'tokenSymbol',
+        'totalSupply',
+        'fNftDecimals',
+        'iaoRequestId',
+        'acceptedCurrencyAddress',
+        'acceptedCurrencySymbol',
+        'exchangeRate',
+        'assetValuation',
+        'IAOOffered',
+        'IAOOfferedToken',
+        'vaultUnlockThreshold',
+        'vaultUnlockThresholdToken',
+        'display',
+        'numberOfItems',
+        'assetName',
+        'assetCategory',
+        'assetType',
+        'allocationType',
+        'hardCapPerUser',
+        'hardCapPerUserToken',
+        'whitelistAnnouncementTime',
+        'createdBy',
+        'createdOn',
+        'createdOnChainBy',
+        'createdOnChainOn',
+        'updatedBy',
+        'updatedOn',
+        'lastWhitelistUpdatedBy',
+        'lastWhitelistUpdatedOn',
+      ],
+    });
+    XLSX.utils.sheet_add_aoa(ws, headings, { origin: 'A1' });
+    XLSX.utils.book_append_sheet(wb, ws);
+    const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
+    res.attachment(`${CVS_NAME.IAO_EVENT}${moment().format('DDMMYY')}.csv`);
+
+    return res.status(200).send(buffer);
   }
 
   async findOne(id: string) {
@@ -568,9 +757,13 @@ export class IaoEventService {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
-      onChainStatus: ON_CHAIN_STATUS.DRAFT,
     });
     if (!iaoEvent) throw ApiError('', 'Data no exists');
+
+    if (iaoEvent.onChainStatus === ON_CHAIN_STATUS.ON_CHAIN) {
+      throw ApiError('', "Can't delete iao event have status on chain");
+    }
+
     const update = await this.dataService.iaoEvent.updateOne(
       {
         iaoEventId: id,
@@ -756,105 +949,180 @@ export class IaoEventService {
 
     const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
 
-    const linkS3 = await this.s3Service.uploadS3(buffer, 'csv', `${CVS_NAME}${moment().format('DDMMYY')}.csv`);
+    const linkS3 = await this.s3Service.uploadS3(buffer, 'csv', `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
 
     return { data: linkS3 };
   }
 
-  async checkRegistrationParticipation(
-    checkTimeDTO: CheckTimeDTO,
-  ): Promise<Array<IAOEvent>> {
-    const query = { $or: [] };
+  async checkRegistrationParticipation(checkTimeDTO: CheckTimeDTO) {
+    const queryRegistrationStartTime = { $or: [] };
+    const queryRegistrationEndTime = { $or: [] };
+    const queryParticipationStartTime = { $or: [] };
+    const queryParticipationEndTime = { $or: [] };
+
     // check with registrationStartTime
-    query['$or'].push(
+    queryRegistrationStartTime['$or'].push(
       {
         registrationStartTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         registrationStartTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
     );
     // check with registrationEndTime
-    query['$or'].push(
+    queryRegistrationEndTime['$or'].push(
       {
         registrationEndTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         registrationEndTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
     );
     // check with participationStartTime
-    query['$or'].push(
+    queryParticipationStartTime['$or'].push(
       {
         participationStartTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         participationStartTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
     );
     // check with participationEndTime
-    query['$or'].push(
+    queryParticipationEndTime['$or'].push(
       {
         participationEndTime: {
           $lte: checkTimeDTO.date,
-          $gte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() -
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $gte: Utils.subtractDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
       {
         participationEndTime: {
           $gte: checkTimeDTO.date,
-          $lte: checkTimeDTO.date.setHours(
-            checkTimeDTO.date.getHours() +
-              Number(process.env.IAO_EVENT_CHECK_HOURS),
+          $lte: Utils.addDateByHour(
+            checkTimeDTO.date,
+            +process.env.IAO_EVENT_CHECK_HOURS,
           ),
         },
       },
     );
 
-    const iaoEventList = await this.dataService.iaoEvent.findMany({
-      ...query,
+    let iaoEventList = [];
+
+    const iaoEventListRegistrationStartTime =
+      this.dataService.iaoEvent.findMany({
+        ...queryRegistrationStartTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      });
+    const iaoEventListRegistrationEndTime = this.dataService.iaoEvent.findMany({
+      ...queryRegistrationEndTime,
       status: IAO_EVENT_STATUS.ACTIVE,
     });
+    const iaoEventListParticipationStartTime =
+      this.dataService.iaoEvent.findMany({
+        ...queryParticipationStartTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      });
+    const iaoEventListParticipationEndTime = this.dataService.iaoEvent.findMany(
+      {
+        ...queryParticipationEndTime,
+        status: IAO_EVENT_STATUS.ACTIVE,
+      },
+    );
+
+    let [getRegisStart, getRegisEnd, getParStart, getParEnd]: any =
+      await Promise.all([
+        iaoEventListRegistrationStartTime,
+        iaoEventListRegistrationEndTime,
+        iaoEventListParticipationStartTime,
+        iaoEventListParticipationEndTime,
+      ]);
+
+    getRegisStart = this.convertIaoEventToCheckTime(
+      getRegisStart,
+      IAO_EVENT_TYPE.REGIS_START,
+    );
+    getRegisEnd = this.convertIaoEventToCheckTime(
+      getRegisEnd,
+      IAO_EVENT_TYPE.REGIS_END,
+    );
+    getParStart = this.convertIaoEventToCheckTime(
+      getParStart,
+      IAO_EVENT_TYPE.PARTICI_START,
+    );
+    getParEnd = this.convertIaoEventToCheckTime(
+      getParEnd,
+      IAO_EVENT_TYPE.PARTICI_END,
+    );
+
+    iaoEventList = iaoEventList.concat(
+      getRegisStart,
+      getRegisEnd,
+      getParStart,
+      getParEnd,
+    );
+    iaoEventList.sort((obj, _obj) => obj.date - _obj.date);
+
     return iaoEventList;
+  }
+
+  convertIaoEventToCheckTime(iao: any, type: any) {
+    return iao.map((iao: any) => {
+      const { iaoEventName, eventPhotoUrl, iaoEventId } = iao;
+      const obj: any = {
+        iaoEventName,
+        eventPhotoUrl,
+        iaoEventId,
+        eventType: type,
+      };
+      if (type === IAO_EVENT_TYPE.REGIS_START)
+        obj.date = iao.registrationStartTime;
+      if (type === IAO_EVENT_TYPE.REGIS_END) obj.date = iao.registrationEndTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_START)
+        obj.date = iao.participationStartTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_END)
+        obj.date = iao.registrationEndTime;
+
+      return obj;
+    });
   }
 
   checkCurrentStage(

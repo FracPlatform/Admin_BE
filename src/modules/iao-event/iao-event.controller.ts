@@ -18,7 +18,7 @@ import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
-import { Request, response } from 'express';
+import { Request } from 'express';
 import { Roles } from '../auth/roles.decorator';
 import { Role } from '../auth/role.enum';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
@@ -125,6 +125,20 @@ export class IaoEventController {
     try {
       const responseData = await this.iaoEventService.finAll(filter);
       return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('export-events')
+  @ApiOperation({ summary: 'Export IAO event' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async exportIaoEvent(@Res() res: Response) {
+    try {
+      return await this.iaoEventService.exportIaoEvent(res);
     } catch (error) {
       throw error;
     }

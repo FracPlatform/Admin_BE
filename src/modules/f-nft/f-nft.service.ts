@@ -266,7 +266,7 @@ export class FnftService {
     data.items = items;
   }
 
-  async getDetail(id: string, user: any) {
+  async getDetail(id: string) {
     const filter = {
       $or: [{ fnftId: id }, { contractAddress: id }],
       deleted: false,

@@ -11,6 +11,7 @@ import mongoose from 'mongoose';
 import { IGenericRepository } from '../core/abstracts/generic-repository.abstract';
 import { CounterId } from '../datalayer/model';
 import { Web3ETH } from 'src/blockchain/web3.eth';
+import moment = require('moment');
 const jwt = require('jsonwebtoken');
 const { URL, parse } = require('url');
 export class Utils {
@@ -334,5 +335,27 @@ export class Utils {
       .token721Address()
       .call();
     return nftContractAddress;
+  }
+
+  public static formatDate(date: Date) {
+    return moment(date).format('MM/DD/YYYY HH:mm:ss');
+  }
+
+  public static addDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() + hours));
+  }
+
+  public static subtractDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() - hours));
+  }
+  
+  public static async getCurrencySymbol(currencyAddress) {
+    const contract20 = await new Web3ETH().getContract20Instance(
+      currencyAddress,
+    );
+    const currencySymbol = await contract20.methods.symbol().call();
+    return currencySymbol;
   }
 }

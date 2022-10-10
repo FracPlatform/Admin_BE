@@ -1,6 +1,5 @@
 import {
   ForbiddenException,
-  HttpStatus,
   Injectable,
   Logger,
 } from '@nestjs/common';
@@ -194,7 +193,7 @@ export class AdminService {
     );
   }
 
-  async getDetail(id: string, user: any) {
+  async getDetail(id: string) {
     const filter = {
       adminId: id,
       deleted: false,

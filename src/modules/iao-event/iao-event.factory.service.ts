@@ -1,10 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { PREFIX_ID } from 'src/common/constants';
+import {
+  ALLOCATION_TYPE_BY_ID,
+  ASSET_CATEGORY_BY_ID,
+  CHAIN_NAME_BY_ID,
+  PREFIX_ID,
+  VAULT_TYPE_BY_ID,
+} from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { FNFT_DECIMAL, ON_CHAIN_STATUS } from 'src/datalayer/model';
+import {
+  CategoryType,
+  FNFT_DECIMAL,
+  ON_CHAIN_STATUS,
+} from 'src/datalayer/model';
 import {
   CreateIAOEventEntity,
+  ExportedIAOEventEntity,
   IAOEventDetailEntity,
 } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
@@ -19,6 +30,9 @@ export class IaoEventBuilderService {
     user: any,
     session,
   ): Promise<CreateIAOEventEntity> {
+    const currencySymbol = await Utils.getCurrencySymbol(
+      createIaoEventDto.acceptedCurrencyAddress,
+    );
     return {
       iaoEventId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
@@ -36,6 +50,7 @@ export class IaoEventBuilderService {
       participationEndTime: createIaoEventDto['participationEndTime'],
       vaultType: createIaoEventDto.vaultType,
       acceptedCurrencyAddress: createIaoEventDto.acceptedCurrencyAddress,
+      acceptedCurrencySymbol: currencySymbol,
       exchangeRate: createIaoEventDto.exchangeRate,
       percentageOffered: createIaoEventDto.percentageOffered,
       vaultUnlockThreshold: createIaoEventDto.vaultUnlockThreshold,
@@ -153,5 +168,83 @@ export class IaoEventBuilderService {
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
     };
+  }
+
+  convertExportedEvents(data: any[], assetTypes: any[]) {
+    const exportedEvents: ExportedIAOEventEntity[] = data.map((event) => {
+      let assetCategory = '';
+      if (event.iaoRequest.items.length === 1) {
+        assetCategory =
+          ASSET_CATEGORY_BY_ID[event.iaoRequest.items[0]?.category];
+        if (event.iaoRequest.items[0].category === CategoryType.VIRTUAL) {
+          if (event.iaoRequest.items[0].isMintNFT)
+            assetCategory = `${assetCategory} (NFT)`;
+          else assetCategory = `${assetCategory} (Non-NFT)`;
+        }
+      }
+      return {
+        iaoEventId: event.iaoEventId,
+        iaoEventDuration: event.iaoEventDuration,
+        registrationStartTime: Utils.formatDate(event.registrationStartTime),
+        registrationEndTime: Utils.formatDate(event.registrationEndTime),
+        participationStartTime: Utils.formatDate(event.participationStartTime),
+        participationEndTime: Utils.formatDate(event.participationEndTime),
+        iaoEventName: event.iaoEventName.en,
+        vaultType: VAULT_TYPE_BY_ID[event.vaultType],
+        chainId: CHAIN_NAME_BY_ID[event.chainId],
+        FNFTcontractAddress: event.FNFTcontractAddress,
+        tokenSymbol: event.tokenSymbol,
+        totalSupply: event.totalSupply,
+        fNftDecimals: FNFT_DECIMAL,
+        iaoRequestId: event.iaoRequestId,
+        acceptedCurrencyAddress: event.acceptedCurrencyAddress,
+        acceptedCurrencySymbol: event.acceptedCurrencySymbol,
+        exchangeRate: event.exchangeRate,
+        assetValuation: event.exchangeRate * event.totalSupply,
+        IAOOffered: event.percentageOffered,
+        IAOOfferedToken: (event.percentageOffered * event.totalSupply) / 100,
+        vaultUnlockThreshold: event.vaultUnlockThreshold,
+        vaultUnlockThresholdToken:
+          (event.vaultUnlockThreshold * event.totalSupply) / 100,
+        display: event.isDisplay,
+        numberOfItems: event.iaoRequest.items.length,
+        assetName:
+          event.iaoRequest.items.length === 1
+            ? event.iaoRequest.items[0]?.name
+            : '',
+        assetCategory,
+        assetType:
+          event.iaoRequest.items.length === 1
+            ? assetTypes.find(
+                (assetType) =>
+                  assetType._id.toString() ===
+                  event.iaoRequest.items[0].typeId.toString(),
+              ).name.en
+            : '',
+        allocationType: ALLOCATION_TYPE_BY_ID[event.allocationType],
+        hardCapPerUser: event.hardCapPerUser,
+        hardCapPerUserToken: (event.hardCapPerUser * event.totalSupply) / 100,
+        whitelistAnnouncementTime: Utils.formatDate(
+          event.whitelistAnnouncementTime,
+        ),
+        createdBy: `${event.createdByAdmin?.adminId} - ${event.createdByAdmin?.fullname}`,
+        createdOn: Utils.formatDate(event.createdAt),
+        createdOnChainBy: event.createdOnChainByAdmin
+          ? `${event.createdOnChainByAdmin?.adminId} - ${event.createdOnChainByAdmin?.fullname}`
+          : '',
+        createdOnChainOn: event.createdOnChainAt
+          ? Utils.formatDate(event.createdOnChainAt)
+          : '',
+        updatedBy: `${event.updatedByAdmin?.adminId} - ${event.updatedByAdmin?.fullname}`,
+        updatedOn: Utils.formatDate(event.updatedAt),
+        lastWhitelistUpdatedBy: event.lastWhitelistUpdatedByAdmin
+          ? `${event.lastWhitelistUpdatedByAdmin?.adminId} - ${event.lastWhitelistUpdatedByAdmin?.fullname}`
+          : '',
+        lastWhitelistUpdatedOn: event.lastWhitelistUpdatedAt
+          ? Utils.formatDate(event.lastWhitelistUpdatedAt)
+          : '',
+      };
+    });
+    return exportedEvents;
   }
 }
