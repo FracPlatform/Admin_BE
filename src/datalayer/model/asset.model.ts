@@ -7,6 +7,7 @@ import { CollectionItem } from './collection-item.model';
 import { SpecificationField } from './asset_type.model';
 import { DocumentItem, DocumentItemSchema } from './document-item.model';
 import { PREFIX_ID } from 'src/common/constants';
+import { TokenStandard } from 'src/common/common-type';
 
 export type AssetDocument = Asset & Document;
 
@@ -93,6 +94,9 @@ export class DepositedNFT {
 
   @Prop({ type: Number })
   status: DEPOSITED_NFT_STATUS;
+
+  @Prop({ type: String })
+  tokenStandard: TokenStandard;
 
   @Prop({ type: Number })
   withdrawable: number;
