@@ -337,6 +337,8 @@ export class IaoEventService {
           availableSupply: '$availableSupply',
           tokenSymbol: '$tokenSymbol',
           vaultUnlockThreshold: '$vaultUnlockThreshold',
+          eventPhotoUrl: '$eventPhotoUrl',
+          eventBannerUrl: '$eventBannerUrl',
           isDeleted: '$isDeleted',
         },
       },
