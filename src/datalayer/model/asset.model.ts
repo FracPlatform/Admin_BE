@@ -7,6 +7,7 @@ import { CollectionItem } from './collection-item.model';
 import { SpecificationField } from './asset_type.model';
 import { DocumentItem, DocumentItemSchema } from './document-item.model';
 import { PREFIX_ID } from 'src/common/constants';
+import { TokenStandard } from 'src/common/common-type';
 
 export type AssetDocument = Asset & Document;
 
@@ -39,6 +40,12 @@ export enum CUSTODIANSHIP_STATUS {
   USER = 9,
 }
 
+export enum DEPOSITED_NFT_STATUS {
+  REJECTED = 0,
+  IN_REVIEW = 1,
+  APPROVED = 2,
+}
+
 export enum NETWORK {
   ETH = 'eth',
   BSC = 'bsc',
@@ -65,6 +72,37 @@ export class Specifications extends SpecificationField {
   value: string;
 }
 
+@Schema({
+  collection: 'DepositedNFT',
+  timestamps: true,
+})
+export class DepositedNFT {
+  @Prop({ type: String })
+  contractAddress: string;
+
+  @Prop({ type: String })
+  tokenId: string;
+
+  @Prop({ type: Number })
+  balance: number;
+
+  @Prop({ type: Object })
+  metadata: object;
+
+  @Prop({ type: Date })
+  depositedOn: Date;
+
+  @Prop({ type: Number })
+  status: DEPOSITED_NFT_STATUS;
+
+  @Prop({ type: String })
+  tokenStandard: TokenStandard;
+
+  @Prop({ type: Number })
+  withdrawable: number;
+}
+
+export const DepositedNFTSchema = SchemaFactory.createForClass(DepositedNFT);
 @Schema({
   timestamps: true,
   collection: 'Asset',
@@ -123,6 +161,9 @@ export class Asset {
 
   @Prop({ type: String })
   lastUpdatedBy: string;
+
+  @Prop({ type: [DepositedNFTSchema], default: [] })
+  depositedNFTs: DepositedNFT[];
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
