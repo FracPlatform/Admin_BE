@@ -18,6 +18,7 @@ import { FilterAssetDto } from './dto/filter-asset.dto';
 import { DISPLAY_STATUS, FilterDocumentDto } from './dto/filter-document.dto';
 import { Role } from 'src/modules/auth/role.enum';
 import { Utils } from 'src/common/utils';
+import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -549,6 +550,36 @@ export class AssetService {
     );
     if (!updatedAsset)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete document');
+    return { success: true };
+  }
+
+  async editDepositedNft(
+    assetId: string,
+    depositedNftId: string,
+    editDepositedNft: EditDepositedNftDto,
+    user: any,
+  ) {
+    const asset = await this.dataServices.asset.findOne({
+      itemId: assetId,
+    });
+    if (!asset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, `Id of Asset is invalid`);
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'depositedNFTs._id': depositedNftId,
+      },
+      {
+        $set: {
+          'depositedNFTs.$.status': editDepositedNft.status,
+          'depositedNFTs.$.withdrawable': editDepositedNft.withdrawable,
+          lastUpdatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update asset');
     return { success: true };
   }
 }

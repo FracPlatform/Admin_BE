@@ -1,6 +1,8 @@
 import { Media, CUSTODIANSHIP_STATUS } from '../datalayer/model/asset.model';
 import { Specifications } from 'src/datalayer/model';
 import { DocumentItem } from 'src/datalayer/model/document-item.model';
+import { TokenStandard } from 'src/common/common-type';
+import { DEPOSITED_NFT_STATUS } from 'src/datalayer/model';
 export class AssetEntity {
   name: string;
   media: Media[];
@@ -57,4 +59,16 @@ export class AssetForOwnerEntity {
   lastUpdatedBy?: object;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export class DepositedNFT {
+  contractAddress: string;
+  tokenId: string;
+  balance: number;
+  metadata: object;
+  depositedOn: Date;
+  status: DEPOSITED_NFT_STATUS;
+  tokenStandard: TokenStandard;
+  withdrawable: number;
+  txHash: string;
 }

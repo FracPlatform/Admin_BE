@@ -27,6 +27,7 @@ import {
   CreateDocumentItemDto,
   UpdateDocumentItemDto,
 } from './dto/documentItem.dto';
+import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 
@@ -157,5 +158,27 @@ export class AssetController {
       docId,
     );
     return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Put('edit-deposited-nft/:assetId/:depositedNftId')
+  @ApiOperation({ summary: 'Edit deposited NFT' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async editDepositedNft(
+    @Param('assetId') assetId: string,
+    @Param('depositedNftId') depositedNftId: string,
+    @Body() editDepositedNft: EditDepositedNftDto,
+    @GetUser() user: any,
+  ) {
+    try {
+      const responseData = await this.assetService.editDepositedNft(
+        assetId,
+        depositedNftId,
+        editDepositedNft,
+        user,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
   }
 }
