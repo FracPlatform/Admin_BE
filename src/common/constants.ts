@@ -1,3 +1,5 @@
+import { TokenStandard } from './common-type';
+
 export const ErrorCode = {
   DEFAULT_ERROR: 'E0',
   INVALID_ADDRESS_OR_SIGNDATA: 'E2',
@@ -100,6 +102,7 @@ export const CONTRACT_EVENTS = {
   CREATE_IAO_EVENT_ON_CHAIN: 'CreateIAOEventEvent',
   DEACTIVE_F_NFT: 'DeactivateFNFTEvent',
   DEACTIVE_IAO_EVENT: 'DeactivateIAOEvent',
+  DEPOSIT_NFTS: 'DepositNFTEvent',
 };
 
 export enum CHAINID {
@@ -128,4 +131,9 @@ export const ALLOCATION_TYPE_BY_ID = {
 export const ASSET_CATEGORY_BY_ID = {
   physical: 'Physical Asset',
   virtual: 'Digital Asset',
+};
+
+export const TOKEN_STANDARD_BY_ID = {
+  0: TokenStandard.ERC_721,
+  1: TokenStandard.ERC_1155,
 };

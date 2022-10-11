@@ -100,6 +100,9 @@ export class DepositedNFT {
 
   @Prop({ type: Number })
   withdrawable: number;
+
+  @Prop({ type: String })
+  txHash: string;
 }
 
 export const DepositedNFTSchema = SchemaFactory.createForClass(DepositedNFT);
