@@ -32,6 +32,7 @@ import {
 import { CheckTimeDTO } from './dto/check-time.dto';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { GetListIaoEventDto } from './dto/get-list-iao-event.dto';
+import { CalenderDTO } from './dto/calendar.dto';
 
 @Controller('iao-event')
 @ApiTags('IAO Event')
@@ -144,7 +145,7 @@ export class IaoEventController {
     }
   }
 
-  @Get(':id')
+  @Get('detail/:id')
   @ApiOperation({ summary: 'get IAO event detail' })
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
@@ -230,6 +231,23 @@ export class IaoEventController {
     try {
       const iaoEvent =
         await this.iaoEventService.checkRegistrationParticipation(data);
+      return new ApiSuccessResponse().success(iaoEvent, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('calender')
+  @ApiOperation({ summary: 'get IAO event for calender' })
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async getIaoEventListForCalender(@Query() data: CalenderDTO) {
+    try {
+      const iaoEvent = await this.iaoEventService.getIaoEventListForCalender(
+        data,
+      );
       return new ApiSuccessResponse().success(iaoEvent, '');
     } catch (error) {
       throw error;
