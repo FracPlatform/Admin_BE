@@ -78,7 +78,6 @@ export class Fnft {
 
 export const FnftSchema = SchemaFactory.createForClass(Fnft);
 FnftSchema.index({ fnftId: 1 });
-FnftSchema.index({ tokenName: 1 }, { unique: true });
 FnftSchema.index(
   { contractAddress: 1 },
   {

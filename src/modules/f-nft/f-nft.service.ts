@@ -157,16 +157,6 @@ export class FnftService {
       // check items
       await this.checkItems(data.iaoRequestId, data);
 
-      const fnft = await this.dataServices.fnft.findOne({
-        tokenName: data.tokenName,
-        deleted: false,
-      });
-      if (fnft)
-        throw ApiError(
-          ErrorCode.INVALID_TOKENSYMBOL_OR_TOKENNAME,
-          'tokenSymbol or tokenName already exists',
-        );
-
       const fnftObj = await this.fnftBuilderService.createFnft(
         data,
         user,
