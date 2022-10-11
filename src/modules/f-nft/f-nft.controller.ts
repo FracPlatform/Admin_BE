@@ -16,7 +16,7 @@ import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { FnftService } from './f-nft.service';
-import { CreateFnftDto, FilterFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
+import { CheckExistsDto, CreateFnftDto, FilterFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
 @Controller('f-nft')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('F-nft')
@@ -29,6 +29,15 @@ export class FnftController {
   @ApiOperation({ summary: 'Filter f-nfts' })
   async findAll(@GetUser() user, @Query() filter: FilterFnftDto) {
     const data = await this.fnftService.getListFnft(user, filter);
+    return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Get('/check-exists')
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check exists' })
+  async checkExists(@GetUser() user, @Query() filter: CheckExistsDto) {
+    const data = await this.fnftService.checkExists(user, filter);
     return new ApiSuccessResponse().success(data, '');
   }
 

@@ -7,7 +7,12 @@ import { Connection } from 'mongoose';
 import { ListDocument } from 'src/common/common-type';
 import { FnftBuilderService } from './f-nft.factory.service';
 import { ApiError } from 'src/common/api';
-import { CreateFnftDto, FilterFnftDto, UpdateFnftDto } from './dto/f-nft.dto';
+import {
+  CheckExistsDto,
+  CreateFnftDto,
+  FilterFnftDto,
+  UpdateFnftDto,
+} from './dto/f-nft.dto';
 import { NFT_STATUS, NFT_TYPE } from 'src/datalayer/model/nft.model';
 import {
   ASSET_STATUS,
@@ -134,6 +139,16 @@ export class FnftService {
     } as ListDocument;
   }
 
+  async checkExists(user: any, data: CheckExistsDto) {
+    const fnft = await this.dataServices.fnft.findOne({
+      tokenSymbol: data.tokenSymbol,
+      deleted: false,
+    });
+    if (fnft) return { ok: false };
+
+    return { ok: true };
+  }
+
   async createFnft(user: any, data: CreateFnftDto) {
     const session = await this.connection.startSession();
     session.startTransaction();
@@ -141,16 +156,6 @@ export class FnftService {
     try {
       // check items
       await this.checkItems(data.iaoRequestId, data);
-
-      const fnft = await this.dataServices.fnft.findOne({
-        $or: [{ tokenSymbol: data.tokenSymbol }, { tokenName: data.tokenName }],
-        deleted: false,
-      });
-      if (fnft)
-        throw ApiError(
-          ErrorCode.INVALID_TOKENSYMBOL_OR_TOKENNAME,
-          'tokenSymbol or tokenName already exists',
-        );
 
       const fnftObj = await this.fnftBuilderService.createFnft(
         data,

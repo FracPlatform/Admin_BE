@@ -70,16 +70,16 @@ export class IaoEventController {
   }
 
   @Get('/export-whitelist')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Export whitelist' })
   async exportWhitelist(
     @GetUser() user,
     @Query() filter: ExportWhitelistDto,
-    @Res() res: Response,
   ) {
-    return await this.iaoEventService.exportWhitelist(user, filter, res);
+    const data = await this.iaoEventService.exportWhitelist(user, filter);
+    return new ApiSuccessResponse().success(data, '');
   }
 
   @Post('/whitelist')

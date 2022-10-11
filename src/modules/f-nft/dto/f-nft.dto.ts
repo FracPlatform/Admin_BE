@@ -60,6 +60,14 @@ export class CreateFnftDto {
   items: string[];
 }
 
+export class CheckExistsDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(16)
+  tokenSymbol: string;
+}
+
 export class FilterFnftDto {
   @ApiProperty({ required: false })
   @IsOptional()

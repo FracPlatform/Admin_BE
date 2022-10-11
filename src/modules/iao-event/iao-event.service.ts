@@ -34,6 +34,7 @@ import {
   FilterWhitelistDto,
 } from './dto/whitelist.dto';
 import { IaoEventBuilderService } from './iao-event.factory.service';
+import { S3Service } from 'src/s3/s3.service';
 const XLSX = require('xlsx');
 import moment = require('moment');
 
@@ -42,6 +43,7 @@ export class IaoEventService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly iaoEventBuilderService: IaoEventBuilderService,
+    private readonly s3Service: S3Service,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
@@ -911,7 +913,7 @@ export class IaoEventService {
     return await this.dataService.whitelist.updateOne(filter, option);
   }
 
-  async exportWhitelist(user: any, data: ExportWhitelistDto, res: any) {
+  async exportWhitelist(user: any, data: ExportWhitelistDto) {
     const filter = { iaoEventId: data.iaoEventId, isDeleted: false };
 
     const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
@@ -946,9 +948,10 @@ export class IaoEventService {
     XLSX.utils.book_append_sheet(wb, ws);
 
     const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
-    res.attachment(`${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
 
-    return res.status(200).send(buffer);
+    const linkS3 = await this.s3Service.uploadS3(buffer, 'csv', `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
+
+    return { data: linkS3 };
   }
 
   async checkRegistrationParticipation(checkTimeDTO: CheckTimeDTO) {
