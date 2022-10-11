@@ -11,7 +11,7 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   CategoryType,
   FNFT_DECIMAL,
-  IAO_EVENT_TYPE,
+  IAO_EVENT_CALENDER,
   ON_CHAIN_STATUS,
 } from 'src/datalayer/model';
 import {
@@ -258,12 +258,13 @@ export class IaoEventBuilderService {
         iaoEventId,
         eventType: type,
       };
-      if (type === IAO_EVENT_TYPE.REGIS_START)
+      if (type === IAO_EVENT_CALENDER.REGISTRATION_START)
         obj.date = iao.registrationStartTime;
-      if (type === IAO_EVENT_TYPE.REGIS_END) obj.date = iao.registrationEndTime;
-      if (type === IAO_EVENT_TYPE.PARTICI_START)
+      if (type === IAO_EVENT_CALENDER.REGISTRATION_END)
+        obj.date = iao.registrationEndTime;
+      if (type === IAO_EVENT_CALENDER.PARTICIPATION_START)
         obj.date = iao.participationStartTime;
-      if (type === IAO_EVENT_TYPE.PARTICI_END)
+      if (type === IAO_EVENT_CALENDER.PARTICIPATION_END)
         obj.date = iao.registrationEndTime;
 
       return obj;

@@ -15,13 +15,6 @@ export enum IAO_REQUEST_TYPE {
   NON_VAULT = 2,
 }
 
-export enum IAO_EVENT_TYPE {
-  REGIS_START = 1,
-  REGIS_END = 2,
-  PARTICI_START = 3,
-  PARTICI_END = 4,
-}
-
 export const MAX_IAO_REQUEST_COMMENT = 2000;
 export const MAX_IAO_REQUEST_NOTE = 3000;
 export const MAX_LENGTH_PHONE = 16;
