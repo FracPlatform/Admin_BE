@@ -24,6 +24,8 @@ import {
   NftDocument,
   Whitelist,
   WhitelistDocument,
+  Settings,
+  SettingsDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -39,6 +41,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   iaoEvent: IGenericRepository<IAOEvent>;
   nft: IGenericRepository<Nft>;
   whitelist: IGenericRepository<Whitelist>;
+  settings: IGenericRepository<Settings>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -60,6 +63,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     @InjectModel(Nft.name) private NftRepository: Model<NftDocument>,
     @InjectModel(Whitelist.name)
     private WhitelistRepository: Model<WhitelistDocument>,
+    @InjectModel(Settings.name)
+    private SettingsRepository: Model<SettingsDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -88,6 +93,9 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     this.nft = new MongoGenericRepository<NftDocument>(this.NftRepository);
     this.whitelist = new MongoGenericRepository<WhitelistDocument>(
       this.WhitelistRepository,
+    );
+    this.settings = new MongoGenericRepository<SettingsDocument>(
+      this.SettingsRepository,
     );
   }
 }

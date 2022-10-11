@@ -19,6 +19,7 @@ import { IaoEventModule } from './modules/iao-event/iao-event.module';
 import { NftModule } from './modules/nft/nft.module';
 import { IPFSMofule } from './providers/ipfs/ipfs.module';
 import { FnftModule } from './modules/f-nft/f-nft.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { FnftModule } from './modules/f-nft/f-nft.module';
       isGlobal: true,
     }),
     SocketModule,
+    SettingsModule,
     CommonModule,
     TasksModule,
     WorkerModule,
