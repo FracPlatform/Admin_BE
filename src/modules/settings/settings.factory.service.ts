@@ -3,7 +3,6 @@ import { UpdateSettingsDto } from './dto/settings.dto';
 
 @Injectable()
 export class SettingsBuilderService {
-  constructor() {}
 
   updateSetting(currentSettings, data: UpdateSettingsDto) {
     const dataUpdate = {
