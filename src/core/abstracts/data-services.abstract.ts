@@ -9,6 +9,7 @@ import {
   Fnft,
   Nft,
   Whitelist,
+  Settings,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
@@ -23,4 +24,5 @@ export abstract class IDataServices {
   abstract nft: IGenericRepository<Nft>;
   abstract iaoEvent: IGenericRepository<IAOEvent>;
   abstract whitelist: IGenericRepository<Whitelist>;
+  abstract settings: IGenericRepository<Settings>;
 }
