@@ -36,6 +36,7 @@ import {
 import { IaoEventBuilderService } from './iao-event.factory.service';
 const XLSX = require('xlsx');
 import moment = require('moment');
+import { CalenderDTO } from './dto/calendar.dto';
 
 @Injectable()
 export class IaoEventService {
@@ -1042,6 +1043,20 @@ export class IaoEventService {
       },
     );
 
+    return await this.getIaoEventCalender(
+      queryRegistrationStartTime,
+      queryRegistrationEndTime,
+      queryParticipationStartTime,
+      queryParticipationEndTime,
+    );
+  }
+
+  async getIaoEventCalender(
+    queryRegistrationStartTime,
+    queryRegistrationEndTime,
+    queryParticipationStartTime,
+    queryParticipationEndTime,
+  ) {
     let iaoEventList = [];
 
     const iaoEventListRegistrationStartTime =
@@ -1073,19 +1088,19 @@ export class IaoEventService {
         iaoEventListParticipationEndTime,
       ]);
 
-    getRegisStart = this.convertIaoEventToCheckTime(
+    getRegisStart = this.iaoEventBuilderService.convertIaoEventToCheckTime(
       getRegisStart,
       IAO_EVENT_TYPE.REGIS_START,
     );
-    getRegisEnd = this.convertIaoEventToCheckTime(
+    getRegisEnd = this.iaoEventBuilderService.convertIaoEventToCheckTime(
       getRegisEnd,
       IAO_EVENT_TYPE.REGIS_END,
     );
-    getParStart = this.convertIaoEventToCheckTime(
+    getParStart = this.iaoEventBuilderService.convertIaoEventToCheckTime(
       getParStart,
       IAO_EVENT_TYPE.PARTICI_START,
     );
-    getParEnd = this.convertIaoEventToCheckTime(
+    getParEnd = this.iaoEventBuilderService.convertIaoEventToCheckTime(
       getParEnd,
       IAO_EVENT_TYPE.PARTICI_END,
     );
@@ -1099,27 +1114,6 @@ export class IaoEventService {
     iaoEventList.sort((obj, _obj) => obj.date - _obj.date);
 
     return iaoEventList;
-  }
-
-  convertIaoEventToCheckTime(iao: any, type: any) {
-    return iao.map((iao: any) => {
-      const { iaoEventName, eventPhotoUrl, iaoEventId } = iao;
-      const obj: any = {
-        iaoEventName,
-        eventPhotoUrl,
-        iaoEventId,
-        eventType: type,
-      };
-      if (type === IAO_EVENT_TYPE.REGIS_START)
-        obj.date = iao.registrationStartTime;
-      if (type === IAO_EVENT_TYPE.REGIS_END) obj.date = iao.registrationEndTime;
-      if (type === IAO_EVENT_TYPE.PARTICI_START)
-        obj.date = iao.participationStartTime;
-      if (type === IAO_EVENT_TYPE.PARTICI_END)
-        obj.date = iao.registrationEndTime;
-
-      return obj;
-    });
   }
 
   checkCurrentStage(
@@ -1152,5 +1146,64 @@ export class IaoEventService {
     else currentStage = IAO_EVENT_STAGE.FAILED;
 
     return currentStage;
+  }
+
+  async getIaoEventListForCalender(calenderDTO: CalenderDTO) {
+    const queryRegistrationStartTime = { $or: [] };
+    const queryRegistrationEndTime = { $or: [] };
+    const queryParticipationStartTime = { $or: [] };
+    const queryParticipationEndTime = { $or: [] };
+
+    // check with registrationStartTime
+    queryRegistrationStartTime['$or'].push({
+      registrationStartTime: {
+        $gte: calenderDTO.dateFrom,
+        $lte: calenderDTO.dateTo,
+      },
+    });
+    // check with registrationEndTime
+    queryRegistrationEndTime['$or'].push({
+      registrationEndTime: {
+        $gte: calenderDTO.dateFrom,
+        $lte: calenderDTO.dateTo,
+      },
+    });
+    // check with participationStartTime
+    queryParticipationStartTime['$or'].push({
+      participationStartTime: {
+        $gte: calenderDTO.dateFrom,
+        $lte: calenderDTO.dateTo,
+      },
+    });
+    // check with participationEndTime
+    queryParticipationEndTime['$or'].push({
+      participationEndTime: {
+        $gte: calenderDTO.dateFrom,
+        $lte: calenderDTO.dateTo,
+      },
+    });
+    const iaoEventList = await this.getIaoEventCalender(
+      queryRegistrationStartTime,
+      queryRegistrationEndTime,
+      queryParticipationStartTime,
+      queryParticipationEndTime,
+    );
+    //
+    const groups = iaoEventList.reduce((groups, iao) => {
+      const day = moment(iao.date).format('YYYY-MM-DD');
+      if (!groups[day]) {
+        groups[day] = [];
+      }
+      groups[day].push(iao);
+      return groups;
+    }, {});
+    //
+    const groupArrays = Object.keys(groups).map((day) => {
+      return {
+        day,
+        data: groups[day],
+      };
+    });
+    return groupArrays;
   }
 }

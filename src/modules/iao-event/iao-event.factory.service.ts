@@ -11,6 +11,7 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   CategoryType,
   FNFT_DECIMAL,
+  IAO_EVENT_TYPE,
   ON_CHAIN_STATUS,
 } from 'src/datalayer/model';
 import {
@@ -246,5 +247,26 @@ export class IaoEventBuilderService {
       };
     });
     return exportedEvents;
+  }
+
+  convertIaoEventToCheckTime(iao: any, type: any) {
+    return iao.map((iao: any) => {
+      const { iaoEventName, eventPhotoUrl, iaoEventId } = iao;
+      const obj: any = {
+        iaoEventName,
+        eventPhotoUrl,
+        iaoEventId,
+        eventType: type,
+      };
+      if (type === IAO_EVENT_TYPE.REGIS_START)
+        obj.date = iao.registrationStartTime;
+      if (type === IAO_EVENT_TYPE.REGIS_END) obj.date = iao.registrationEndTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_START)
+        obj.date = iao.participationStartTime;
+      if (type === IAO_EVENT_TYPE.PARTICI_END)
+        obj.date = iao.registrationEndTime;
+
+      return obj;
+    });
   }
 }
