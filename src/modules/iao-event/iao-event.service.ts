@@ -1215,7 +1215,7 @@ export class IaoEventService {
         {
           $and: [
             {
-              fNftSymbol: {
+              tokenSymbol: {
                 $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
                 $options: 'i',
               },
@@ -1233,8 +1233,8 @@ export class IaoEventService {
           ],
         },
       );
-      queryRegistrationStartTime['$or'] = [];
-      queryRegistrationStartTime['$or'].push(
+      queryRegistrationEndTime['$or'] = [];
+      queryRegistrationEndTime['$or'].push(
         {
           $and: [
             {
@@ -1258,7 +1258,7 @@ export class IaoEventService {
         {
           $and: [
             {
-              fNftSymbol: {
+              tokenSymbol: {
                 $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
                 $options: 'i',
               },
@@ -1301,7 +1301,7 @@ export class IaoEventService {
         {
           $and: [
             {
-              fNftSymbol: {
+              tokenSymbol: {
                 $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
                 $options: 'i',
               },
@@ -1344,7 +1344,7 @@ export class IaoEventService {
         {
           $and: [
             {
-              fNftSymbol: {
+              tokenSymbol: {
                 $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
                 $options: 'i',
               },
