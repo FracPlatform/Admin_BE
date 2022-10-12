@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from '../../common/api';
-import { CONTRACT_EVENTS, PREFIX_ID } from '../../common/constants';
+import {
+  CONTRACT_EVENTS,
+  ErrorCode,
+  PREFIX_ID,
+  TOKEN_STANDARD_BY_ID,
+} from '../../common/constants';
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
 import {
   ADMIN_STATUS,
@@ -16,10 +21,15 @@ import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
 import { WorkerDataDto } from './dto/worker-data.dto';
 import { NFT_STATUS } from 'src/datalayer/model/nft.model';
-import { ASSET_STATUS } from 'src/datalayer/model/asset.model';
+import {
+  ASSET_STATUS,
+  DEPOSITED_NFT_STATUS,
+} from 'src/datalayer/model/asset.model';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CommonService } from 'src/common-service/common.service';
+import { DepositedNFT } from 'src/entity';
+import axios from 'axios';
 const jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -59,6 +69,10 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.DEACTIVE_IAO_EVENT:
           await this._handleDeactiveIaoEvent(requestData);
+        case CONTRACT_EVENTS.DEPOSIT_NFTS:
+          await this._handleDepositNFTsEvent(requestData);
+          break;
+        default:
           break;
       }
     } catch (err) {
@@ -412,6 +426,52 @@ export class WorkerService {
         SOCKET_EVENT.DEACTIVE_IAO_EVENT,
         requestData,
       );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleDepositNFTsEvent(requestData: WorkerDataDto) {
+    const asset = await this.dataServices.asset.findOne({
+      itemId: `${PREFIX_ID.ASSET}-${requestData.metadata.assetId}`,
+    });
+    if (!asset) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Asset not exists');
+    if (asset.status < ASSET_STATUS.IAO_APPROVED)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not deposit');
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      const { data } = await axios.get(requestData.metadata.uri);
+      const depositedNFT: DepositedNFT = {
+        contractAddress: requestData.metadata.nftAddr,
+        tokenId: requestData.metadata.tokenId,
+        balance: parseInt(requestData.metadata.tokenAmount),
+        depositedOn: new Date(),
+        status: DEPOSITED_NFT_STATUS.IN_REVIEW,
+        tokenStandard: TOKEN_STANDARD_BY_ID[requestData.metadata.tokenType],
+        txHash: requestData.transactionHash,
+        withdrawable: 0,
+        metadata: {
+          name: data.name,
+          image: data.image,
+          animation_url: data.animation_url,
+        },
+      };
+      const res = await this.dataServices.asset.findOneAndUpdate(
+        {
+          itemId: `${PREFIX_ID.ASSET}-${requestData.metadata.assetId}`,
+        },
+        {
+          $push: { depositedNFTs: depositedNFT },
+        },
+        { session },
+      );
+      if (res)
+        this.socketGateway.sendMessage(SOCKET_EVENT.DEPOSIT_NFTS, requestData);
+      await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
       throw error;

@@ -11,4 +11,5 @@ export enum SOCKET_EVENT {
   CREATE_IAO_EVENT_ON_CHAIN = 'create-iao-event-on-chain',
   DEACTIVE_F_NFT = 'deactive-f-nft',
   DEACTIVE_IAO_EVENT = 'deactive-iao-event',
+  DEPOSIT_NFTS = 'deposit-nfts',
 }

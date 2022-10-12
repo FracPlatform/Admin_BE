@@ -333,17 +333,18 @@ export class FractorService {
     ) {
       throw ApiError('', 'deactivationComment is require');
     }
+    if (data.assignedBD) {
+      if (Object.keys(data).includes('assignedBD')) {
+        const admin = await this.dataServices.admin.findOne({
+          adminId: data.assignedBD,
+        });
+        if (!admin) {
+          throw ApiError('', 'Not found BD');
+        }
 
-    if (Object.keys(data).includes('assignedBD')) {
-      const admin = await this.dataServices.admin.findOne({
-        adminId: data.assignedBD,
-      });
-      if (!admin) {
-        throw ApiError('', 'Not found BD');
-      }
-
-      if (admin.role !== Role.FractorBD) {
-        throw ApiError('', 'Only assign to BD of fractor');
+        if (admin.role !== Role.FractorBD) {
+          throw ApiError('', 'Only assign to BD of fractor');
+        }
       }
     }
   }
