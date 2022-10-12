@@ -1163,10 +1163,10 @@ export class IaoEventService {
   }
 
   async getIaoEventListForCalender(calenderDTO: CalenderDTO) {
-    let queryRegistrationStartTime = {};
-    let queryRegistrationEndTime = {};
-    let queryParticipationStartTime = {};
-    let queryParticipationEndTime = {};
+    const queryRegistrationStartTime = {};
+    const queryRegistrationEndTime = {};
+    const queryParticipationStartTime = {};
+    const queryParticipationEndTime = {};
 
     // check with registrationStartTime
     queryRegistrationStartTime['registrationStartTime'] = {
