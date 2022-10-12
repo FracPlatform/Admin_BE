@@ -344,14 +344,38 @@ export class AssetTypeService {
     params: GetAssetTypeByIdDto,
     deletedSpecification: DeleteSpecificationDto,
   ) {
-    await this.dataService.assetTypes.updateOne(
-      {
-        assetTypeId: params.id,
-      },
-      {
-        $pull: { specifications: { _id: deletedSpecification.id } },
-      },
-    );
-    return { success: true };
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      const updatedAssetType =
+        await this.dataService.assetTypes.findOneAndUpdate(
+          {
+            assetTypeId: params.id,
+          },
+          {
+            $pull: { specifications: { _id: deletedSpecification.id } },
+          },
+          { session },
+        );
+      if (updatedAssetType) {
+        await this.dataService.asset.updateMany(
+          {
+            'specifications._id': deletedSpecification.id,
+          },
+          {
+            $pull: {
+              specifications: { _id: deletedSpecification.id },
+            },
+          },
+        );
+      }
+      await session.commitTransaction();
+      return { success: true };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
   }
 }
