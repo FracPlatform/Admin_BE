@@ -81,6 +81,11 @@ export class FilterFnftDto {
   @IsString()
   status: string;
 
+  @ApiProperty({ required: false, description: '0- Inactive, 1- Active' })
+  @IsOptional()
+  @IsString()
+  mintedStatus: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Number)
