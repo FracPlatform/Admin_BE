@@ -606,7 +606,15 @@ export class IaoEventService {
       deleted: false,
       status: IAO_REQUEST_STATUS.APPROVED_B,
     });
-
+    // get NFT
+    const nftId = fnft.items.map((i) => {
+      return { tokenId: i };
+    });
+    const nfts = await this.dataService.nft.findMany(
+      { $or: nftId },
+      { name: 1, tokenId: 1, status: 1, assetId: 1 },
+    );
+    fnft.items = nfts;
     if (iaoRequest) {
       // get name of fractor
       const fractor = await this.dataService.fractor.findOne(
@@ -635,15 +643,7 @@ export class IaoEventService {
         { itemId: 1, name: 1, media: 1, _id: 0 },
       );
       iaoRequest.itemObject = items;
-      // get NFT
-      const nftId = fnft.items.map((i) => {
-        return { tokenId: i };
-      });
-      const nfts = await this.dataService.nft.findMany(
-        { $or: nftId },
-        { name: 1, tokenId: 1, status: 1, assetId: 1 },
-      );
-      fnft.items = nfts;
+
       //other info
       const getCreatedBy = this.dataService.admin.findOne(
         {
