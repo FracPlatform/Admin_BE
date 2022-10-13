@@ -86,6 +86,7 @@ export class WorkerService {
         { adminId: requestData.metadata.adminId },
         {
           status: ADMIN_STATUS.INACTIVE,
+          role: Role.Deactive,
           lastUpdateBy: requestData.metadata.setBy,
         },
       );
