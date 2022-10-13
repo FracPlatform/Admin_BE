@@ -200,4 +200,16 @@ export class AssetController {
     );
     return new ApiSuccessResponse().success(data, '');
   }
+
+  @Delete('custodianship/delete-file/:assetId/:fileId')
+  @ApiOperation({ summary: 'Delete documentItem for Asset' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async deleteFile(
+    @Param('assetId') assetId: string,
+    @Param('fileId', ParseObjectIdPipe) fielId: string,
+    @GetUser() user,
+  ) {
+    const data = await this.assetService.deleteFile(user, assetId, fielId);
+    return new ApiSuccessResponse().success(data, '');
+  }
 }
