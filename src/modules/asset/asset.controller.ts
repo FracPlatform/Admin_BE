@@ -28,6 +28,7 @@ import {
   UpdateDocumentItemDto,
 } from './dto/documentItem.dto';
 import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
+import { UpdateCustodianshipFile } from './dto/edit-file.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 
@@ -180,5 +181,23 @@ export class AssetController {
     } catch (error) {
       throw error;
     }
+  }
+
+  @Put('custodianship/edit-file/:assetId/:fileId')
+  @ApiOperation({ summary: 'Edit custodianship file for Asset' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async editFile(
+    @Param('assetId') assetId: string,
+    @Param('fileId', ParseObjectIdPipe) fileId: string,
+    @Body() updatefile: UpdateCustodianshipFile,
+    @GetUser() user,
+  ) {
+    const data = await this.assetService.editFile(
+      user,
+      assetId,
+      fileId,
+      updatefile,
+    );
+    return new ApiSuccessResponse().success(data, '');
   }
 }

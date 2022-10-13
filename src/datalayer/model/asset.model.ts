@@ -40,7 +40,7 @@ export enum CUSTODIANSHIP_STATUS {
   USER = 9,
 }
 
-export enum DEPOSITED_NFT_STATUS {
+export enum REVIEW_STATUS {
   REJECTED = 0,
   IN_REVIEW = 1,
   APPROVED = 2,
@@ -72,6 +72,35 @@ export class Specifications extends SpecificationField {
   value: string;
 }
 
+@Schema({ collection: 'DigitalAssetFile', timestamps: true })
+export class DigitalAssetFile {
+  @Prop({ type: String })
+  name: string;
+
+  @Prop({ type: String, default: null })
+  description: string;
+
+  @Prop({ type: String })
+  fileUrl: string;
+
+  @Prop({ type: Number })
+  size: number; //MB
+
+  @Prop({ type: Number })
+  status: REVIEW_STATUS;
+}
+export const DigitalAssetFileSchema =
+  SchemaFactory.createForClass(DigitalAssetFile);
+@Schema({ collection: 'CustodianshipInfo', _id: false })
+export class CustodianshipInfo {
+  @Prop({ type: Number })
+  status: CUSTODIANSHIP_STATUS;
+
+  @Prop({ type: [DigitalAssetFileSchema] })
+  files: DigitalAssetFile[];
+}
+export const CustodianshipInfoSchema =
+  SchemaFactory.createForClass(CustodianshipInfo);
 @Schema({
   collection: 'DepositedNFT',
   timestamps: true,
@@ -93,7 +122,7 @@ export class DepositedNFT {
   depositedOn: Date;
 
   @Prop({ type: Number })
-  status: DEPOSITED_NFT_STATUS;
+  status: REVIEW_STATUS;
 
   @Prop({ type: String })
   tokenStandard: TokenStandard;
@@ -159,14 +188,14 @@ export class Asset {
   @Prop({ type: Boolean, default: false })
   inDraft?: boolean;
 
-  @Prop({ type: Number, default: CUSTODIANSHIP_STATUS.FRACTOR })
-  custodianshipStatus?: CUSTODIANSHIP_STATUS;
-
   @Prop({ type: String })
   lastUpdatedBy: string;
 
   @Prop({ type: [DepositedNFTSchema], default: [] })
   depositedNFTs: DepositedNFT[];
+
+  @Prop({ type: CustodianshipInfoSchema })
+  custodianship?: CustodianshipInfo;
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
