@@ -32,16 +32,16 @@ export class PhysicalAsset {
 }
 
 export class PhysicalAssetLable {
-  fractor: string;
-  fractorToFrac: string;
-  frac: string;
-  availableForFractorToRedeem: string;
-  fractorRedeems: string;
-  fracToFractor: string;
-  availableForUserToRedeem: string;
-  userRedeems: string;
-  fracToUser: string;
-  user: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+  5: string;
+  6: string;
+  7: string;
+  8: string;
+  9: string;
 }
 
 export class DigitalAsset {
@@ -51,12 +51,12 @@ export class DigitalAsset {
 }
 
 export class DigitalAssetLable {
-  fractor: string;
-  fractorToFrac: string;
-  frac: string;
-  availableForFractorToRedeem: string;
-  availableForUsertoRedeem: string;
-  user: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  6: string;
+  9: string;
 }
 
 @Schema({
