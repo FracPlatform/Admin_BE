@@ -1,8 +1,8 @@
 import { Media, CUSTODIANSHIP_STATUS } from '../datalayer/model/asset.model';
-import { Specifications } from 'src/datalayer/model';
+import { Custodianship, Specifications } from 'src/datalayer/model';
 import { DocumentItem } from 'src/datalayer/model/document-item.model';
 import { TokenStandard } from 'src/common/common-type';
-import { DEPOSITED_NFT_STATUS } from 'src/datalayer/model';
+import { REVIEW_STATUS } from 'src/datalayer/model';
 export class AssetEntity {
   name: string;
   media: Media[];
@@ -19,7 +19,7 @@ export class AssetEntity {
   documents: DocumentItem[];
   deleted: boolean;
   itemId?: string;
-  custodianshipStatus: CUSTODIANSHIP_STATUS;
+  custodianship: Custodianship;
 }
 
 export class DocumentItemEntity {
@@ -54,11 +54,11 @@ export class AssetForOwnerEntity {
   itemId: string;
   assetTypeName: string;
   documents: DocumentItem[];
-  custodianshipStatus: CUSTODIANSHIP_STATUS;
   deleted: boolean;
   lastUpdatedBy?: object;
   createdAt: Date;
   updatedAt: Date;
+  custodianship: Custodianship;
 }
 
 export class DepositedNFT {
@@ -67,7 +67,7 @@ export class DepositedNFT {
   balance: number;
   metadata: object;
   depositedOn: Date;
-  status: DEPOSITED_NFT_STATUS;
+  status: REVIEW_STATUS;
   tokenStandard: TokenStandard;
   withdrawable: number;
   txHash: string;

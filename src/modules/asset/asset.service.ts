@@ -7,7 +7,10 @@ import { ListDocument } from 'src/common/common-type';
 import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
-import { MEDIA_TYPE } from 'src/datalayer/model/asset.model';
+import {
+  CUSTODIANSHIP_STATUS,
+  MEDIA_TYPE,
+} from 'src/datalayer/model/asset.model';
 import { MAX_FILE_SIZE } from 'src/datalayer/model/document-item.model';
 import { AssetBuilderService } from './asset.factory.service';
 import {
@@ -19,6 +22,7 @@ import { DISPLAY_STATUS, FilterDocumentDto } from './dto/filter-document.dto';
 import { Role } from 'src/modules/auth/role.enum';
 import { Utils } from 'src/common/utils';
 import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
+import { UpdateCustodianshipFile } from './dto/edit-file.dto';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -75,7 +79,7 @@ export class AssetService {
       query['status'] = filter.status;
     }
     if (filter.custodianshipStatus)
-      query['custodianshipStatus'] = filter.custodianshipStatus;
+      query['custodianship.status'] = filter.custodianshipStatus;
     if (filter.keyword) {
       query['$or'] = [
         {
@@ -225,7 +229,7 @@ export class AssetService {
               documents: '$asset.documents',
               deleted: '$asset.deleted',
               inDraft: '$asset.inDraft',
-              custodianshipStatus: '$custodianshipStatus',
+              custodianship: '$custodianship',
               assetTypeName: { $arrayElemAt: ['$AssetType.name', 0] },
               Fractor: [
                 {
@@ -580,6 +584,45 @@ export class AssetService {
     );
     if (!updatedAsset)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update asset');
+    return { success: true };
+  }
+
+  async editFile(
+    user: any,
+    assetId: string,
+    fileId: string,
+    data: UpdateCustodianshipFile,
+  ) {
+    const filter = {
+      itemId: assetId,
+    };
+    const asset = await this.dataServices.asset.findOne(filter);
+    if (
+      data.status &&
+      asset.custodianship.status >
+        CUSTODIANSHIP_STATUS.FRACTOR_TO_FRAC_OR_IN_REVIEW
+    )
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Can not change file status now.',
+      );
+    if (!asset) throw ApiError('', `Id of Asset is invalid`);
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'custodianship.files._id': fileId,
+      },
+      {
+        $set: {
+          'custodianship.files.$.description': data.description,
+          'custodianship.files.$.status': data.status,
+          lastUpdatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit document');
     return { success: true };
   }
 }
