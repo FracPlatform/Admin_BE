@@ -7,6 +7,8 @@ import { LoginDto } from './dto/login.dto';
 import { Web3Gateway } from 'src/blockchain/web3.gateway';
 import { Web3ETH } from 'src/blockchain/web3.eth';
 import { ADMIN_STATUS } from '../../datalayer/model';
+import { Role } from './role.enum';
+import { DeactiveAccountException } from './exception.decorator';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +26,10 @@ export class AuthService {
       );
 
     const role = await this.getRoleForAdmin(data.walletAddress);
+
+    if (+role === Role.Deactive) {
+      throw new DeactiveAccountException();
+    }
 
     const accessToken = await this._signJwtToken({
       email: user.email,
