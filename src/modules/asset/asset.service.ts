@@ -625,4 +625,30 @@ export class AssetService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit document');
     return { success: true };
   }
+
+  async deleteFile(user, assetId: string, fileId: string) {
+    const filter = {
+      itemId: assetId,
+    };
+
+    const asset = await this.dataServices.asset.findOne(filter);
+    if (!asset) throw ApiError('', `Id of Asset is invalid`);
+
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'custodianship.files._id': fileId,
+      },
+      {
+        $pull: { 'custodianship.files': { _id: fileId } },
+        $set: {
+          lastUpdatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete file');
+    return { success: true };
+  }
 }
