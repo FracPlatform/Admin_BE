@@ -66,6 +66,7 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.DEACTIVE_IAO_EVENT:
           await this._handleDeactiveIaoEvent(requestData);
+          break;
         case CONTRACT_EVENTS.DEPOSIT_NFTS:
           await this._handleDepositNFTsEvent(requestData);
           break;
