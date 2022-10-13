@@ -21,10 +21,7 @@ import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
 import { WorkerDataDto } from './dto/worker-data.dto';
 import { NFT_STATUS } from 'src/datalayer/model/nft.model';
-import {
-  ASSET_STATUS,
-  DEPOSITED_NFT_STATUS,
-} from 'src/datalayer/model/asset.model';
+import { ASSET_STATUS, REVIEW_STATUS } from 'src/datalayer/model/asset.model';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CommonService } from 'src/common-service/common.service';
@@ -69,6 +66,7 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.DEACTIVE_IAO_EVENT:
           await this._handleDeactiveIaoEvent(requestData);
+          break;
         case CONTRACT_EVENTS.DEPOSIT_NFTS:
           await this._handleDepositNFTsEvent(requestData);
           break;
@@ -89,6 +87,7 @@ export class WorkerService {
         { adminId: requestData.metadata.adminId },
         {
           status: ADMIN_STATUS.INACTIVE,
+          role: Role.Deactive,
           lastUpdateBy: requestData.metadata.setBy,
         },
       );
@@ -450,7 +449,7 @@ export class WorkerService {
         tokenId: requestData.metadata.tokenId,
         balance: parseInt(requestData.metadata.tokenAmount),
         depositedOn: new Date(),
-        status: DEPOSITED_NFT_STATUS.IN_REVIEW,
+        status: REVIEW_STATUS.IN_REVIEW,
         tokenStandard: TOKEN_STANDARD_BY_ID[requestData.metadata.tokenType],
         txHash: requestData.transactionHash,
         withdrawable: 0,

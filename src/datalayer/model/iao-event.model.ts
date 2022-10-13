@@ -2,6 +2,13 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 export type IAOEventDocument = IAOEvent & Document;
 
+export enum IAO_EVENT_CALENDER {
+  REGISTRATION_START = 1,
+  REGISTRATION_END = 2,
+  PARTICIPATION_START = 3,
+  PARTICIPATION_END = 4,
+}
+
 export enum IAO_EVENT_STAGE {
   UPCOMING = 1,
   REGISTER_NOW = 2,
@@ -171,4 +178,4 @@ IaoEventSchema.index({ registrationStartTime: 1 });
 IaoEventSchema.index({ registrationEndTime: 1 });
 IaoEventSchema.index({ participationStartTime: 1 });
 IaoEventSchema.index({ participationEndTime: 1 });
-IaoEventSchema.index({ FNFTcontractAddress: 1 }, { unique: true });
+IaoEventSchema.index({ FNFTcontractAddress: 1 });

@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { get } from 'lodash';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { ApiError } from 'src/common/api';

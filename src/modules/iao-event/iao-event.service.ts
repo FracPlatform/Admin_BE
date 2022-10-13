@@ -20,7 +20,7 @@ import {
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
   VAULT_TYPE,
-  IAO_EVENT_TYPE,
+  IAO_EVENT_CALENDER,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -74,6 +74,7 @@ export class IaoEventService {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       FNFTcontractAddress: createIaoEventDto.FNFTcontractAddress,
       status: IAO_EVENT_STATUS.ACTIVE,
+      isDeleted: false,
     });
     if (iaoEvent)
       error['FNFTcontractAddress'] =
@@ -113,6 +114,15 @@ export class IaoEventService {
     if (existsIAOEvent)
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
+
+    try {
+      const currencySymbol = await Utils.getCurrencySymbol(
+        createIaoEventDto.acceptedCurrencyAddress,
+      );
+      createIaoEventDto['currencySymbol'] = currencySymbol;
+    } catch (err) {
+      error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
+    }
 
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
@@ -596,7 +606,15 @@ export class IaoEventService {
       deleted: false,
       status: IAO_REQUEST_STATUS.APPROVED_B,
     });
-
+    // get NFT
+    const nftId = fnft.items.map((i) => {
+      return { tokenId: i };
+    });
+    const nfts = await this.dataService.nft.findMany(
+      { $or: nftId },
+      { name: 1, tokenId: 1, status: 1, assetId: 1 },
+    );
+    fnft.items = nfts;
     if (iaoRequest) {
       // get name of fractor
       const fractor = await this.dataService.fractor.findOne(
@@ -625,15 +643,7 @@ export class IaoEventService {
         { itemId: 1, name: 1, media: 1, _id: 0 },
       );
       iaoRequest.itemObject = items;
-      // get NFT
-      const nftId = fnft.items.map((i) => {
-        return { tokenId: i };
-      });
-      const nfts = await this.dataService.nft.findMany(
-        { $or: nftId },
-        { name: 1, tokenId: 1, status: 1, assetId: 1 },
-      );
-      fnft.items = nfts;
+
       //other info
       const getCreatedBy = this.dataService.admin.findOne(
         {
@@ -950,7 +960,11 @@ export class IaoEventService {
 
     const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
 
-    const linkS3 = await this.s3Service.uploadS3(buffer, 'csv', `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
+    const linkS3 = await this.s3Service.uploadS3(
+      buffer,
+      'csv',
+      `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`,
+    );
 
     return { data: linkS3 };
   }
@@ -1061,7 +1075,6 @@ export class IaoEventService {
     queryParticipationEndTime,
   ) {
     let iaoEventList = [];
-
     const iaoEventListRegistrationStartTime =
       this.dataService.iaoEvent.findMany({
         ...queryRegistrationStartTime,
@@ -1085,28 +1098,36 @@ export class IaoEventService {
 
     let [getRegisStart, getRegisEnd, getParStart, getParEnd]: any =
       await Promise.all([
-        iaoEventListRegistrationStartTime,
-        iaoEventListRegistrationEndTime,
-        iaoEventListParticipationStartTime,
-        iaoEventListParticipationEndTime,
+        queryRegistrationStartTime ? iaoEventListRegistrationStartTime : null,
+        queryRegistrationEndTime ? iaoEventListRegistrationEndTime : null,
+        queryParticipationStartTime ? iaoEventListParticipationStartTime : null,
+        queryParticipationEndTime ? iaoEventListParticipationEndTime : null,
       ]);
 
-    getRegisStart = this.iaoEventBuilderService.convertIaoEventToCheckTime(
-      getRegisStart,
-      IAO_EVENT_TYPE.REGIS_START,
-    );
-    getRegisEnd = this.iaoEventBuilderService.convertIaoEventToCheckTime(
-      getRegisEnd,
-      IAO_EVENT_TYPE.REGIS_END,
-    );
-    getParStart = this.iaoEventBuilderService.convertIaoEventToCheckTime(
-      getParStart,
-      IAO_EVENT_TYPE.PARTICI_START,
-    );
-    getParEnd = this.iaoEventBuilderService.convertIaoEventToCheckTime(
-      getParEnd,
-      IAO_EVENT_TYPE.PARTICI_END,
-    );
+    getRegisStart = getRegisStart
+      ? this.iaoEventBuilderService.convertIaoEventToCheckTime(
+          getRegisStart,
+          IAO_EVENT_CALENDER.REGISTRATION_START,
+        )
+      : [];
+    getRegisEnd = getRegisEnd
+      ? this.iaoEventBuilderService.convertIaoEventToCheckTime(
+          getRegisEnd,
+          IAO_EVENT_CALENDER.REGISTRATION_END,
+        )
+      : [];
+    getParStart = getParStart
+      ? this.iaoEventBuilderService.convertIaoEventToCheckTime(
+          getParStart,
+          IAO_EVENT_CALENDER.PARTICIPATION_START,
+        )
+      : [];
+    getParEnd = getParEnd
+      ? this.iaoEventBuilderService.convertIaoEventToCheckTime(
+          getParEnd,
+          IAO_EVENT_CALENDER.PARTICIPATION_END,
+        )
+      : [];
 
     iaoEventList = iaoEventList.concat(
       getRegisStart,
@@ -1152,45 +1173,231 @@ export class IaoEventService {
   }
 
   async getIaoEventListForCalender(calenderDTO: CalenderDTO) {
-    const queryRegistrationStartTime = { $or: [] };
-    const queryRegistrationEndTime = { $or: [] };
-    const queryParticipationStartTime = { $or: [] };
-    const queryParticipationEndTime = { $or: [] };
+    const queryRegistrationStartTime = {};
+    const queryRegistrationEndTime = {};
+    const queryParticipationStartTime = {};
+    const queryParticipationEndTime = {};
 
     // check with registrationStartTime
-    queryRegistrationStartTime['$or'].push({
-      registrationStartTime: {
-        $gte: calenderDTO.dateFrom,
-        $lte: calenderDTO.dateTo,
-      },
-    });
-    // check with registrationEndTime
-    queryRegistrationEndTime['$or'].push({
-      registrationEndTime: {
-        $gte: calenderDTO.dateFrom,
-        $lte: calenderDTO.dateTo,
-      },
-    });
-    // check with participationStartTime
-    queryParticipationStartTime['$or'].push({
-      participationStartTime: {
-        $gte: calenderDTO.dateFrom,
-        $lte: calenderDTO.dateTo,
-      },
-    });
-    // check with participationEndTime
-    queryParticipationEndTime['$or'].push({
-      participationEndTime: {
-        $gte: calenderDTO.dateFrom,
-        $lte: calenderDTO.dateTo,
-      },
-    });
-    const iaoEventList = await this.getIaoEventCalender(
-      queryRegistrationStartTime,
-      queryRegistrationEndTime,
-      queryParticipationStartTime,
-      queryParticipationEndTime,
-    );
+    queryRegistrationStartTime['registrationStartTime'] = {
+      $gte: calenderDTO.dateFrom,
+      $lte: calenderDTO.dateTo,
+    };
+    // // check with registrationEndTime
+    queryRegistrationEndTime['registrationEndTime'] = {
+      $gte: calenderDTO.dateFrom,
+      $lte: calenderDTO.dateTo,
+    };
+    // // check with participationStartTime
+    queryParticipationStartTime['participationStartTime'] = {
+      $gte: calenderDTO.dateFrom,
+      $lte: calenderDTO.dateTo,
+    };
+    // // check with participationEndTime
+    queryParticipationEndTime['participationEndTime'] = {
+      $gte: calenderDTO.dateFrom,
+      $lte: calenderDTO.dateTo,
+    };
+
+    if (calenderDTO.keyword) {
+      queryRegistrationStartTime['$or'] = [];
+      queryRegistrationStartTime['$or'].push(
+        {
+          $and: [
+            {
+              'iaoEventName.en': {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              iaoEventId: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              tokenSymbol: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              FNFTcontractAddress: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+      );
+      queryRegistrationEndTime['$or'] = [];
+      queryRegistrationEndTime['$or'].push(
+        {
+          $and: [
+            {
+              'iaoEventName.en': {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              iaoEventId: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              tokenSymbol: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              FNFTcontractAddress: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+      );
+      queryParticipationStartTime['$or'] = [];
+      queryParticipationStartTime['$or'].push(
+        {
+          $and: [
+            {
+              'iaoEventName.en': {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              iaoEventId: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              tokenSymbol: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              FNFTcontractAddress: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+      );
+      queryParticipationEndTime['$or'] = [];
+      queryParticipationEndTime['$or'].push(
+        {
+          $and: [
+            {
+              'iaoEventName.en': {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              iaoEventId: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              tokenSymbol: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              FNFTcontractAddress: {
+                $regex: Utils.escapeRegex(calenderDTO.keyword.trim()),
+                $options: 'i',
+              },
+            },
+          ],
+        },
+      );
+    }
+    let iaoEventList = [];
+    //
+    if (calenderDTO.iaoEventStage) {
+      iaoEventList = await this.getIaoEventCalender(
+        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.REGISTRATION_START
+          ? queryRegistrationStartTime
+          : null,
+        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.REGISTRATION_END
+          ? queryRegistrationEndTime
+          : null,
+        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.PARTICIPATION_START
+          ? queryParticipationStartTime
+          : null,
+        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.PARTICIPATION_END
+          ? queryParticipationEndTime
+          : null,
+      );
+    } else {
+      iaoEventList = await this.getIaoEventCalender(
+        queryRegistrationStartTime,
+        queryRegistrationEndTime,
+        queryParticipationStartTime,
+        queryParticipationEndTime,
+      );
+    }
     //
     const groups = iaoEventList.reduce((groups, iao) => {
       const day = moment(iao.date).format('YYYY-MM-DD');

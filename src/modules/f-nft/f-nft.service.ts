@@ -39,6 +39,12 @@ export class FnftService {
       query['status'] = { $in: status };
     }
 
+    if (filter.mintedStatus) {
+      const filterMinted = filter.mintedStatus.split(',');
+      const mintedStatus: any = filterMinted.map((e) => parseInt(e));
+      query['mintedStatus'] = { $in: mintedStatus };
+    }
+
     const agg = [];
 
     agg.push(
