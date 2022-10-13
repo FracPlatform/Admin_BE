@@ -1,4 +1,4 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, CacheModuleOptions, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { RedisClientOptions } from 'redis';
 import * as redisStore from 'cache-manager-redis-store';
@@ -25,13 +25,16 @@ import { SettingsModule } from './modules/settings/settings.module';
   imports: [
     DataServicesModule,
     ScheduleModule.forRoot(),
-    CacheModule.register<RedisClientOptions>({
-      store: redisStore,
-      socket: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.PORT),
+    CacheModule.registerAsync<RedisClientOptions>({
+      useFactory: (): CacheModuleOptions => {
+        const options = {
+          store: redisStore,
+          ttl: Number(process.env.REDIS_TTL),
+          host: process.env.REDIS_HOST,
+          port: Number(process.env.REDIS_PORT || 6379),
+        };
+        return options;
       },
-      ttl: Number(process.env.REDIS_TTL),
       isGlobal: true,
     }),
     SocketModule,
