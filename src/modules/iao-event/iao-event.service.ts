@@ -74,6 +74,7 @@ export class IaoEventService {
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       FNFTcontractAddress: createIaoEventDto.FNFTcontractAddress,
       status: IAO_EVENT_STATUS.ACTIVE,
+      isDeleted: false,
     });
     if (iaoEvent)
       error['FNFTcontractAddress'] =
@@ -113,6 +114,15 @@ export class IaoEventService {
     if (existsIAOEvent)
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
+
+    try {
+      const currencySymbol = await Utils.getCurrencySymbol(
+        createIaoEventDto.acceptedCurrencyAddress,
+      );
+      createIaoEventDto['currencySymbol'] = currencySymbol;
+    } catch (err) {
+      error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
+    }
 
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
 
