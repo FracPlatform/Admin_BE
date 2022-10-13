@@ -31,6 +31,7 @@ import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 import { UpdateCustodianshipFile } from './dto/edit-file.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
+import { UpdateCustodianshipStatusDto } from './dto/update-custodianship-status.dto';
 
 @Controller('asset')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -175,6 +176,26 @@ export class AssetController {
         assetId,
         depositedNftId,
         editDepositedNft,
+        user,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Put('custodianship/update-status/:assetId')
+  @ApiOperation({ summary: 'Update custodianship status' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async updateCustodianshipStatus(
+    @Param('assetId') assetId: string,
+    @Body() updateStatus: UpdateCustodianshipStatusDto,
+    @GetUser() user: any,
+  ) {
+    try {
+      const responseData = await this.assetService.updateCustodianshipStatus(
+        assetId,
+        updateStatus,
         user,
       );
       return new ApiSuccessResponse().success(responseData, '');
