@@ -6,7 +6,7 @@ import { ApiError } from 'src/common/api';
 import { ListDocument } from 'src/common/common-type';
 import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
+import { CategoryType, MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
 import {
   CUSTODIANSHIP_STATUS,
   MEDIA_TYPE,
@@ -23,6 +23,7 @@ import { Role } from 'src/modules/auth/role.enum';
 import { Utils } from 'src/common/utils';
 import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 import { UpdateCustodianshipFile } from './dto/edit-file.dto';
+import { UpdateCustodianshipStatusDto } from './dto/update-custodianship-status.dto';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -584,6 +585,40 @@ export class AssetService {
     );
     if (!updatedAsset)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update asset');
+    return { success: true };
+  }
+
+  async updateCustodianshipStatus(
+    assetId: string,
+    updateStatus: UpdateCustodianshipStatusDto,
+    user: any,
+  ) {
+    const asset = await this.dataServices.asset.findOne({
+      itemId: assetId,
+    });
+    if (!asset) throw ApiError('', `Id of Asset is invalid`);
+    if (asset.custodianship.status > CUSTODIANSHIP_STATUS.FRAC)
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Cannot update custodianship status',
+      );
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+      },
+      {
+        $set: {
+          'custodianship.status': updateStatus.status,
+          lastUpdatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedAsset)
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Can not update custodianship status',
+      );
     return { success: true };
   }
 
