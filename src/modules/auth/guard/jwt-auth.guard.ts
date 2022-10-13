@@ -6,6 +6,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ADMIN_STATUS } from '../../../datalayer/model';
 import { DeactiveAccountException } from '../exception.decorator';
+import { Role } from '../role.enum';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
@@ -20,7 +21,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new UnauthorizedException();
     }
-    if (user.status === ADMIN_STATUS.INACTIVE) {
+    if (user.status === ADMIN_STATUS.INACTIVE || user.role === Role.Deactive) {
       throw new DeactiveAccountException();
     }
     return user;
@@ -44,7 +45,7 @@ export class JwtAuthGuardNonToken extends AuthGuard('jwt') {
     if (err || !user) {
       throw err || new UnauthorizedException();
     }
-    if (user.status === ADMIN_STATUS.INACTIVE) {
+    if (user.status === ADMIN_STATUS.INACTIVE || user.role === Role.Deactive) {
       throw new DeactiveAccountException();
     }
     return user;
