@@ -182,7 +182,7 @@ export class IaoRequestService {
                 $expr: { $eq: ['$$ownerId', '$fractorId'] },
               },
             },
-            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
+            { $project: { _id: 1, fullname: 1, fractorId: 1, avatar: 1 } },
           ],
           as: 'fractors',
         },
@@ -538,9 +538,7 @@ export class IaoRequestService {
     const iaos = await this.dataService.iaoRequest.aggregate(agg);
 
     if (iaos.length === 0) throw 'No data exists';
-    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(
-      iaos,
-    );
+    const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
     return iao;
   }
 
