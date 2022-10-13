@@ -71,37 +71,37 @@ export class DigitalAssetLable {
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractor: string;
+  0: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractorToFrac: string;
+  1: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  frac: string;
+  2: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForFractorToRedeem: string;
+  3: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForUsertoRedeem: string;
+  6: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  user: string;
+  9: string;
 }
 
 export class DigitalAsset {
@@ -129,61 +129,61 @@ export class PhysicalAssetLable {
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractor: string;
+  0: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractorToFrac: string;
+  1: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  frac: string;
+  2: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForFractorToRedeem: string;
+  3: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractorRedeems: string;
+  4: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fracToFractor: string;
+  5: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForUserToRedeem: string;
+  6: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  userRedeems: string;
+  7: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fracToUser: string;
+  8: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  user: string;
+  9: string;
 }
 
 export class PhysicalAsset {
