@@ -643,45 +643,45 @@ export class IaoEventService {
         { itemId: 1, name: 1, media: 1, _id: 0 },
       );
       iaoRequest.itemObject = items;
-
-      //other info
-      const getCreatedBy = this.dataService.admin.findOne(
-        {
-          adminId: iaoEvent.createdBy,
-        },
-        { fullname: 1 },
-      );
-      const getUpdatedBy = this.dataService.admin.findOne(
-        {
-          adminId: iaoEvent.updatedBy,
-        },
-        { fullname: 1 },
-      );
-      const getLastWhitelistUpdatedBy = this.dataService.admin.findOne(
-        {
-          adminId: iaoEvent.lastWhitelistUpdatedBy,
-        },
-        { fullname: 1 },
-      );
-      const [createdBy, updatedBy, lastWhitelistUpdatedBy] = await Promise.all([
-        getCreatedBy,
-        getUpdatedBy,
-        getLastWhitelistUpdatedBy,
-      ]);
-      iaoEvent.createdBy = createdBy?.fullname;
-      iaoEvent.updatedBy = updatedBy?.fullname;
-      iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy?.fullname;
-
-      const createdOnChainBy = await this.dataService.admin.findOne(
-        {
-          adminId: iaoEvent.createdOnChainBy,
-        },
-        { fullname: 1 },
-      );
-      iaoEvent.createdOnChainBy = createdOnChainBy?.fullname
-        ? createdOnChainBy.fullname
-        : null;
     }
+    //other info
+    const getCreatedBy = this.dataService.admin.findOne(
+      {
+        adminId: iaoEvent.createdBy,
+      },
+      { fullname: 1 },
+    );
+    const getUpdatedBy = this.dataService.admin.findOne(
+      {
+        adminId: iaoEvent.updatedBy,
+      },
+      { fullname: 1 },
+    );
+    const getLastWhitelistUpdatedBy = this.dataService.admin.findOne(
+      {
+        adminId: iaoEvent.lastWhitelistUpdatedBy,
+      },
+      { fullname: 1 },
+    );
+    const [createdBy, updatedBy, lastWhitelistUpdatedBy] = await Promise.all([
+      getCreatedBy,
+      getUpdatedBy,
+      getLastWhitelistUpdatedBy,
+    ]);
+    iaoEvent.createdBy = createdBy?.fullname;
+    iaoEvent.updatedBy = updatedBy?.fullname;
+    iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy?.fullname;
+
+    const createdOnChainBy = await this.dataService.admin.findOne(
+      {
+        adminId: iaoEvent.createdOnChainBy,
+      },
+      { fullname: 1 },
+    );
+    iaoEvent.createdOnChainBy = createdOnChainBy?.fullname
+      ? createdOnChainBy.fullname
+      : null;
+    // 
     const currentStage = this.checkCurrentStage(
       iaoEvent.registrationStartTime,
       iaoEvent.registrationEndTime,
