@@ -66,147 +66,147 @@ export class IaoRequest {
   maxItem: number;
 }
 
-export class DigitalAssetLable {
+export class DigitalAssetLabel {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractor: string;
+  0: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractorToFrac: string;
+  1: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  frac: string;
+  2: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForFractorToRedeem: string;
+  3: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForUsertoRedeem: string;
+  6: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  user: string;
+  9: string;
 }
 
 export class DigitalAsset {
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => DigitalAssetLable)
-  en: DigitalAssetLable;
+  @Type(() => DigitalAssetLabel)
+  en: DigitalAssetLabel;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => DigitalAssetLable)
-  cn: DigitalAssetLable;
+  @Type(() => DigitalAssetLabel)
+  cn: DigitalAssetLabel;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => DigitalAssetLable)
-  jp: DigitalAssetLable;
+  @Type(() => DigitalAssetLabel)
+  ja: DigitalAssetLabel;
 }
 
-export class PhysicalAssetLable {
+export class PhysicalAssetLabel {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractor: string;
+  0: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractorToFrac: string;
+  1: string;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  frac: string;
+  2: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForFractorToRedeem: string;
+  3: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fractorRedeems: string;
+  4: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fracToFractor: string;
+  5: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  availableForUserToRedeem: string;
+  6: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  userRedeems: string;
+  7: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  fracToUser: string;
+  8: string;
   
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  user: string;
+  9: string;
 }
 
 export class PhysicalAsset {
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => PhysicalAssetLable)
-  en: PhysicalAssetLable;
+  @Type(() => PhysicalAssetLabel)
+  en: PhysicalAssetLabel;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => PhysicalAssetLable)
-  cn: PhysicalAssetLable;
+  @Type(() => PhysicalAssetLabel)
+  cn: PhysicalAssetLabel;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => PhysicalAssetLable)
-  jp: PhysicalAssetLable;
+  @Type(() => PhysicalAssetLabel)
+  ja: PhysicalAssetLabel;
 }
 
-export class CustodianshipLable {
+export class CustodianshipLabel {
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
@@ -248,6 +248,6 @@ export class UpdateSettingsDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
-  @Type(() => CustodianshipLable)
-  custodianshipLable: CustodianshipLable;
+  @Type(() => CustodianshipLabel)
+  custodianshipLabel: CustodianshipLabel;
 }

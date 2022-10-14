@@ -6,7 +6,7 @@ import { ApiError } from 'src/common/api';
 import { ListDocument } from 'src/common/common-type';
 import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
+import { CategoryType, MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
 import {
   CUSTODIANSHIP_STATUS,
   MEDIA_TYPE,
@@ -23,6 +23,8 @@ import { Role } from 'src/modules/auth/role.enum';
 import { Utils } from 'src/common/utils';
 import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 import { UpdateCustodianshipFile } from './dto/edit-file.dto';
+import { UpdateCustodianshipStatusDto } from './dto/update-custodianship-status.dto';
+import { CreateShipmentInfoDto, UpdateShipmentInfoDto } from './dto/shipment-infor.dto';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -587,6 +589,40 @@ export class AssetService {
     return { success: true };
   }
 
+  async updateCustodianshipStatus(
+    assetId: string,
+    updateStatus: UpdateCustodianshipStatusDto,
+    user: any,
+  ) {
+    const asset = await this.dataServices.asset.findOne({
+      itemId: assetId,
+    });
+    if (!asset) throw ApiError('', `Id of Asset is invalid`);
+    if (asset.custodianship.status > CUSTODIANSHIP_STATUS.FRAC)
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Cannot update custodianship status',
+      );
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+      },
+      {
+        $set: {
+          'custodianship.status': updateStatus.status,
+          lastUpdatedBy: user.adminId,
+        },
+      },
+    );
+    if (!updatedAsset)
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Can not update custodianship status',
+      );
+    return { success: true };
+  }
+
   async editFile(
     user: any,
     assetId: string,
@@ -649,6 +685,103 @@ export class AssetService {
     );
     if (!updatedAsset)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete file');
+    return { success: true };
+  }
+
+  async addShipmentInfo(
+    user: any,
+    data: CreateShipmentInfoDto,
+    assetId: string,
+  ) {
+    const filter = {
+      itemId: assetId,
+      category: CategoryType.PHYSICAL,
+      deleted: false,
+    };
+
+    const asset = await this.dataServices.asset.findOne(filter);
+    if (!asset) throw ApiError('', `Id of Asset is invalid`);
+
+    //create new shipment-info
+    const newShipmentInfo = await this.assetBuilderService.createShipmentInfo(
+      data,
+    );
+
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      filter,
+      {
+        $push: {
+          'custodianship.listShipmentInfo': newShipmentInfo,
+        },
+        $set: {
+          lastUpdatedBy: user.fractorId,
+        },
+      },
+      { new: true },
+    );
+
+    const last = updatedAsset.custodianship.listShipmentInfo.length - 1;
+    return updatedAsset.custodianship.listShipmentInfo[last];
+  }
+
+  async editShipmentInfo(
+    user: any,
+    assetId: string,
+    shipmentId: string,
+    data: UpdateShipmentInfoDto,
+  ) {
+    const filter = { itemId: assetId };
+
+    const asset = await this.dataServices.asset.findOne(filter);
+    if (!asset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id of Asset is invalid');
+
+    //update shipment-info
+    const newShipmentInfo = await this.assetBuilderService.updateShipmentInfo(
+      user,
+      data,
+    );
+
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'custodianship.listShipmentInfo._id': shipmentId,
+      },
+      {
+        $set: newShipmentInfo,
+      },
+      { new: true },
+    );
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit shipment info');
+    return { success: true };
+  }
+
+  async removeShipmentInfo(user, assetId: string, shipmentId: string) {
+    const filter = { itemId: assetId };
+
+    const asset = await this.dataServices.asset.findOne(filter);
+    if (!asset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, `Id of Asset is invalid`);
+
+    const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
+      {
+        itemId: assetId,
+        updatedAt: asset['updatedAt'],
+        'custodianship.listShipmentInfo._id': shipmentId,
+      },
+      {
+        $pull: { 'custodianship.listShipmentInfo': { _id: shipmentId } },
+        $set: {
+          lastUpdatedBy: user.fractorId,
+        },
+      },
+      { new: true },
+    );
+    if (!updatedAsset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete shipment info');
+
     return { success: true };
   }
 }

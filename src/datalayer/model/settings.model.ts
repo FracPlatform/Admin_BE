@@ -19,7 +19,7 @@ export class IaoRequest {
   maxItem: number;
 }
 
-export class CustodianshipLable {
+export class CustodianshipLabel {
   physicalAsset: PhysicalAsset;
   digitalAssetForNft: DigitalAsset;
   digitalAssetForNonNft: DigitalAsset;
@@ -28,35 +28,35 @@ export class CustodianshipLable {
 export class PhysicalAsset {
   en: PhysicalAssetLable;
   cn: PhysicalAssetLable;
-  jp: PhysicalAssetLable;
+  ja: PhysicalAssetLable;
 }
 
 export class PhysicalAssetLable {
-  fractor: string;
-  fractorToFrac: string;
-  frac: string;
-  availableForFractorToRedeem: string;
-  fractorRedeems: string;
-  fracToFractor: string;
-  availableForUserToRedeem: string;
-  userRedeems: string;
-  fracToUser: string;
-  user: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+  5: string;
+  6: string;
+  7: string;
+  8: string;
+  9: string;
 }
 
 export class DigitalAsset {
   en: DigitalAssetLable;
   cn: DigitalAssetLable;
-  jp: DigitalAssetLable;
+  ja: DigitalAssetLable;
 }
 
 export class DigitalAssetLable {
-  fractor: string;
-  fractorToFrac: string;
-  frac: string;
-  availableForFractorToRedeem: string;
-  availableForUsertoRedeem: string;
-  user: string;
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  6: string;
+  9: string;
 }
 
 @Schema({
@@ -76,8 +76,8 @@ export class Settings {
   @Prop({ type: IaoRequest })
   iaoRequest: IaoRequest;
 
-  @Prop({ type: CustodianshipLable })
-  custodianshipLable: CustodianshipLable;
+  @Prop({ type: CustodianshipLabel })
+  custodianshipLable: CustodianshipLabel;
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings);

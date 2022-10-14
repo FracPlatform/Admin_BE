@@ -72,3 +72,8 @@ export class DepositedNFT {
   withdrawable: number;
   txHash: string;
 }
+
+export class ShipmentInfoEntity {
+  shipment_status: string;
+  shipment_time: Date;
+}
