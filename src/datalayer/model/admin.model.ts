@@ -58,5 +58,8 @@ AdminSchema.index(
   { walletAddress: 1 },
   {
     unique: true,
+    partialFilterExpression: {
+      deleted: false,
+    },
   },
 );
