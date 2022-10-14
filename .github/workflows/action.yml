@@ -2,18 +2,25 @@ name: admin-be
 on:
   pull_request:
     branches: 
-      - develop
+      - staging
     types: [closed]
 jobs:
   deploy:
     name: Deploy
-    if: ${{ github.event.pull_request.merged }}
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: deploy
-        run: | # run with multiple script
-          cd /home/debian/source/Admin_BE
-          git pull origin develop
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.STG_HOST }} #hostname of server
+          username: ${{ secrets.STG_USERNAME }} #username login to server
+          key: ${{ secrets.STG_KEY }} #password login to server
+          port: ${{ secrets.STG_PORT }} #port of server - often port is 22
+        script: |
+          export NVM_DIR=~/.nvm
+          source ~/.nvm/nvm.sh
+          cd /home/ubuntu/source/Admin_BE
+          git pull
           npm install
           npm run build
           pm2 restart iao-admin-be
