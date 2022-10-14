@@ -18,21 +18,21 @@ export class SettingsBuilderService {
       iaoRequest: data.iaoRequest ? {
         maxItem: data.iaoRequest?.maxItem || currentSettings.iaoRequest.maxItem,
       } : undefined,
-      custodianshipLable: data.custodianshipLable ? {
+      custodianshipLabel: data.custodianshipLabel ? {
         physicalAsset: {
-          en: data.custodianshipLable?.physicalAsset?.en || currentSettings.custodianshipLable.physicalAsset.en,
-          cn: data.custodianshipLable?.physicalAsset?.cn || currentSettings.custodianshipLable.physicalAsset.cn,
-          jp: data.custodianshipLable?.physicalAsset?.jp || currentSettings.custodianshipLable.physicalAsset.jp,
+          en: data.custodianshipLabel?.physicalAsset?.en || currentSettings.custodianshipLabel.physicalAsset.en,
+          cn: data.custodianshipLabel?.physicalAsset?.cn || currentSettings.custodianshipLabel.physicalAsset.cn,
+          jp: data.custodianshipLabel?.physicalAsset?.ja || currentSettings.custodianshipLabel.physicalAsset.jp,
         },
         digitalAssetForNft:{
-          en: data.custodianshipLable?.digitalAssetForNft?.en || currentSettings.custodianshipLable.digitalAssetForNft.en,
-          cn: data.custodianshipLable?.digitalAssetForNft?.cn || currentSettings.custodianshipLable.digitalAssetForNft.cn,
-          jp: data.custodianshipLable?.digitalAssetForNft?.jp || currentSettings.custodianshipLable.digitalAssetForNft.jp,
+          en: data.custodianshipLabel?.digitalAssetForNft?.en || currentSettings.custodianshipLabel.digitalAssetForNft.en,
+          cn: data.custodianshipLabel?.digitalAssetForNft?.cn || currentSettings.custodianshipLabel.digitalAssetForNft.cn,
+          jp: data.custodianshipLabel?.digitalAssetForNft?.ja || currentSettings.custodianshipLabel.digitalAssetForNft.jp,
         },
         digitalAssetForNonNft:{
-          en: data.custodianshipLable?.digitalAssetForNonNft?.en || currentSettings.custodianshipLable.digitalAssetForNonNft.en,
-          cn: data.custodianshipLable?.digitalAssetForNonNft?.cn || currentSettings.custodianshipLable.digitalAssetForNonNft.cn,
-          jp: data.custodianshipLable?.digitalAssetForNonNft?.jp || currentSettings.custodianshipLable.digitalAssetForNonNft.jp,
+          en: data.custodianshipLabel?.digitalAssetForNonNft?.en || currentSettings.custodianshipLabel.digitalAssetForNonNft.en,
+          cn: data.custodianshipLabel?.digitalAssetForNonNft?.cn || currentSettings.custodianshipLabel.digitalAssetForNonNft.cn,
+          jp: data.custodianshipLabel?.digitalAssetForNonNft?.ja || currentSettings.custodianshipLabel.digitalAssetForNonNft.jp,
         },
       } : undefined,
     };
