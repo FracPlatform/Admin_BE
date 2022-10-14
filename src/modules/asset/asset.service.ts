@@ -24,7 +24,10 @@ import { Utils } from 'src/common/utils';
 import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 import { UpdateCustodianshipFile } from './dto/edit-file.dto';
 import { UpdateCustodianshipStatusDto } from './dto/update-custodianship-status.dto';
-import { CreateShipmentInfoDto, UpdateShipmentInfoDto } from './dto/shipment-infor.dto';
+import {
+  CreateShipmentInfoDto,
+  UpdateShipmentInfoDto,
+} from './dto/shipment-infor.dto';
 const ufs = require('url-file-size');
 
 @Injectable()
@@ -338,11 +341,15 @@ export class AssetService {
     if (!currentAssetType)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'DEFAULT_ERROR');
 
+    const currentIaoRequest = await this.dataServices.iaoRequest.findOne({
+      items: currentAsset.itemId,
+    });
     const response = this.assetBuilderService.convertAssetDetail(
       currentAsset,
       currentUser,
       currentAssetType,
       currentAssetDocument,
+      currentIaoRequest,
     );
     return response;
   }

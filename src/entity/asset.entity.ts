@@ -55,6 +55,7 @@ export class AssetForOwnerEntity {
   assetTypeName: string;
   documents: DocumentItem[];
   deleted: boolean;
+  iaoRequest?: object;
   lastUpdatedBy?: object;
   createdAt: Date;
   updatedAt: Date;
