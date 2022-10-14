@@ -3,8 +3,13 @@ import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   AssetForOwnerEntity,
   DocumentItemEntity,
+  ShipmentInfoEntity,
 } from 'src/entity/asset.entity';
 import { CreateDocumentItemDto } from './dto/documentItem.dto';
+import {
+  CreateShipmentInfoDto,
+  UpdateShipmentInfoDto,
+} from './dto/shipment-infor.dto';
 
 @Injectable()
 export class AssetBuilderService {
@@ -122,5 +127,23 @@ export class AssetBuilderService {
       },
     };
     return documentItem;
+  }
+
+  async createShipmentInfo(data: CreateShipmentInfoDto) {
+    const shipmentInfo: ShipmentInfoEntity = {
+      shipment_status: data.shipment_status,
+      shipment_time: data.shipment_time,
+    };
+    return shipmentInfo;
+  }
+
+  async updateShipmentInfo(user: any, data: UpdateShipmentInfoDto) {
+    const newShipmentInfo = {
+      'custodianship.listShipmentInfo.$.shipment_status': data.shipment_status,
+      'custodianship.listShipmentInfo.$.shipment_time':
+        data.shipment_time === 'N/A' ? null : data.shipment_time,
+      lastUpdatedBy: user.fractorId,
+    };
+    return newShipmentInfo;
   }
 }
