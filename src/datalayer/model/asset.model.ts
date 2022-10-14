@@ -72,6 +72,20 @@ export class Specifications extends SpecificationField {
   value: string;
 }
 
+@Schema({
+  timestamps: false,
+  collection: 'ShipmentInfo',
+})
+export class ShipmentInfo {
+  @Prop({ type: String })
+  shipment_status: string;
+
+  @Prop({ type: Date, default: null })
+  shipment_time: any;
+}
+
+export const ShipmentInfoSchema = SchemaFactory.createForClass(ShipmentInfo);
+
 @Schema({ collection: 'DigitalAssetFile', timestamps: true })
 export class DigitalAssetFile {
   @Prop({ type: String })
@@ -98,6 +112,9 @@ export class CustodianshipInfo {
 
   @Prop({ type: [DigitalAssetFileSchema] })
   files: DigitalAssetFile[];
+
+  @Prop({ type: [ShipmentInfoSchema] })
+  listShipmentInfo: ShipmentInfo[];
 }
 export const CustodianshipInfoSchema =
   SchemaFactory.createForClass(CustodianshipInfo);
