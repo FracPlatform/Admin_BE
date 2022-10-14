@@ -16,11 +16,11 @@ jobs:
           username: ${{ secrets.STG_USERNAME }} #username login to server
           key: ${{ secrets.STG_KEY }} #password login to server
           port: ${{ secrets.STG_PORT }} #port of server - often port is 22
-        script: |
-          export NVM_DIR=~/.nvm
-          source ~/.nvm/nvm.sh
-          cd /home/ubuntu/source/Admin_BE
-          git pull
-          npm install
-          npm run build
-          pm2 restart iao-admin-be
+          script: |
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
+            cd /home/ubuntu/source/Admin_BE
+            git pull
+            npm install
+            npm run build
+            pm2 restart iao-admin-be
