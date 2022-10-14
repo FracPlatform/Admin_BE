@@ -41,7 +41,7 @@ export class AssetBuilderService {
                 kycStatus: e.Fractor[0]['kycStatus'],
                 fullname: e.Fractor[0]['fullname'],
                 avatar: e.Fractor[0]['avatar'],
-                _id: e.Fractor[0]['_id'],
+                id: e.Fractor[0]['fractorId'],
               }
             : null,
         itemId: e.itemId,
@@ -80,7 +80,7 @@ export class AssetBuilderService {
             kycStatus: user.kycStatus,
             fullname: user.fullname,
             avatar: user.avatar,
-            _id: user._id,
+            id: user.fractorId,
           }
         : null,
       itemId: data.itemId,
