@@ -603,7 +603,6 @@ export class IaoEventService {
 
     const iaoRequest: any = await this.dataService.iaoRequest.findOne({
       iaoId: fnft.iaoRequestId,
-      deleted: false,
       status: IAO_REQUEST_STATUS.APPROVED_B,
     });
     // get NFT
