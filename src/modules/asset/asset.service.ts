@@ -814,7 +814,7 @@ export class AssetService {
     session.startTransaction();
 
     try {
-      let updatedAsset1 = await this.dataServices.asset.findOneAndUpdate(
+      const updatedAsset1 = await this.dataServices.asset.findOneAndUpdate(
         {
           itemId: assetId,
           updatedAt: asset['updatedAt'],
