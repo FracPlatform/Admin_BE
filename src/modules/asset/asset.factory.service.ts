@@ -142,7 +142,7 @@ export class AssetBuilderService {
       'custodianship.listShipmentInfo.$.shipment_status': data.shipment_status,
       'custodianship.listShipmentInfo.$.shipment_time':
         data.shipment_time === 'N/A' ? null : data.shipment_time,
-      lastUpdatedBy: user.fractorId,
+      lastUpdatedBy: user.adminId,
     };
     return newShipmentInfo;
   }
