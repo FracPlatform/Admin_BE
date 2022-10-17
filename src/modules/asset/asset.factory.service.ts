@@ -56,7 +56,13 @@ export class AssetBuilderService {
     });
   }
 
-  convertAssetDetail(data: any, user: any, assetType: any, documents: any[]) {
+  convertAssetDetail(
+    data: any,
+    user: any,
+    assetType: any,
+    documents: any[],
+    currentIaoRequest,
+  ) {
     const asset: AssetForOwnerEntity = {
       _id: data._id,
       ownerId: data.ownerId,
@@ -87,6 +93,9 @@ export class AssetBuilderService {
       assetTypeName: assetType.name,
       custodianship: data.custodianship,
       deleted: data.deleted,
+      iaoRequest: {
+        id: currentIaoRequest.iaoId,
+      },
       lastUpdatedBy: {
         id: data.lastUpdatedBy,
         fullname:
