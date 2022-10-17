@@ -20,6 +20,7 @@ import { NftModule } from './modules/nft/nft.module';
 import { IPFSMofule } from './providers/ipfs/ipfs.module';
 import { FnftModule } from './modules/f-nft/f-nft.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SignerModule } from './modules/signer/signer.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     IaoEventModule,
     NftModule,
     IPFSMofule,
+    SignerModule,
   ],
   controllers: [AppController],
 })

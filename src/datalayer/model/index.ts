@@ -9,3 +9,4 @@ export * from './iao-event.model';
 export * from './nft.model';
 export * from './whitelist.model';
 export * from './settings.model';
+export * from './signer.model';
