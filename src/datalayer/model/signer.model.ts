@@ -14,14 +14,11 @@ export class Signer {
   @Prop({ type: String })
   hashKey: string;
 
-  @Prop({ type: String })
-  publicKey: string;
+  @Prop({ type: Boolean, default: true })
+  isActive?: boolean;
 
-  @Prop({ type: Boolean })
-  isActive: boolean;
-
-  @Prop({ type: String })
-  chain: string;
+  @Prop({ type: Number })
+  chain: number;
 }
 
 export const SignerSchema = SchemaFactory.createForClass(Signer);
