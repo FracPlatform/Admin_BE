@@ -687,16 +687,7 @@ export class IaoEventService {
       lastWhitelistUpdatedBy,
       createdOnChainBy,
     };
-    // const createdOnChainBy = await this.dataService.admin.findOne(
-    //   {
-    //     adminId: iaoEvent.createdOnChainBy,
-    //   },
-    //   { fullname: 1 },
-    // );
-    // iaoEvent.createdOnChainBy = createdOnChainBy?.fullname
-    //   ? createdOnChainBy.fullname
-    //   : null;
-    //
+
     const currentStage = this.checkCurrentStage(
       iaoEvent.registrationStartTime,
       iaoEvent.registrationEndTime,
