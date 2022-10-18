@@ -187,9 +187,7 @@ export class AssetService {
         data: dataReturnFilter,
       },
     });
-
     let dataQuery;
-
     if (user.role === Role.FractorBD) {
       dataQuery = await this.dataServices.fractor.aggregate(
         [
@@ -214,7 +212,7 @@ export class AssetService {
           {
             $lookup: {
               from: 'AssetType',
-              localField: 'typeId',
+              localField: 'asset.typeId',
               foreignField: '_id',
               as: 'AssetType',
             },
@@ -230,13 +228,13 @@ export class AssetService {
               description: '$asset.description',
               status: '$asset.status',
               media: '$asset.media',
-              typeId: '$asset.typeId',
               ownerId: '$asset.ownerId',
               collectionId: '$asset.collectionId',
               documents: '$asset.documents',
               deleted: '$asset.deleted',
               inDraft: '$asset.inDraft',
               custodianship: '$custodianship',
+              AssetType: '$AssetType',
               assetTypeName: { $arrayElemAt: ['$AssetType.name', 0] },
               Fractor: [
                 {
@@ -834,7 +832,7 @@ export class AssetService {
           ErrorCode.DEFAULT_ERROR,
           'Cannot change index shipment info 1',
         );
-        
+
       const updatedAsset2 = await this.dataServices.asset.findOneAndUpdate(
         {
           itemId: assetId,
