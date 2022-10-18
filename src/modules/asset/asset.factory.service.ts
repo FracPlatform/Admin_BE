@@ -94,7 +94,7 @@ export class AssetBuilderService {
       custodianship: data.custodianship,
       deleted: data.deleted,
       iaoRequest: {
-        id: currentIaoRequest.iaoId,
+        id: currentIaoRequest?.iaoId,
       },
       lastUpdatedBy: {
         id: data.lastUpdatedBy,
