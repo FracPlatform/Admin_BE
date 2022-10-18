@@ -630,7 +630,10 @@ export class IaoEventService {
         },
         { fullname: 1 },
       );
-      iaoRequest.bd = bd?.fullname ? bd.fullname : null;
+      iaoRequest.bd = {
+        name: bd?.fullname ? bd.fullname : null,
+        id: fractor.assignedBD,
+      };
       // get url of items
       const itemsId = iaoRequest.items.map((i) => {
         return { itemId: i };
@@ -662,25 +665,29 @@ export class IaoEventService {
       },
       { fullname: 1 },
     );
-    const [createdBy, updatedBy, lastWhitelistUpdatedBy] = await Promise.all([
-      getCreatedBy,
-      getUpdatedBy,
-      getLastWhitelistUpdatedBy,
-    ]);
-    iaoEvent.createdBy = createdBy?.fullname;
-    iaoEvent.updatedBy = updatedBy?.fullname;
-    iaoEvent.lastWhitelistUpdatedBy = lastWhitelistUpdatedBy?.fullname;
 
-    const createdOnChainBy = await this.dataService.admin.findOne(
+    const getCreatedOnChainBy = this.dataService.admin.findOne(
       {
         adminId: iaoEvent.createdOnChainBy,
       },
       { fullname: 1 },
     );
-    iaoEvent.createdOnChainBy = createdOnChainBy?.fullname
-      ? createdOnChainBy.fullname
-      : null;
-    // 
+
+    const [createdBy, updatedBy, lastWhitelistUpdatedBy, createdOnChainBy] =
+      await Promise.all([
+        getCreatedBy,
+        getUpdatedBy,
+        getLastWhitelistUpdatedBy,
+        getCreatedOnChainBy,
+      ]);
+
+    const obj = {
+      createdBy,
+      updatedBy,
+      lastWhitelistUpdatedBy,
+      createdOnChainBy,
+    };
+
     const currentStage = this.checkCurrentStage(
       iaoEvent.registrationStartTime,
       iaoEvent.registrationEndTime,
@@ -695,6 +702,7 @@ export class IaoEventService {
       iaoEvent,
       fnft,
       iaoRequest,
+      obj,
     );
 
     return iaoEventDetail;

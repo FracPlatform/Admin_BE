@@ -24,6 +24,8 @@ import {
   WhitelistSchema,
   Settings,
   SettingsSchema,
+  Signer,
+  SignerSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -42,6 +44,7 @@ import 'dotenv/config';
       { name: Nft.name, schema: NftSchema },
       { name: Whitelist.name, schema: WhitelistSchema },
       { name: Settings.name, schema: SettingsSchema },
+      { name: Signer.name, schema: SignerSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

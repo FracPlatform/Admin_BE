@@ -26,6 +26,8 @@ import {
   WhitelistDocument,
   Settings,
   SettingsDocument,
+  Signer,
+  SignerDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -42,6 +44,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   nft: IGenericRepository<Nft>;
   whitelist: IGenericRepository<Whitelist>;
   settings: IGenericRepository<Settings>;
+  signer: IGenericRepository<Signer>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -65,6 +68,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private WhitelistRepository: Model<WhitelistDocument>,
     @InjectModel(Settings.name)
     private SettingsRepository: Model<SettingsDocument>,
+    @InjectModel(Signer.name)
+    private SignerRepository: Model<SignerDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -96,6 +101,10 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     );
     this.settings = new MongoGenericRepository<SettingsDocument>(
       this.SettingsRepository,
+    );
+
+    this.signer = new MongoGenericRepository<SignerDocument>(
+      this.SignerRepository,
     );
   }
 }

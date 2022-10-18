@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { get, isEqual } from 'lodash';
 import mongoose from 'mongoose';
@@ -32,6 +32,8 @@ const ufs = require('url-file-size');
 
 @Injectable()
 export class AssetService {
+  private readonly logger = new Logger(AssetService.name);
+
   constructor(
     private readonly dataServices: IDataServices,
     private readonly assetBuilderService: AssetBuilderService,
@@ -721,7 +723,7 @@ export class AssetService {
           'custodianship.listShipmentInfo': newShipmentInfo,
         },
         $set: {
-          lastUpdatedBy: user.fractorId,
+          lastUpdatedBy: user.adminId,
         },
       },
       { new: true },
@@ -762,6 +764,7 @@ export class AssetService {
     );
     if (!updatedAsset)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot edit shipment info');
+
     return { success: true };
   }
 
@@ -781,7 +784,7 @@ export class AssetService {
       {
         $pull: { 'custodianship.listShipmentInfo': { _id: shipmentId } },
         $set: {
-          lastUpdatedBy: user.fractorId,
+          lastUpdatedBy: user.adminId,
         },
       },
       { new: true },
@@ -790,5 +793,79 @@ export class AssetService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot delete shipment info');
 
     return { success: true };
+  }
+
+  async changeIndexShipmentInfo(
+    user: any,
+    assetId: string,
+    shipmentId: string,
+    index: number,
+  ) {
+    const asset = await this.dataServices.asset.findOne({ itemId: assetId });
+    if (!asset)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id of Asset is invalid');
+
+    const currentShipment = asset.custodianship.listShipmentInfo.filter(
+      (s) => s['_id'] == shipmentId,
+    );
+    if (!currentShipment.length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id of shipment is invalid');
+
+    if (asset.custodianship.listShipmentInfo.length < index + 1)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'index is invalid');
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const updatedAsset1 = await this.dataServices.asset.findOneAndUpdate(
+        {
+          itemId: assetId,
+          updatedAt: asset['updatedAt'],
+          'custodianship.listShipmentInfo._id': shipmentId,
+        },
+        {
+          $pull: { 'custodianship.listShipmentInfo': { _id: shipmentId } },
+        },
+        { session },
+      );
+      if (!updatedAsset1)
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'Cannot change index shipment info 1',
+        );
+        
+      const updatedAsset2 = await this.dataServices.asset.findOneAndUpdate(
+        {
+          itemId: assetId,
+        },
+        {
+          $push: {
+            'custodianship.listShipmentInfo': {
+              $each: currentShipment,
+              $position: index,
+            },
+          },
+          $set: {
+            lastUpdatedBy: user.adminId,
+          },
+        },
+        { session },
+      );
+      if (!updatedAsset2)
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'Cannot change index shipment info 2',
+        );
+
+      await session.commitTransaction();
+      return { success: true };
+    } catch (error) {
+      await session.abortTransaction();
+      this.logger.debug(error.message);
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }

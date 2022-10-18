@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Post,
   Put,
   Query,
@@ -261,6 +262,24 @@ export class AssetController {
       assetId,
       shipmentId,
       editShipmentInfoDto,
+    );
+    return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Put('custodianship/change-index-shipment-info/:assetId/:shipmentId/:index')
+  @ApiOperation({ summary: 'Change index shipment info for Asset' })
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async changeIndexShipmentInfo(
+    @Param('assetId') assetId: string,
+    @Param('shipmentId', ParseObjectIdPipe) shipmentId: string,
+    @Param('index', ParseIntPipe) index: number,
+    @GetUser() user,
+  ) {
+    const data = await this.assetService.changeIndexShipmentInfo(
+      user,
+      assetId,
+      shipmentId,
+      index,
     );
     return new ApiSuccessResponse().success(data, '');
   }

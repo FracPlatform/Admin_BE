@@ -72,11 +72,7 @@ export class IaoEventBuilderService {
     };
   }
 
-  getIaoEventDetail(
-    iaoEvent: any,
-    fnft: any,
-    iaoRequest: any,
-  ): IAOEventDetailEntity {
+  getIaoEventDetail(iaoEvent: any, fnft: any, iaoRequest: any, obj: any) {
     return {
       iaoEventId: iaoEvent.iaoEventId,
       status: iaoEvent.status,
@@ -120,14 +116,20 @@ export class IaoEventBuilderService {
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       whitelist: iaoEvent.whitelist,
       totalWhitelist: iaoEvent.whitelist.length,
-      updatedBy: iaoEvent.updatedBy,
-      createdBy: iaoEvent.createdBy,
+      updatedBy: { id: iaoEvent.updatedBy, name: obj.updatedBy?.fullname },
+      createdBy: { id: iaoEvent.createdBy, name: obj.createdBy?.fullname },
       createdAt: iaoEvent.createdAt,
       updatedAt: iaoEvent.updatedAt,
-      createdOnChainBy: iaoEvent.createdOnChainBy,
+      createdOnChainBy: {
+        id: iaoEvent.createdOnChainBy,
+        name: obj.createdOnChainBy?.fullname,
+      },
       createdOnChainAt: iaoEvent.createdOnChainAt,
       lastWhitelistUpdatedAt: iaoEvent.lastWhitelistUpdatedAt,
-      lastWhitelistUpdatedBy: iaoEvent.lastWhitelistUpdatedBy,
+      lastWhitelistUpdatedBy: {
+        id: iaoEvent.lastWhitelistUpdatedBy,
+        name: obj.lastWhitelistUpdatedBy?.fullname,
+      },
     };
   }
 
