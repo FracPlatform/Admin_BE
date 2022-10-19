@@ -12,6 +12,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { CHAINID } from 'src/common/constants';
@@ -154,8 +155,9 @@ export class CreateIaoEventDto {
   @Min(MIN_PERCENT_OFFERED)
   percentageOffered: number;
 
-  @ApiProperty({ required: true })
-  @IsNotEmpty()
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateIf((obj) => obj.vaultType === VAULT_TYPE.VAULT)
   @IsNumber()
   @Max(MAX_PERCENT_VAULT)
   @Min(MIN_PERCENT_VAULT)
