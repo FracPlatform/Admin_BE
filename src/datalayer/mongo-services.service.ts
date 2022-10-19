@@ -28,6 +28,8 @@ import {
   SettingsDocument,
   Signer,
   SignerDocument,
+  ClaimDocument,
+  Claim,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -45,6 +47,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   whitelist: IGenericRepository<Whitelist>;
   settings: IGenericRepository<Settings>;
   signer: IGenericRepository<Signer>;
+  claim: IGenericRepository<Claim>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -70,6 +73,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private SettingsRepository: Model<SettingsDocument>,
     @InjectModel(Signer.name)
     private SignerRepository: Model<SignerDocument>,
+    @InjectModel(Claim.name)
+    private ClaimRepository: Model<ClaimDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -105,6 +110,10 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
 
     this.signer = new MongoGenericRepository<SignerDocument>(
       this.SignerRepository,
+    );
+
+    this.claim = new MongoGenericRepository<ClaimDocument>(
+      this.ClaimRepository,
     );
   }
 }

@@ -9,6 +9,7 @@ import {
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
 import {
   ADMIN_STATUS,
+  CLAIM_STATUS,
   F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
   F_NFT_TYPE,
@@ -70,6 +71,12 @@ export class WorkerService {
         case CONTRACT_EVENTS.DEPOSIT_NFTS:
           await this._handleDepositNFTsEvent(requestData);
           break;
+        case CONTRACT_EVENTS.CLAIM_FNFT_SUCCESSFUL:
+          await this._handleClaimFNFTEvent(requestData);
+          break;
+        case CONTRACT_EVENTS.CLAIM_FNFT_FAILURE:
+          await this._handleClaimFNFTEvent(requestData);
+          break;
         default:
           break;
       }
@@ -77,6 +84,19 @@ export class WorkerService {
       this.logger.debug(err.message, err.stack);
       throw ApiError('Webhook err', err.message);
     }
+  }
+
+  private async _handleClaimFNFTEvent(requestData: WorkerDataDto) {
+    const status =
+      requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE
+        ? CLAIM_STATUS.FAILD
+        : CLAIM_STATUS.SUCCESS;
+    await this.dataServices.claim.create({
+      amount: requestData.metadata.amount,
+      buyerAddress: requestData.metadata.sender,
+      iaoEventId: requestData.metadata.id,
+      status,
+    });
   }
 
   private async _handleSetAdminEvent(requestData: WorkerDataDto) {

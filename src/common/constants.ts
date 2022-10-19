@@ -103,6 +103,8 @@ export const CONTRACT_EVENTS = {
   DEACTIVE_F_NFT: 'DeactivateFNFTEvent',
   DEACTIVE_IAO_EVENT: 'DeactivateIAOEvent',
   DEPOSIT_NFTS: 'DepositNFTEvent',
+  CLAIM_FNFT_SUCCESSFUL: 'WithdrawFNFTEvent',
+  CLAIM_FNFT_FAILURE: 'WithdrawFundEvent',
 };
 
 export enum CHAINID {
