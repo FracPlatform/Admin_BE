@@ -11,7 +11,7 @@ export class S3Service {
     const nameArr = presignUrlDto.name.split('.');
     const fileExt = nameArr[nameArr.length - 1];
 
-    if (!FILE_PRESIGN_URL.includes(fileExt)) {
+    if (!FILE_PRESIGN_URL.includes(fileExt.toLocaleLowerCase())) {
       throw ApiError('', `Invalid file type`);
     }
 
