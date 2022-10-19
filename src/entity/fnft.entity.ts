@@ -16,6 +16,7 @@ export class FnftEntity {
   lastUpdateBy: string;
   fnftId?: string;
   deleted: boolean;
+  availableSupply: number;
 }
 
 export class ListFnftEntity {
