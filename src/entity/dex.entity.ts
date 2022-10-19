@@ -1,5 +1,5 @@
 export class FractorFeeEntity {
-  iaoFeerate: number;
+  iaoFeeRate: number;
   tradingFeeProfit: number;
 }
 
