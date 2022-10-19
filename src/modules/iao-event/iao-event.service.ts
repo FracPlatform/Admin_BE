@@ -952,7 +952,7 @@ export class IaoEventService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
 
     const headings = [
-      ['Wallet address', 'Deposited (USDT)', 'Purchased (GEM1)'],
+      ['Wallet address', `Deposited (${currentIaoEvent.acceptedCurrencySymbol})`, `Purchased (${currentIaoEvent.tokenSymbol})`],
     ];
 
     const wb = XLSX.utils.book_new();
@@ -969,7 +969,7 @@ export class IaoEventService {
 
     const linkS3 = await this.s3Service.uploadS3(
       buffer,
-      'csv',
+      'text/csv',
       `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`,
     );
 
