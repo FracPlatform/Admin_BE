@@ -296,6 +296,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.CREATE_IAO_EVENT_ON_CHAIN,
         requestData,
+        requestData.metadata.createdBy,
       );
     } catch (error) {
       await session.abortTransaction();
@@ -432,6 +433,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEACTIVE_IAO_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     } catch (error) {
       await session.abortTransaction();
@@ -515,9 +517,12 @@ export class WorkerService {
 
       // update iao event
       await this.dataServices.iaoEvent.updateOne(
-        { iaoEventId: purchase.iaoEventId, updatedAt: iaoEvent['updatedAt'] },
         {
-          $set: {
+          iaoEventId: purchase.iaoEventId,
+          availableSupply: { $gte: purchase.tokenAmount },
+        },
+        {
+          $inc: {
             availableSupply: iaoEvent.availableSupply - purchase.tokenAmount,
           },
         },
@@ -528,10 +533,10 @@ export class WorkerService {
       await this.dataServices.fnft.updateOne(
         {
           contractAddress: iaoEvent.FNFTcontractAddress,
-          updatedAt: fnft['updatedAt'],
+          availableSupply: { $gte: purchase.tokenAmount },
         },
         {
-          $set: {
+          $inc: {
             availableSupply: fnft.availableSupply - purchase.tokenAmount,
           },
         },
@@ -542,6 +547,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEPOSIT_FUND_EVENT,
         requestData,
+        requestData.metadata.buyer,
       );
     } catch (error) {
       await session.abortTransaction();
