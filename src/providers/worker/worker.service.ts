@@ -523,7 +523,7 @@ export class WorkerService {
         },
         {
           $inc: {
-            availableSupply: iaoEvent.availableSupply - purchase.tokenAmount,
+            availableSupply: -purchase.tokenAmount,
           },
         },
         { session },
@@ -537,7 +537,7 @@ export class WorkerService {
         },
         {
           $inc: {
-            availableSupply: fnft.availableSupply - purchase.tokenAmount,
+            availableSupply: -purchase.tokenAmount,
           },
         },
         { session },
