@@ -21,6 +21,8 @@ import {
   ON_CHAIN_STATUS,
   VAULT_TYPE,
   IAO_EVENT_CALENDER,
+  F_NFT_TYPE,
+  ASSET_STATUS,
 } from 'src/datalayer/model';
 import { ListDocument } from '../iao-request/iao-request.service';
 import { CheckTimeDTO } from './dto/check-time.dto';
@@ -134,6 +136,14 @@ export class IaoEventService {
     const session = await this.connection.startSession();
     session.startTransaction();
 
+    let items = [];
+    if (fnft.fnftType === F_NFT_TYPE.AUTO_IMPORT) {
+      const iaoRequest = await this.dataService.iaoRequest.findOne({
+        iaoId: fnft.iaoRequestId,
+      });
+      items = iaoRequest.items;
+    }
+
     try {
       const buildIAOEvent = await this.iaoEventBuilderService.createIAOEvent(
         createIaoEventDto,
@@ -145,6 +155,14 @@ export class IaoEventService {
         buildIAOEvent,
         session,
       );
+
+      if (fnft.fnftType === F_NFT_TYPE.AUTO_IMPORT) {
+        await this.dataService.asset.updateMany(
+          { itemId: { $in: items } },
+          { $set: { status: ASSET_STATUS.IAO_EVENT } },
+        );
+      }
+
       await session.commitTransaction();
 
       return iaoEvent[0];
@@ -952,7 +970,11 @@ export class IaoEventService {
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
 
     const headings = [
-      ['Wallet address', 'Deposited (USDT)', 'Purchased (GEM1)'],
+      [
+        'Wallet address',
+        `Deposited (${currentIaoEvent.acceptedCurrencySymbol})`,
+        `Purchased (${currentIaoEvent.tokenSymbol})`,
+      ],
     ];
 
     const wb = XLSX.utils.book_new();
@@ -969,7 +991,7 @@ export class IaoEventService {
 
     const linkS3 = await this.s3Service.uploadS3(
       buffer,
-      'csv',
+      'text/csv',
       `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`,
     );
 
@@ -1384,16 +1406,20 @@ export class IaoEventService {
     //
     if (calenderDTO.iaoEventStage) {
       iaoEventList = await this.getIaoEventCalender(
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.REGISTRATION_START
+        calenderDTO.iaoEventStage.includes(
+          IAO_EVENT_CALENDER.REGISTRATION_START,
+        )
           ? queryRegistrationStartTime
           : null,
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.REGISTRATION_END
+        calenderDTO.iaoEventStage.includes(IAO_EVENT_CALENDER.REGISTRATION_END)
           ? queryRegistrationEndTime
           : null,
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.PARTICIPATION_START
+        calenderDTO.iaoEventStage.includes(
+          IAO_EVENT_CALENDER.PARTICIPATION_START,
+        )
           ? queryParticipationStartTime
           : null,
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.PARTICIPATION_END
+        calenderDTO.iaoEventStage.includes(IAO_EVENT_CALENDER.PARTICIPATION_END)
           ? queryParticipationEndTime
           : null,
       );

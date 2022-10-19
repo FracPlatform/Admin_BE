@@ -26,6 +26,10 @@ import {
   SettingsSchema,
   Signer,
   SignerSchema,
+  User,
+  UserSchema,
+  Purchase,
+  PurchaseSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -45,6 +49,8 @@ import 'dotenv/config';
       { name: Whitelist.name, schema: WhitelistSchema },
       { name: Settings.name, schema: SettingsSchema },
       { name: Signer.name, schema: SignerSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Purchase.name, schema: PurchaseSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

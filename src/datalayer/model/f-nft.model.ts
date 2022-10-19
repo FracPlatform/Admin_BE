@@ -74,6 +74,9 @@ export class Fnft {
 
   @Prop({ type: Boolean, default: false })
   deleted: boolean;
+
+  @Prop({ type: Number })
+  availableSupply: number;
 }
 
 export const FnftSchema = SchemaFactory.createForClass(Fnft);

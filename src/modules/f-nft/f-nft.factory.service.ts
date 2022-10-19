@@ -43,6 +43,7 @@ export class FnftBuilderService {
         session,
       ),
       deleted: false,
+      availableSupply: data.totalSupply,
     };
     return fnft;
   }
@@ -75,7 +76,12 @@ export class FnftBuilderService {
     });
   }
 
-  convertFnftDetail(data, currentNftIds: string[], listNft: any, relatedAdminList: any) {
+  convertFnftDetail(
+    data,
+    currentNftIds: string[],
+    listNft: any,
+    relatedAdminList: any,
+  ) {
     const items = [];
 
     for (const i of currentNftIds) {

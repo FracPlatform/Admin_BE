@@ -308,7 +308,7 @@ export class IaoRequestService {
                 $expr: { $eq: ['$$ownerId', '$fractorId'] },
               },
             },
-            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
+            { $project: { _id: 1, fullname: 1, fractorId: 1, assignedBD: 1 } },
           ],
           as: 'fractors',
         },
@@ -316,6 +316,26 @@ export class IaoRequestService {
       {
         $addFields: {
           fractor: { $arrayElemAt: ['$fractors', 0] },
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          let: { adminId: '$fractor.assignedBD' },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ['$adminId', '$$adminId'] },
+              },
+            },
+            { $project: { _id: 1, fullname: 1, adminId: 1 } },
+          ],
+          as: 'bds',
+        },
+      },
+      {
+        $addFields: {
+          bd: { $arrayElemAt: ['$bds', 0] },
         },
       },
       {
@@ -532,6 +552,7 @@ export class IaoRequestService {
         createdAt: { $first: '$createdAt' },
         updatedAt: { $first: '$updatedAt' },
         updatedBy: { $first: '$updatedBy' },
+        bd: { $first: '$bd' },
       },
     });
 

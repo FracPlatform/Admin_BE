@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Web3Gateway } from 'src/blockchain/web3.gateway';
 import { AwsUtils } from 'src/common/aws.util';
 import { SetSignerDto } from './dto/signer.dto';
