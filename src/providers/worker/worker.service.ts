@@ -10,6 +10,7 @@ import { IDataServices } from '../../core/abstracts/data-services.abstract';
 import {
   ADMIN_STATUS,
   CLAIM_STATUS,
+  CLAIM_TYPE,
   F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
   F_NFT_TYPE,
@@ -91,15 +92,16 @@ export class WorkerService {
   }
 
   private async _handleClaimFNFTEvent(requestData: WorkerDataDto) {
-    const status =
+    const type =
       requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE
-        ? CLAIM_STATUS.FAILD
-        : CLAIM_STATUS.SUCCESS;
+        ? CLAIM_TYPE.REFUND
+        : CLAIM_TYPE.FNFT;
     await this.dataServices.claim.create({
       amount: requestData.metadata.amount,
       buyerAddress: requestData.metadata.sender,
       iaoEventId: requestData.metadata.id,
-      status,
+      status: CLAIM_STATUS.SUCCESS,
+      type,
     });
   }
 
