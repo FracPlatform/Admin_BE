@@ -10,4 +10,6 @@ export * from './nft.model';
 export * from './whitelist.model';
 export * from './settings.model';
 export * from './signer.model';
+export * from './user.model';
+export * from './purchase.model';
 export * from './claim.model';

@@ -103,6 +103,7 @@ export const CONTRACT_EVENTS = {
   DEACTIVE_F_NFT: 'DeactivateFNFTEvent',
   DEACTIVE_IAO_EVENT: 'DeactivateIAOEvent',
   DEPOSIT_NFTS: 'DepositNFTEvent',
+  DEPOSIT_FUND_EVENT: 'DepositFundEvent',
   CLAIM_FNFT_SUCCESSFUL: 'WithdrawFNFTEvent',
   CLAIM_FNFT_FAILURE: 'WithdrawFundEvent',
 };

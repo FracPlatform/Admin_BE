@@ -28,6 +28,10 @@ import {
   SettingsDocument,
   Signer,
   SignerDocument,
+  User,
+  UserDocument,
+  Purchase,
+  PurchaseDocument,
   ClaimDocument,
   Claim,
 } from './model';
@@ -47,6 +51,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   whitelist: IGenericRepository<Whitelist>;
   settings: IGenericRepository<Settings>;
   signer: IGenericRepository<Signer>;
+  user: IGenericRepository<User>;
+  purchase: IGenericRepository<Purchase>;
   claim: IGenericRepository<Claim>;
 
   constructor(
@@ -73,6 +79,10 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private SettingsRepository: Model<SettingsDocument>,
     @InjectModel(Signer.name)
     private SignerRepository: Model<SignerDocument>,
+    @InjectModel(User.name)
+    private UserRepository: Model<UserDocument>,
+    @InjectModel(Purchase.name)
+    private PurchaseRepository: Model<PurchaseDocument>,
     @InjectModel(Claim.name)
     private ClaimRepository: Model<ClaimDocument>,
   ) {}
@@ -110,6 +120,12 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
 
     this.signer = new MongoGenericRepository<SignerDocument>(
       this.SignerRepository,
+    );
+
+    this.user = new MongoGenericRepository<UserDocument>(this.UserRepository);
+
+    this.purchase = new MongoGenericRepository<PurchaseDocument>(
+      this.PurchaseRepository,
     );
 
     this.claim = new MongoGenericRepository<ClaimDocument>(

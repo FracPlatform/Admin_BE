@@ -16,6 +16,7 @@ import {
   IAO_EVENT_STATUS,
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
+  PURCHASE_STATUS,
 } from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
 import { SOCKET_EVENT } from '../socket/socket.enum';
@@ -76,6 +77,9 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.CLAIM_FNFT_FAILURE:
           await this._handleClaimFNFTEvent(requestData);
+          break;
+        case CONTRACT_EVENTS.DEPOSIT_FUND_EVENT:
+          await this._handleDepositFundEvent(requestData);
           break;
         default:
           break;
@@ -256,8 +260,10 @@ export class WorkerService {
 
   private async _handleCreateIaoEventOnChain(requestData: WorkerDataDto) {
     const admin = await this.dataServices.admin.findOne({
-      $regex: requestData.metadata.createdBy,
-      $options: 'i',
+      walletAddress: {
+        $regex: requestData.metadata.createdBy,
+        $options: 'i',
+      },
     });
 
     const iaoId = this.commonService.decodeHexToString(
@@ -310,6 +316,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.CREATE_IAO_EVENT_ON_CHAIN,
         requestData,
+        requestData.metadata.createdBy,
       );
     } catch (error) {
       await session.abortTransaction();
@@ -387,8 +394,10 @@ export class WorkerService {
      */
 
     const admin = await this.dataServices.admin.findOne({
-      $regex: requestData.metadata.caller,
-      $options: 'i',
+      walletAddress: {
+        $regex: requestData.metadata.caller,
+        $options: 'i',
+      },
     });
 
     const iaoId = this.commonService.decodeHexToString(
@@ -444,6 +453,7 @@ export class WorkerService {
       this.socketGateway.sendMessage(
         SOCKET_EVENT.DEACTIVE_IAO_EVENT,
         requestData,
+        requestData.metadata.caller,
       );
     } catch (error) {
       await session.abortTransaction();
@@ -491,6 +501,74 @@ export class WorkerService {
       if (res)
         this.socketGateway.sendMessage(SOCKET_EVENT.DEPOSIT_NFTS, requestData);
       await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleDepositFundEvent(requestData: WorkerDataDto) {
+    /**
+     * update status purchase PROCESS => SUCCESS
+     * update avalibleSupply FNFT,avalibleSupply IAO Event
+     */
+    const purchaseId = requestData.metadata.internalTxId.substring(2);
+    const purchase = await this.dataServices.purchase.findOne({
+      _id: purchaseId,
+    });
+    const iaoEvent = await this.dataServices.iaoEvent.findOne({
+      iaoEventId: purchase.iaoEventId,
+    });
+    const fnft = await this.dataServices.fnft.findOne({
+      contractAddress: iaoEvent.FNFTcontractAddress,
+    });
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      // update purchase
+      await this.dataServices.purchase.updateOne(
+        { _id: purchaseId },
+        { status: PURCHASE_STATUS.SUCCESS },
+        { session },
+      );
+
+      // update iao event
+      await this.dataServices.iaoEvent.updateOne(
+        {
+          iaoEventId: purchase.iaoEventId,
+          availableSupply: { $gte: purchase.tokenAmount },
+        },
+        {
+          $inc: {
+            availableSupply: -purchase.tokenAmount,
+          },
+        },
+        { session },
+      );
+
+      // update FNFT
+      await this.dataServices.fnft.updateOne(
+        {
+          contractAddress: iaoEvent.FNFTcontractAddress,
+          availableSupply: { $gte: purchase.tokenAmount },
+        },
+        {
+          $inc: {
+            availableSupply: -purchase.tokenAmount,
+          },
+        },
+        { session },
+      );
+
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.DEPOSIT_FUND_EVENT,
+        requestData,
+        requestData.metadata.buyer,
+      );
     } catch (error) {
       await session.abortTransaction();
       throw error;
