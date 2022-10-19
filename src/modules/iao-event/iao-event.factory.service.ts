@@ -17,7 +17,6 @@ import {
 import {
   CreateIAOEventEntity,
   ExportedIAOEventEntity,
-  IAOEventDetailEntity,
 } from 'src/entity/create-iao-event.entity';
 import { CreateIaoEventDto } from './dto/create-iao-event.dto';
 import { UpdateIaoEventDto } from './dto/update-iao-event.dto';
