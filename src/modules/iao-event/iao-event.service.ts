@@ -1384,16 +1384,20 @@ export class IaoEventService {
     //
     if (calenderDTO.iaoEventStage) {
       iaoEventList = await this.getIaoEventCalender(
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.REGISTRATION_START
+        calenderDTO.iaoEventStage.includes(
+          IAO_EVENT_CALENDER.REGISTRATION_START,
+        )
           ? queryRegistrationStartTime
           : null,
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.REGISTRATION_END
+        calenderDTO.iaoEventStage.includes(IAO_EVENT_CALENDER.REGISTRATION_END)
           ? queryRegistrationEndTime
           : null,
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.PARTICIPATION_START
+        calenderDTO.iaoEventStage.includes(
+          IAO_EVENT_CALENDER.PARTICIPATION_START,
+        )
           ? queryParticipationStartTime
           : null,
-        calenderDTO.iaoEventStage === IAO_EVENT_CALENDER.PARTICIPATION_END
+        calenderDTO.iaoEventStage.includes(IAO_EVENT_CALENDER.PARTICIPATION_END)
           ? queryParticipationEndTime
           : null,
       );

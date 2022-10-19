@@ -2,12 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsDate,
-  IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
-import { IAO_EVENT_CALENDER } from 'src/datalayer/model';
 
 export class CalenderDTO {
   @ApiProperty({ required: true })
@@ -30,6 +29,6 @@ export class CalenderDTO {
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsEnum(IAO_EVENT_CALENDER)
-  iaoEventStage: number;
+  @IsNumber({}, { each: true })
+  iaoEventStage: number[];
 }
