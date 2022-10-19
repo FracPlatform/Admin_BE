@@ -11,6 +11,8 @@ import {
   Whitelist,
   Settings,
   Signer,
+  User,
+  Purchase,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
@@ -27,4 +29,6 @@ export abstract class IDataServices {
   abstract whitelist: IGenericRepository<Whitelist>;
   abstract settings: IGenericRepository<Settings>;
   abstract signer: IGenericRepository<Signer>;
+  abstract user: IGenericRepository<User>;
+  abstract purchase: IGenericRepository<Purchase>;
 }
