@@ -321,11 +321,11 @@ export class IaoRequestService {
       {
         $lookup: {
           from: 'Admin',
-          let: { bd: '$adminId' },
+          let: { adminId: '$fractor.assignedBD' },
           pipeline: [
             {
               $match: {
-                $expr: { $eq: ['$$bd', '$fractor.assignedBD'] },
+                $expr: { $eq: ['$adminId', '$$adminId'] },
               },
             },
             { $project: { _id: 1, fullname: 1, adminId: 1 } },
