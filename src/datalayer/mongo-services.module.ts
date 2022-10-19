@@ -30,6 +30,8 @@ import {
   UserSchema,
   Purchase,
   PurchaseSchema,
+  ClaimSchema,
+  Claim,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -51,6 +53,7 @@ import 'dotenv/config';
       { name: Signer.name, schema: SignerSchema },
       { name: User.name, schema: UserSchema },
       { name: Purchase.name, schema: PurchaseSchema },
+      { name: Claim.name, schema: ClaimSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
