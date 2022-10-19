@@ -19,7 +19,7 @@ export class DexService {
     if (!fractor)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Fractor does not exists');
     return {
-      iaoFeerate: fractor.iaoFeeRate,
+      iaoFeeRate: fractor.iaoFeeRate,
       tradingFeeProfit: fractor.tradingFeeProfit,
     };
   }
