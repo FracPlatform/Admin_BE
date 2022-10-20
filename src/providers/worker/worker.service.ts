@@ -517,14 +517,14 @@ export class WorkerService {
      * update avalibleSupply FNFT,avalibleSupply IAO Event
      */
     const purchaseId = requestData.metadata.internalTxId.substring(2);
+    const transactionHash = requestData.transactionHash;
+    const buyer = requestData.metadata.buyer;
+
     const purchase = await this.dataServices.purchase.findOne({
       _id: purchaseId,
     });
     const iaoEvent = await this.dataServices.iaoEvent.findOne({
       iaoEventId: purchase.iaoEventId,
-    });
-    const fnft = await this.dataServices.fnft.findOne({
-      contractAddress: iaoEvent.FNFTcontractAddress,
     });
 
     const session = await this.connection.startSession();
@@ -533,7 +533,7 @@ export class WorkerService {
       // update purchase
       await this.dataServices.purchase.updateOne(
         { _id: purchaseId },
-        { status: PURCHASE_STATUS.SUCCESS },
+        { status: PURCHASE_STATUS.SUCCESS, transactionHash },
         { session },
       );
 
@@ -562,6 +562,26 @@ export class WorkerService {
             availableSupply: -purchase.tokenAmount,
           },
         },
+        { session },
+      );
+
+      // whitelist
+      const wl = await this.dataServices.whitelist.findOne({
+        iaoEventId: purchase.iaoEventId,
+      });
+      let whiteListAddresses = wl.whiteListAddresses;
+      whiteListAddresses = whiteListAddresses.map((user) => {
+        if (user.walletAddress === buyer) {
+          user.deposited = +requestData.metadata.totalFundDeposited;
+          user.purchased = +requestData.metadata.totalFNFT;
+        }
+        return user;
+      });
+      await this.dataServices.whitelist.updateOne(
+        {
+          iaoEventId: purchase.iaoEventId,
+        },
+        { whiteListAddresses },
         { session },
       );
 
