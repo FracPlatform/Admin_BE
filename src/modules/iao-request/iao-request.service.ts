@@ -58,7 +58,16 @@ export class IaoRequestService {
     if (!iaoRequestRole.includes(user.role))
       throw 'You do not have permission for this action';
 
+    let lisFractorId = [];
+    if (user.role === Role.FractorBD) {
+      lisFractorId = await this.getListFractorId(user.adminId);
+    }
+
     const query = {};
+
+    if (lisFractorId.length) {
+      query['ownerId'] = { $in: lisFractorId };
+    }
 
     if (filter.keyword) {
       let fractors: any = await this.dataService.fractor.findMany(
@@ -275,6 +284,24 @@ export class IaoRequestService {
     } as ListDocument;
   }
 
+  async getListFractorId(adminId: string) {
+    let agg = [
+      {
+        $match: { assignedBD: adminId },
+      },
+      {
+        $group: {
+          _id: '$assignedBD',
+          fractorIds: { $push: '$fractorId' },
+        },
+      },
+    ];
+    const listFractor = await this.dataService.fractor.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+    return listFractor.length ? listFractor[0].fractorIds : [];
+  }
+
   async findOne(
     id: string,
     user: any,
@@ -290,13 +317,22 @@ export class IaoRequestService {
     if (!iaoRequestRole.includes(user.role))
       throw 'You do not have permission for this action';
 
+    let lisFractorId = [];
+    if (user.role === Role.FractorBD) {
+      lisFractorId = await this.getListFractorId(user.adminId);
+    }
+
+    const query = { iaoId: id };
+
+    if (lisFractorId.length) {
+      query['ownerId'] = { $in: lisFractorId };
+    }
+
     const agg = [];
 
     agg.push(
       {
-        $match: {
-          iaoId: id,
-        },
+        $match: query,
       },
       {
         $lookup: {
