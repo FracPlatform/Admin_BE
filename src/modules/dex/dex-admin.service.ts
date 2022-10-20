@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { catchError, map } from 'rxjs';
-import { ApiError } from '../../common/api';
+import { DownloadOrdersDto } from './dto/dex.dto';
 
 @Injectable()
 export class DexAdminService {
@@ -25,5 +25,9 @@ export class DexAdminService {
           throw e;
         }),
       );
+  }
+
+  async downloadOrders(filter: DownloadOrdersDto) {
+    console.log(filter);
   }
 }
