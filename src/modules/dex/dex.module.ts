@@ -5,6 +5,9 @@ import { DataServicesModule } from 'src/services';
 import { DexController } from './dex.controller';
 import { DexService } from './dex.service';
 import { JwtStrategy } from './jwt.strategy';
+import { DexAdminController } from './dex-admin.controller';
+import { DexAdminService } from './dex-admin.service';
+import { HttpModule } from "@nestjs/axios";
 
 @Module({
   imports: [
@@ -13,8 +16,9 @@ import { JwtStrategy } from './jwt.strategy';
       secret: process.env.JWT_DEX_SECRET,
     }),
     DataServicesModule,
+    HttpModule,
   ],
-  controllers: [DexController],
-  providers: [DexService, JwtStrategy],
+  controllers: [DexController, DexAdminController],
+  providers: [DexService, JwtStrategy, DexAdminService],
 })
 export class DexModule {}
