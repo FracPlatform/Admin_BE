@@ -27,6 +27,9 @@ export class Purchase {
 
   @Prop({ type: Number, default: PURCHASE_STATUS.PROCESS })
   status?: number;
+
+  @Prop({ type: String })
+  transactionHash?: string;
 }
 
 export const PurchaseSchema = SchemaFactory.createForClass(Purchase);
