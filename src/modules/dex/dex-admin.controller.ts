@@ -12,7 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { DexAdminService } from './dex-admin.service';
 import {
@@ -23,6 +23,14 @@ import {
   OrdersDto,
   TradingLevelDto,
   UploadIntervalDto,
+  AddCoinDto,
+  CreatePairDto,
+  FilterPairDto,
+  GetIntervalSettingDto,
+  GetListCoinsDto,
+  RemoveFavoriteDto,
+  UpdateFavoriteDto,
+  UpdatePairDto,
 } from './dto/dex.dto';
 
 @Controller('dex-admin')
@@ -87,5 +95,63 @@ export class DexAdminController {
   @Get('auth/admin/login-wallet-address')
   async loginWalletAddress(@Body() data: LoginDto) {
     return this.dexAdminService.loginWalletAddress(data);
+  }
+
+  @Post('coins/add-coin')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: AddCoinDto,
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async addCoin(@UploadedFile() file: Express.Multer.File, @Body() body) {
+    return await this.dexAdminService.addCoin(file, body);
+  }
+
+  @Get('coins/list')
+  async getListCoins(@Query() filter: GetListCoinsDto) {
+    return await this.dexAdminService.getListCoins(filter);
+  }
+
+  @Get('favorite')
+  async getFavorite() {
+    return await this.dexAdminService.getFavorite();
+  }
+
+  @Put('favorite')
+  async updateFavorite(@Body() body: UpdateFavoriteDto) {
+    return await this.dexAdminService.updateFavorite(body);
+  }
+
+  @Put('favorite/remove')
+  async removeFavorite(@Body() body: RemoveFavoriteDto) {
+    return await this.dexAdminService.removeFavorite(body);
+  }
+
+  @Post('pair/create-pair')
+  async createPair(@Body() body: CreatePairDto) {
+    return await this.dexAdminService.createPair(body);
+  }
+
+  @Get('pair/filter')
+  async filterPair(@Query() filter: FilterPairDto) {
+    return await this.dexAdminService.filterPair(filter);
+  }
+
+  @Put('pair/update-pair/:pairId')
+  async updatePair(
+    @Param('pairId') pairId: string,
+    @Body() updatePair: UpdatePairDto,
+  ) {
+    return await this.dexAdminService.updatePair(pairId, updatePair);
+  }
+
+  @Get('trading-fee')
+  async getTradingFee() {
+    return await this.dexAdminService.getTradingFee();
+  }
+
+  @Get('users/get-interval-settings')
+  async GetIntervalSettings(@Query() filter: GetIntervalSettingDto) {
+    return await this.dexAdminService.getIntervalSetting(filter);
   }
 }
