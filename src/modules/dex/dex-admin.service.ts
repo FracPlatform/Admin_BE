@@ -33,7 +33,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -53,7 +53,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -73,7 +73,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -93,7 +93,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -110,7 +110,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -130,7 +130,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -151,7 +151,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -172,7 +172,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -195,7 +195,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -217,7 +217,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -242,7 +242,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -260,7 +260,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -277,7 +277,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -294,7 +294,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -311,7 +311,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -328,7 +328,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -345,7 +345,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -366,7 +366,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -383,7 +383,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -404,7 +404,7 @@ export class DexAdminService {
       )
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
@@ -421,7 +421,7 @@ export class DexAdminService {
       })
       .pipe(
         map((res) => {
-          return res;
+          return res.data;
         }),
       )
       .pipe(
