@@ -412,4 +412,21 @@ export class DexAdminService {
         }),
       );
   }
+
+  async deletePair(id: string) {
+    return this.http
+      .delete(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/pair/${id}`, {
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+      })
+      .pipe(
+        map((res) => {
+          return res;
+        }),
+      )
+      .pipe(
+        catchError((e) => {
+          throw e;
+        }),
+      );
+  }
 }
