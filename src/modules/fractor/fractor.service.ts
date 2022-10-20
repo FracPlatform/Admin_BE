@@ -55,13 +55,19 @@ export class FractorService {
     return { success: true };
   }
 
-  async getFractorById(fractorId: string) {
+  async getFractorById(user: any, fractorId: string) {
+    const query = {
+      fractorId: fractorId,
+    };
+
+    if (user.role === Role.FractorBD) {
+      query['assignedBD'] = user.adminId;
+    }
+
     const dataQuery = await this.dataServices.fractor.aggregate(
       [
         {
-          $match: {
-            fractorId: fractorId,
-          },
+          $match: query,
         },
         {
           $lookup: {
@@ -141,8 +147,13 @@ export class FractorService {
     return dataQuery;
   }
 
-  async filterFractor(filter: FilterFractorDto) {
+  async filterFractor(user: any, filter: FilterFractorDto) {
     let match: Record<string, any> = {};
+    
+    if (user.role === Role.FractorBD) {
+      match.assignedBD = user.adminId;
+    }
+
     if (filter.textSearch) {
       const matchOrCondition: any = [
         {
