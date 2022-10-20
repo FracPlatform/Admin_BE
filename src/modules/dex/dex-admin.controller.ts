@@ -154,4 +154,9 @@ export class DexAdminController {
   async GetIntervalSettings(@Query() filter: GetIntervalSettingDto) {
     return await this.dexAdminService.getIntervalSetting(filter);
   }
+
+  @Delete('admin/pair/:id')
+  async deletePair(@Param('id') id: string) {
+    return this.dexAdminService.deletePair(id);
+  }
 }
