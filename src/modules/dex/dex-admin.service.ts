@@ -27,7 +27,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-interval-settings`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -47,7 +47,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-orders?startDate=${filter.startDate}&endDate=${filter.endDate}&pairId=${filter.pairId}&timezone=${filter.timezone}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -67,7 +67,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/orders?page=${filter.page}&limit=${filter.limit}&startDate=${filter.startDate}&endDate=${filter.endDate}&pairId=${filter.pairId}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -87,7 +87,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level?page=${filter.page}&limit=${filter.limit}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -105,7 +105,7 @@ export class DexAdminService {
   async addTradingLevel(data: AddTradingLevelDto) {
     return this.http
       .post(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level`, data, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -124,7 +124,7 @@ export class DexAdminService {
       .delete(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level/${id}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -145,7 +145,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level/${id}`,
         data,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -166,7 +166,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level/tier-idle
         `,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -190,7 +190,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/upload-interval-settings`,
         formData,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -212,7 +212,7 @@ export class DexAdminService {
         `,
         data,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -234,7 +234,7 @@ export class DexAdminService {
         { ...body, file },
         {
           headers: {
-            Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}`,
+            'API-Key': `${process.env.SPOT_DEX_API_KEY}`,
             'Content-Type': 'multipart/form-data',
           },
         },
@@ -254,7 +254,7 @@ export class DexAdminService {
   async getListCoins(filter: GetListCoinsDto) {
     return this.http
       .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/coins/list`, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         params: filter,
       })
       .pipe(
@@ -272,7 +272,7 @@ export class DexAdminService {
   async getFavorite() {
     return this.http
       .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/favorite`, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -289,7 +289,7 @@ export class DexAdminService {
   async updateFavorite(body: UpdateFavoriteDto) {
     return this.http
       .put(`${process.env.SPOT_DEX_DOMAIN}/api/v1/favorite`, body, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -306,7 +306,7 @@ export class DexAdminService {
   async removeFavorite(body: RemoveFavoriteDto) {
     return this.http
       .put(`${process.env.SPOT_DEX_DOMAIN}/api/v1/favorite/remove`, body, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -323,7 +323,7 @@ export class DexAdminService {
   async createPair(body: CreatePairDto) {
     return this.http
       .post(`${process.env.SPOT_DEX_DOMAIN}/api/v1/pair/create-pair`, body, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -339,7 +339,7 @@ export class DexAdminService {
   async filterPair(filter: FilterPairDto) {
     return this.http
       .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/pair/filter`, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         params: filter,
       })
       .pipe(
@@ -360,7 +360,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/pair/update-pair/${pairId}`,
         updatePair,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -378,7 +378,7 @@ export class DexAdminService {
   async getTradingFee() {
     return this.http
       .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/trading-fee`, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -397,7 +397,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/users/get-interval-settings`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
           params: filter,
         },
       )
