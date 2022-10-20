@@ -285,7 +285,7 @@ export class IaoRequestService {
   }
 
   async getListFractorId(adminId: string) {
-    let agg = [
+    const agg = [
       {
         $match: { assignedBD: adminId },
       },
