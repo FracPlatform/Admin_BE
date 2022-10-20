@@ -19,7 +19,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-interval-settings`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -39,7 +39,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-orders?startDate=${filter.startDate}&endDate=${filter.endDate}&pairId=${filter.pairId}&timezone=${filter.timezone}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -59,7 +59,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/orders?page=${filter.page}&limit=${filter.limit}&startDate=${filter.startDate}&endDate=${filter.endDate}&pairId=${filter.pairId}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -79,7 +79,7 @@ export class DexAdminService {
       .get(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level?page=${filter.page}&limit=${filter.limit}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -97,7 +97,7 @@ export class DexAdminService {
   async addTradingLevel(data: AddTradingLevelDto) {
     return this.http
       .post(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level`, data, {
-        headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
       })
       .pipe(
         map((res) => {
@@ -116,7 +116,7 @@ export class DexAdminService {
       .delete(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level/${id}`,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -137,7 +137,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level/${id}`,
         data,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -158,7 +158,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level/tier-idle
         `,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -182,7 +182,7 @@ export class DexAdminService {
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/upload-interval-settings`,
         formData,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
@@ -204,7 +204,7 @@ export class DexAdminService {
         `,
         data,
         {
-          headers: { Authorization: `Bearer ${process.env.SPOT_DEX_API_KEY}` },
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
       )
       .pipe(
