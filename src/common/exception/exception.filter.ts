@@ -44,6 +44,12 @@ export class AllExceptionFilter extends BaseExceptionFilter {
           message: exception['message'],
         });
       }
+    } else if(errorName === 'AxiosError') {
+      response.status(400).json({
+        code: '',
+        statusCode: 400,
+        message: `AxiosError: ${exception['message']}`,
+      });
     } else {
       if (process.env.LOG_MONITOR && !(exception instanceof HttpException)) {
         const realIp =
