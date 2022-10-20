@@ -17,6 +17,7 @@ import {
   UpdateFavoriteDto,
   UpdatePairDto,
 } from './dto/dex.dto';
+const FormData = require('form-data');
 
 @Injectable()
 export class DexAdminService {
@@ -182,7 +183,6 @@ export class DexAdminService {
   }
 
   async uploadInterval(file) {
-    const FormData = require('form-data');
     const formData = new FormData();
     formData.append('csv', file.buffer, file.originalname);
     return this.http
@@ -228,17 +228,18 @@ export class DexAdminService {
   }
 
   async addCoin(file: Express.Multer.File, body: AddCoinDto) {
+    const formData = new FormData();
+    Object.keys(body).forEach((key) => {
+      formData.append(key, body[key]);
+    });
+    formData.append('file', file);
     return this.http
-      .post(
-        `${process.env.SPOT_DEX_DOMAIN}/api/v1/coins/add-coin`,
-        { ...body, file },
-        {
-          headers: {
-            'API-Key': `${process.env.SPOT_DEX_API_KEY}`,
-            'Content-Type': 'multipart/form-data',
-          },
+      .post(`${process.env.SPOT_DEX_DOMAIN}/api/v1/coins/add-coin`, formData, {
+        headers: {
+          'API-Key': `${process.env.SPOT_DEX_API_KEY}`,
+          'Content-Type': 'multipart/form-data',
         },
-      )
+      })
       .pipe(
         map((res) => {
           return res;
