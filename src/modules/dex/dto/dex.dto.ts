@@ -179,8 +179,6 @@ export class RemoveFavoriteDto {
 export class UpdateFavoriteDto extends RemoveFavoriteDto {}
 
 export class GetListCoinsDto {
-  @IsBoolean()
-  @IsOptional()
   @ApiProperty({ type: Boolean, required: false })
   isFnft: boolean;
 }
@@ -213,4 +211,99 @@ export class AddCoinDto {
 
   @ApiProperty({ type: 'string', format: 'binary' })
   file: any;
+}
+
+export class GetCollectedFeeDto {
+  @ApiProperty({ required: false })
+  startTime: number;
+
+  @ApiProperty({ required: false })
+  endTime: number;
+
+  @ApiProperty({ required: false })
+  poolAddress: string;
+
+  @ApiProperty({ type: [String], required: false })
+  methods: string;
+
+  @ApiProperty({ required: false })
+  pair: number;
+
+  @ApiProperty({ required: false })
+  interval: number;
+
+  @ApiProperty({ required: false })
+  timestamps: string;
+
+  @ApiProperty({ required: false })
+  coinId: number;
+
+  @ApiProperty({ type: [String], required: false })
+  calculationMethod: number;
+}
+
+export class DownloadCollectedFeeDto {
+  @ApiProperty({ required: false })
+  poolAddress: string;
+
+  @ApiProperty({ type: [String], required: false })
+  method: string;
+
+  @ApiProperty({ required: false })
+  pair: number;
+
+  @ApiProperty({ required: false })
+  startTime: number;
+
+  @ApiProperty({ required: false })
+  endTime: number;
+
+  @ApiProperty({ required: false })
+  timezone: string;
+}
+
+export class GetIntervalSettingsDto {
+  @ApiProperty({ required: false })
+  page: number;
+
+  @ApiProperty({ required: false })
+  limit: number;
+}
+
+export class GetTradeDto {
+  @ApiProperty({ required: false })
+  page: number;
+
+  @ApiProperty({ required: false })
+  limit: number;
+
+  @ApiProperty({ required: false })
+  pair: number;
+
+  @ApiProperty({ required: false })
+  wallet: string;
+
+  @ApiProperty({ type: [String], required: false })
+  tradeMethodTab: string;
+
+  @ApiProperty({ required: false })
+  userId: number;
+
+  @ApiProperty({ required: false })
+  orderId: string;
+
+  @ApiProperty({ required: false })
+  pool: string;
+
+  @ApiProperty({ required: false })
+  type: number;
+
+  @ApiProperty({ required: false })
+  coinId: number;
+
+  @ApiProperty({ required: false })
+  startDate: string;
+
+  @ApiProperty({ required: false })
+  endDate: string;
 }
