@@ -7,13 +7,13 @@ export class CreateShipmentInfoDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
-  shipment_status: string;
+  shipmentStatus: string;
 
   @ApiProperty({ required: false })
   @Type(() => Date)
   @IsOptional()
   @IsDate()
-  shipment_time: any;
+  shipmentTime: any;
 }
 
 export class UpdateShipmentInfoDto {
@@ -21,11 +21,11 @@ export class UpdateShipmentInfoDto {
     @IsOptional()
     @IsString()
     @MaxLength(256)
-    shipment_status: string;
+    shipmentStatus: string;
   
     @ApiProperty({ required: false })
     // @Type(() => Date)
     @IsOptional()
     // @IsDate()
-    shipment_time: any;
+    shipmentTime: any;
   }

@@ -78,10 +78,10 @@ export class Specifications extends SpecificationField {
 })
 export class ShipmentInfo {
   @Prop({ type: String })
-  shipment_status: string;
+  shipmentStatus: string;
 
   @Prop({ type: Date, default: null })
-  shipment_time: any;
+  shipmentTime: any;
 }
 
 export const ShipmentInfoSchema = SchemaFactory.createForClass(ShipmentInfo);
