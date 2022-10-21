@@ -11,11 +11,10 @@ module.exports = {
           const prefix = await db
             .collection('CounterId')
             .findOneAndUpdate(
-              { _id: 'A' },
+              { _id: 'ADM' },
               { $inc: { sequenceValue: 1 } },
-              { new: true },
             );
-          const prefixId = `A-${prefix.value.sequenceValue}`;
+          const prefixId = `ADM-${prefix.value.sequenceValue + 1}`;
           await db.collection('Admin').insertOne({
             email: '',
             fullname: 'Owner',
