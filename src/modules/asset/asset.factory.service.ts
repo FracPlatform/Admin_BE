@@ -140,17 +140,17 @@ export class AssetBuilderService {
 
   async createShipmentInfo(data: CreateShipmentInfoDto) {
     const shipmentInfo: ShipmentInfoEntity = {
-      shipment_status: data.shipment_status,
-      shipment_time: data.shipment_time,
+      shipmentStatus: data.shipmentStatus,
+      shipmentTime: data.shipmentTime,
     };
     return shipmentInfo;
   }
 
   async updateShipmentInfo(user: any, data: UpdateShipmentInfoDto) {
     const newShipmentInfo = {
-      'custodianship.listShipmentInfo.$.shipment_status': data.shipment_status,
-      'custodianship.listShipmentInfo.$.shipment_time':
-        data.shipment_time === 'N/A' ? null : data.shipment_time,
+      'custodianship.listShipmentInfo.$.shipmentStatus': data.shipmentStatus,
+      'custodianship.listShipmentInfo.$.shipmentTime':
+        data.shipmentTime === 'N/A' ? null : data.shipmentTime,
       lastUpdatedBy: user.adminId,
     };
     return newShipmentInfo;

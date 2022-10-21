@@ -75,6 +75,6 @@ export class DepositedNFT {
 }
 
 export class ShipmentInfoEntity {
-  shipment_status: string;
-  shipment_time: Date;
+  shipmentStatus: string;
+  shipmentTime: Date;
 }
