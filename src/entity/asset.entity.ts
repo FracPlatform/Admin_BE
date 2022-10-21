@@ -1,4 +1,4 @@
-import { Media, CUSTODIANSHIP_STATUS } from '../datalayer/model/asset.model';
+import { Media } from '../datalayer/model/asset.model';
 import { Custodianship, Specifications } from 'src/datalayer/model';
 import { DocumentItem } from 'src/datalayer/model/document-item.model';
 import { TokenStandard } from 'src/common/common-type';
@@ -75,6 +75,6 @@ export class DepositedNFT {
 }
 
 export class ShipmentInfoEntity {
-  shipment_status: string;
-  shipment_time: Date;
+  shipmentStatus: string;
+  shipmentTime: Date;
 }

@@ -55,6 +55,7 @@ export class AdminService {
       } else {
         query['role'] = {
           $in: [
+            Role.Deactive,
             Role.SuperAdmin,
             Role.OperationAdmin,
             Role.HeadOfBD,
@@ -109,6 +110,8 @@ export class AdminService {
       },
     });
 
+    console.log(112, JSON.stringify(agg));
+    
     const dataQuery = await this.dataServices.admin.aggregate(agg, {
       collation: { locale: 'en' },
     });

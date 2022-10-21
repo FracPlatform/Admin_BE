@@ -9,6 +9,8 @@ import {
 import { IDataServices } from '../../core/abstracts/data-services.abstract';
 import {
   ADMIN_STATUS,
+  CLAIM_STATUS,
+  CLAIM_TYPE,
   F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
   F_NFT_TYPE,
@@ -71,6 +73,12 @@ export class WorkerService {
         case CONTRACT_EVENTS.DEPOSIT_NFTS:
           await this._handleDepositNFTsEvent(requestData);
           break;
+        case CONTRACT_EVENTS.CLAIM_FNFT_SUCCESSFUL:
+          await this._handleClaimFNFTEvent(requestData);
+          break;
+        case CONTRACT_EVENTS.CLAIM_FNFT_FAILURE:
+          await this._handleClaimFNFTEvent(requestData);
+          break;
         case CONTRACT_EVENTS.DEPOSIT_FUND_EVENT:
           await this._handleDepositFundEvent(requestData);
           break;
@@ -81,6 +89,20 @@ export class WorkerService {
       this.logger.debug(err.message, err.stack);
       throw ApiError('Webhook err', err.message);
     }
+  }
+
+  private async _handleClaimFNFTEvent(requestData: WorkerDataDto) {
+    const type =
+      requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE
+        ? CLAIM_TYPE.REFUND
+        : CLAIM_TYPE.FNFT;
+    await this.dataServices.claim.create({
+      amount: requestData.metadata.amount,
+      buyerAddress: requestData.metadata.sender,
+      iaoEventId: requestData.metadata.id,
+      status: CLAIM_STATUS.SUCCESS,
+      type,
+    });
   }
 
   private async _handleSetAdminEvent(requestData: WorkerDataDto) {
@@ -495,14 +517,14 @@ export class WorkerService {
      * update avalibleSupply FNFT,avalibleSupply IAO Event
      */
     const purchaseId = requestData.metadata.internalTxId.substring(2);
+    const transactionHash = requestData.transactionHash;
+    const buyer = requestData.metadata.buyer;
+
     const purchase = await this.dataServices.purchase.findOne({
       _id: purchaseId,
     });
     const iaoEvent = await this.dataServices.iaoEvent.findOne({
       iaoEventId: purchase.iaoEventId,
-    });
-    const fnft = await this.dataServices.fnft.findOne({
-      contractAddress: iaoEvent.FNFTcontractAddress,
     });
 
     const session = await this.connection.startSession();
@@ -511,7 +533,7 @@ export class WorkerService {
       // update purchase
       await this.dataServices.purchase.updateOne(
         { _id: purchaseId },
-        { status: PURCHASE_STATUS.SUCCESS },
+        { status: PURCHASE_STATUS.SUCCESS, transactionHash },
         { session },
       );
 
@@ -540,6 +562,26 @@ export class WorkerService {
             availableSupply: -purchase.tokenAmount,
           },
         },
+        { session },
+      );
+
+      // whitelist
+      const wl = await this.dataServices.whitelist.findOne({
+        iaoEventId: purchase.iaoEventId,
+      });
+      let whiteListAddresses = wl.whiteListAddresses;
+      whiteListAddresses = whiteListAddresses.map((user) => {
+        if (user.walletAddress === buyer) {
+          user.deposited = +requestData.metadata.totalFundDeposited;
+          user.purchased = +requestData.metadata.totalFNFT;
+        }
+        return user;
+      });
+      await this.dataServices.whitelist.updateOne(
+        {
+          iaoEventId: purchase.iaoEventId,
+        },
+        { whiteListAddresses },
         { session },
       );
 

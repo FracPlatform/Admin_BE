@@ -26,7 +26,7 @@ export class S3Service {
 
     const getPresignedS3Url = `${process.env.AWS_S3_URL}/${user._id}/${
       presignUrlDto.type
-    }/${String(presignUrlDto.name).toLowerCase()}`;
+    }/${encodeURIComponent(presignUrlDto.name.toLowerCase())}`;
     return {
       putPresignedURL,
       getPresignedS3Url,

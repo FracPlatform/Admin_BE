@@ -32,6 +32,8 @@ import {
   UserDocument,
   Purchase,
   PurchaseDocument,
+  ClaimDocument,
+  Claim,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -51,6 +53,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   signer: IGenericRepository<Signer>;
   user: IGenericRepository<User>;
   purchase: IGenericRepository<Purchase>;
+  claim: IGenericRepository<Claim>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -80,6 +83,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private UserRepository: Model<UserDocument>,
     @InjectModel(Purchase.name)
     private PurchaseRepository: Model<PurchaseDocument>,
+    @InjectModel(Claim.name)
+    private ClaimRepository: Model<ClaimDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -121,6 +126,10 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
 
     this.purchase = new MongoGenericRepository<PurchaseDocument>(
       this.PurchaseRepository,
+    );
+
+    this.claim = new MongoGenericRepository<ClaimDocument>(
+      this.ClaimRepository,
     );
   }
 }

@@ -13,6 +13,7 @@ import {
   Signer,
   User,
   Purchase,
+  Claim,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
@@ -31,4 +32,5 @@ export abstract class IDataServices {
   abstract signer: IGenericRepository<Signer>;
   abstract user: IGenericRepository<User>;
   abstract purchase: IGenericRepository<Purchase>;
+  abstract claim: IGenericRepository<Claim>;
 }

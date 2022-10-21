@@ -235,6 +235,8 @@ export class AssetService {
               inDraft: '$asset.inDraft',
               custodianship: '$custodianship',
               AssetType: '$AssetType',
+              itemId: '$asset.itemId',
+              createdAt: '$asset.createdAt',
               assetTypeName: { $arrayElemAt: ['$AssetType.name', 0] },
               Fractor: [
                 {
@@ -577,6 +579,15 @@ export class AssetService {
     });
     if (!asset)
       throw ApiError(ErrorCode.DEFAULT_ERROR, `Id of Asset is invalid`);
+    const totalDepositedNumber = asset.depositedNFTs.find(
+      (nft) => nft['_id'] === depositedNftId,
+    );
+    if (editDepositedNft.withdrawable >= totalDepositedNumber.balance) {
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Withdrawavble amount can not be larger than total deposited amount',
+      );
+    }
     const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
       {
         itemId: assetId,

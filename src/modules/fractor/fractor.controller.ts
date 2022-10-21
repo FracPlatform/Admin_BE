@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from '../../common/response/api-success';
+import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
@@ -29,8 +30,8 @@ export class FractorController {
   @ApiOperation({ summary: 'Filter fractors' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async filterFractor(@Query() filter: FilterFractorDto) {
-    const data = await this.fractorServices.filterFractor(filter);
+  async filterFractor(@GetUser() user, @Query() filter: FilterFractorDto) {
+    const data = await this.fractorServices.filterFractor(user, filter);
     return new ApiSuccessResponse().success(data, '');
   }
 
@@ -38,8 +39,8 @@ export class FractorController {
   @ApiOperation({ summary: 'Get detail fractor' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async getDetail(@Param('id') fractorId: string) {
-    const data = await this.fractorServices.getFractorById(fractorId);
+  async getDetail(@GetUser() user, @Param('id') fractorId: string) {
+    const data = await this.fractorServices.getFractorById(user, fractorId);
     return new ApiSuccessResponse().success(data, '');
   }
 

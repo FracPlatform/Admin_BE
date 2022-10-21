@@ -1178,8 +1178,10 @@ export class IaoEventService {
     vaultUnlockThreshold?: boolean,
   ) {
     const nowDate = new Date();
-    let currentStage = IAO_EVENT_STAGE.UPCOMING;
-    if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
+    let currentStage;
+    if (nowDate < registrationStartTime)
+      currentStage = IAO_EVENT_STAGE.UPCOMING;
+    else if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
       currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
     else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
       currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
