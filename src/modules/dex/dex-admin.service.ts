@@ -16,6 +16,10 @@ import {
   RemoveFavoriteDto,
   UpdateFavoriteDto,
   UpdatePairDto,
+  GetCollectedFeeDto,
+  DownloadCollectedFeeDto,
+  GetIntervalSettingsDto,
+  GetTradeDto,
 } from './dto/dex.dto';
 const FormData = require('form-data');
 
@@ -418,6 +422,84 @@ export class DexAdminService {
     return this.http
       .delete(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/pair/${id}`, {
         headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+      })
+      .pipe(
+        map((res) => {
+          return res.data;
+        }),
+      )
+      .pipe(
+        catchError((e) => {
+          throw e;
+        }),
+      );
+  }
+
+  async getCollectedFee(filter: GetCollectedFeeDto) {
+    return this.http
+      .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/collected-fee`, {
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+        params: filter,
+      })
+      .pipe(
+        map((res) => {
+          return res.data;
+        }),
+      )
+      .pipe(
+        catchError((e) => {
+          throw e;
+        }),
+      );
+  }
+
+  async downloadCollectedFee(filter: DownloadCollectedFeeDto) {
+    return this.http
+      .get(
+        `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-collected-fee`,
+        {
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+          params: filter,
+        },
+      )
+      .pipe(
+        map((res) => {
+          return res.data;
+        }),
+      )
+      .pipe(
+        catchError((e) => {
+          throw e;
+        }),
+      );
+  }
+
+  async getIntervalSettings(filter: GetIntervalSettingsDto) {
+    return this.http
+      .get(
+        `${process.env.SPOT_DEX_DOMAIN}/api/v1/users/get-interval-settings`,
+        {
+          headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+          params: filter,
+        },
+      )
+      .pipe(
+        map((res) => {
+          return res.data;
+        }),
+      )
+      .pipe(
+        catchError((e) => {
+          throw e;
+        }),
+      );
+  }
+
+  async getTrades(filter: GetTradeDto) {
+    return this.http
+      .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trades`, {
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+        params: filter,
       })
       .pipe(
         map((res) => {

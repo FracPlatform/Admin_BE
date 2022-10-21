@@ -31,6 +31,10 @@ import {
   RemoveFavoriteDto,
   UpdateFavoriteDto,
   UpdatePairDto,
+  GetCollectedFeeDto,
+  DownloadCollectedFeeDto,
+  GetIntervalSettingsDto,
+  GetTradeDto,
 } from './dto/dex.dto';
 
 @Controller('dex-admin')
@@ -158,5 +162,25 @@ export class DexAdminController {
   @Delete('admin/pair/:id')
   async deletePair(@Param('id') id: string) {
     return this.dexAdminService.deletePair(id);
+  }
+
+  @Get('admin/collected-fee')
+  async getCollectedFee(@Query() filter: GetCollectedFeeDto) {
+    return await this.dexAdminService.getCollectedFee(filter);
+  }
+
+  @Get('admin/download-collected-fee')
+  async downloadCollectedFee(@Query() filter: DownloadCollectedFeeDto) {
+    return await this.dexAdminService.downloadCollectedFee(filter);
+  }
+
+  @Get('admin/users/get-interval-settings')
+  async getIntervalSettings(@Query() filter: GetIntervalSettingsDto) {
+    return await this.dexAdminService.getIntervalSettings(filter);
+  }
+
+  @Get('admin/trades')
+  async getTrades(@Query() filter: GetTradeDto) {
+    return await this.dexAdminService.getTrades(filter);
   }
 }
