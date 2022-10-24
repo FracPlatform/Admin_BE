@@ -19,7 +19,7 @@ import {
   AddTradingLevelDto,
   DownloadOrdersDto,
   EditTradingLevelDto,
-  LoginDto,
+  LoginDexDto,
   OrdersDto,
   TradingLevelDto,
   UploadIntervalDto,
@@ -93,7 +93,7 @@ export class DexAdminController {
   }
 
   @Get('auth/admin/login-wallet-address')
-  async loginWalletAddress(@Body() data: LoginDto) {
+  async loginWalletAddress(@Body() data: LoginDexDto) {
     return this.dexAdminService.loginWalletAddress(data);
   }
 

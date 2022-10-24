@@ -4,7 +4,7 @@ import { catchError, map } from 'rxjs';
 import {
   AddTradingLevelDto,
   EditTradingLevelDto,
-  LoginDto,
+  LoginDexDto,
   OrdersDto,
   TradingLevelDto,
   AddCoinDto,
@@ -205,7 +205,7 @@ export class DexAdminService {
       );
   }
 
-  async loginWalletAddress(data: LoginDto) {
+  async loginWalletAddress(data: LoginDexDto) {
     return this.http
       .post(
         `${process.env.SPOT_DEX_DOMAIN}/api/v1/auth/admin/login-wallet-address
