@@ -122,7 +122,7 @@ export class IaoEventService {
         createIaoEventDto.acceptedCurrencyAddress,
       );
       createIaoEventDto['currencySymbol'] = currencySymbol;
-      createIaoEventDto['currencyDecimal'] = currencyDecimal;
+      createIaoEventDto['currencyDecimal'] = +currencyDecimal;
     } catch (err) {
       error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
     }
