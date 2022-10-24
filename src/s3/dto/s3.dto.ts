@@ -3,6 +3,11 @@ import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 
 export enum S3_TYPE {
   ASSET = 'asset',
+  IAO_EVENT = 'iao-event',
+  NFT = 'nft',
+  FNFT = 'fnft',
+  IAO_REQUEST = 'iao-request',
+  ASSET_TYPE = 'asset-type',
 }
 
 export const FILE_PRESIGN_URL = [

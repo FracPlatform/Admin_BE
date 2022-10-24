@@ -76,7 +76,7 @@ export class UploadIntervalDto {
   csv: Express.Multer.File;
 }
 
-export class LoginDto {
+export class LoginDexDto {
   @ApiProperty({ required: false })
   message: string;
 
