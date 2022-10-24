@@ -236,7 +236,7 @@ export class DexAdminService {
     Object.keys(body).forEach((key) => {
       formData.append(key, body[key]);
     });
-    formData.append('file', file);
+    formData.append('file', file.buffer, file.originalname);
     return this.http
       .post(`${process.env.SPOT_DEX_DOMAIN}/api/v1/coins/add-coin`, formData, {
         headers: {

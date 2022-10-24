@@ -45,10 +45,14 @@ export class AllExceptionFilter extends BaseExceptionFilter {
         });
       }
     } else if(errorName === 'AxiosError') {
+      let detailErr = '';
+      if (exception['response']['status'] === 400) {
+        detailErr = exception['response']['data']['message'];
+      }
       response.status(400).json({
         code: '',
         statusCode: 400,
-        message: `AxiosError: ${exception['message']}`,
+        message: `AxiosError: ${exception['message']}. Detail error: ${detailErr}`,
       });
     } else {
       if (process.env.LOG_MONITOR && !(exception instanceof HttpException)) {
