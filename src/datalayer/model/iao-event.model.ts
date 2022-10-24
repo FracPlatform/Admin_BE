@@ -170,6 +170,9 @@ export class IAOEvent {
 
   @Prop({ type: String })
   acceptedCurrencySymbol: string;
+
+  @Prop({ type: Number })
+  currencyDecimal: number;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);

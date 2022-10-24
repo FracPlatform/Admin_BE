@@ -31,6 +31,7 @@ export class CreateIAOEventEntity {
   totalSupply: number;
   availableSupply: number;
   tokenSymbol: string;
+  currencyDecimal: number;
 }
 
 export class IAOEventDetailEntity {
