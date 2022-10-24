@@ -356,7 +356,7 @@ export class Utils {
       currencyAddress,
     );
     const currencySymbol = await contract20.methods.symbol().call();
-    const currencyDecimal = await contract20.methods.symbol().call();
+    const currencyDecimal = await contract20.methods.decimals().call();
     return { currencySymbol, currencyDecimal };
   }
 
