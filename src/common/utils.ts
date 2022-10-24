@@ -350,8 +350,17 @@ export class Utils {
     const copyDate = new Date(date);
     return new Date(copyDate.setHours(copyDate.getHours() - hours));
   }
-  
+
   public static async getCurrencySymbol(currencyAddress) {
+    const contract20 = await new Web3ETH().getContract20Instance(
+      currencyAddress,
+    );
+    const currencySymbol = await contract20.methods.symbol().call();
+    const currencyDecimal = await contract20.methods.symbol().call();
+    return { currencySymbol, currencyDecimal };
+  }
+
+  public static async getCurrency(currencyAddress) {
     const contract20 = await new Web3ETH().getContract20Instance(
       currencyAddress,
     );

@@ -118,10 +118,11 @@ export class IaoEventService {
         'IAO event name has existed. Please enter another value.';
 
     try {
-      const currencySymbol = await Utils.getCurrencySymbol(
+      const { currencySymbol, currencyDecimal } = await Utils.getCurrencySymbol(
         createIaoEventDto.acceptedCurrencyAddress,
       );
       createIaoEventDto['currencySymbol'] = currencySymbol;
+      createIaoEventDto['currencyDecimal'] = currencyDecimal;
     } catch (err) {
       error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
     }

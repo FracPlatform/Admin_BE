@@ -30,9 +30,6 @@ export class IaoEventBuilderService {
     user: any,
     session,
   ): Promise<CreateIAOEventEntity> {
-    const currencySymbol = await Utils.getCurrencySymbol(
-      createIaoEventDto.acceptedCurrencyAddress,
-    );
     return {
       iaoEventId: await Utils.getNextPrefixId(
         this.dataServices.counterId,
@@ -50,7 +47,8 @@ export class IaoEventBuilderService {
       participationEndTime: createIaoEventDto['participationEndTime'],
       vaultType: createIaoEventDto.vaultType,
       acceptedCurrencyAddress: createIaoEventDto.acceptedCurrencyAddress,
-      acceptedCurrencySymbol: currencySymbol,
+      acceptedCurrencySymbol: createIaoEventDto['currencySymbol'],
+      currencyDecimal: createIaoEventDto['currencyDecimal'],
       exchangeRate: createIaoEventDto.exchangeRate,
       percentageOffered: createIaoEventDto.percentageOffered,
       vaultUnlockThreshold: createIaoEventDto.vaultUnlockThreshold,
