@@ -193,7 +193,7 @@ export class IaoEventService {
           },
         },
         {
-          fNftSymbol: {
+          tokenSymbol: {
             $regex: Utils.escapeRegex(filter.keyword.trim()),
             $options: 'i',
           },
