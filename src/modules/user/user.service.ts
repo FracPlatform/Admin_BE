@@ -8,7 +8,7 @@ import {
 } from 'src/datalayer/model';
 import { CreateAffiliateDTO } from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
-
+import { Role } from 'src/modules/auth/role.enum';
 @Injectable()
 export class UserService {
   constructor(
@@ -45,13 +45,15 @@ export class UserService {
         'E35',
         'maxSubSecondCommissionRate must be less than masterCommissionRate and maxSubFristCommissionRate',
       );
-    let bd;
+    let bd: any;
     if (createAffiliateDTO.bd) {
-      bd = await this.dataService.admin.findOne({
+      const admin = await this.dataService.admin.findOne({
         adminId: createAffiliateDTO.bd,
         status: ADMIN_STATUS.ACTIVE,
+        role: Role.MasterBD,
       });
-      if (!bd) throw ApiError('E4', 'bd is invalid');
+      if (!admin) throw ApiError('E4', 'bd is invalid');
+      bd = admin.adminId;
     }
     const buildAffiliate =
       this.userBuilderService.createAffiliate(createAffiliateDTO);

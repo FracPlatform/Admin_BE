@@ -19,7 +19,7 @@ export class CreateAffiliateDTO {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Max(50, { message: 'E10' })
   @Min(20, { message: 'E24' })
   masterCommissionRate: number;
@@ -27,7 +27,7 @@ export class CreateAffiliateDTO {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Max(100)
   @Min(1)
   maxSubFristCommissionRate: number;
@@ -35,7 +35,7 @@ export class CreateAffiliateDTO {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Max(100)
   @Min(1)
   maxSubSecondCommissionRate: number;
