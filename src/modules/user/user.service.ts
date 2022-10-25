@@ -45,7 +45,7 @@ export class UserService {
         'E35',
         'maxSubSecondCommissionRate must be less than masterCommissionRate and maxSubFristCommissionRate',
       );
-    let bd: any;
+
     if (createAffiliateDTO.bd) {
       const admin = await this.dataService.admin.findOne({
         adminId: createAffiliateDTO.bd,
@@ -53,8 +53,8 @@ export class UserService {
         role: Role.MasterBD,
       });
       if (!admin) throw ApiError('E4', 'bd is invalid');
-      bd = admin.adminId;
     }
+    
     const buildAffiliate =
       this.userBuilderService.createAffiliate(createAffiliateDTO);
 
