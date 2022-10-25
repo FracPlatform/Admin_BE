@@ -22,6 +22,7 @@ import { FnftModule } from './modules/f-nft/f-nft.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SignerModule } from './modules/signer/signer.module';
 import { DexModule } from './modules/dex/dex.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { DexModule } from './modules/dex/dex.module';
     IPFSMofule,
     SignerModule,
     DexModule,
+    UserModule,
   ],
   controllers: [AppController],
 })
