@@ -345,7 +345,7 @@ export class IaoEventService {
     if (filter.particicationToDate) {
       dateQuery.push({
         participationEndTime: {
-          $lte: new Date(filter.particicationFromDate),
+          $lte: new Date(filter.particicationToDate),
         },
       });
     }
