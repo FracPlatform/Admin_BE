@@ -4,7 +4,7 @@ export class FractorFeeEntity {
 }
 
 export class AffiliateFeeEntity {
-  commissionRate: number;
-  maxCommissionRateForSub1: number;
-  maxCommissionRateForSub2: number;
+  role: number;
+  walletAddress: string;
+  feeReceive: number;
 }

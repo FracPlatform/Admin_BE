@@ -32,11 +32,23 @@ export class DexService {
     return { token };
   }
 
-  async getAffiliateFee(walletAddress: string): Promise<AffiliateFeeEntity> {
-    return {
-      commissionRate: 10,
-      maxCommissionRateForSub1: 10,
-      maxCommissionRateForSub2: 10,
-    };
+  async getAffiliateFee(walletAddress: string): Promise<AffiliateFeeEntity[]> {
+    return [
+      {
+        role: 1,
+        walletAddress: '0x779361Af4503C1eaA52baf64c01C013842eB87f1',
+        feeReceive: 10,
+      },
+      {
+        role: 2,
+        walletAddress: '0x83eF7DEA9c0eD0CadE9Aed85702540CF5254c095',
+        feeReceive: 10,
+      },
+      {
+        role: 3,
+        walletAddress: '0xFf7Dcc7131958e5fDa7976BeE585947730e43fCf',
+        feeReceive: 10,
+      }
+    ];
   }
 }
