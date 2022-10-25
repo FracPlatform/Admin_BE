@@ -47,3 +47,5 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.plugin(paginate);
 UserSchema.plugin(aggregatePaginate);
 UserSchema.index({ userId: 1 });
+UserSchema.index({ walletAddress: 1 });
+
