@@ -20,6 +20,7 @@ import { ApiError } from 'src/common/api';
 import * as randomatic from 'randomatic';
 import { Role } from '../auth/role.enum';
 import { Admin, ADMIN_STATUS } from 'src/datalayer/model';
+import { Web3ETH } from '../../blockchain/web3.eth';
 
 @Injectable()
 export class AdminService {
@@ -109,8 +110,6 @@ export class AdminService {
         data: dataReturnFilter,
       },
     });
-
-    console.log(112, JSON.stringify(agg));
     
     const dataQuery = await this.dataServices.admin.aggregate(agg, {
       collation: { locale: 'en' },
@@ -138,6 +137,9 @@ export class AdminService {
       const referral = [Role.FractorBD, Role.MasterBD].includes(data.role)
         ? await this.randomReferal()
         : null;
+
+      const web3Service = new Web3ETH();
+      data.walletAddress = web3Service.toChecksumAddress(data.walletAddress)
 
       const adminObj = await this.adminBuilderService.createAdmin(
         data,
