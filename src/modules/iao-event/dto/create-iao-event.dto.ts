@@ -117,8 +117,8 @@ export class CreateIaoEventDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsNumber()
-  @Min(MIN_IAO_EVENT_DURATION)
-  @Max(MAX_IAO_EVENT_DURATION)
+  // @Min(MIN_IAO_EVENT_DURATION)
+  // @Max(MAX_IAO_EVENT_DURATION)
   iaoEventDuration: number;
 
   @ApiProperty({ required: true })
@@ -129,6 +129,12 @@ export class CreateIaoEventDto {
     message: 'registrationEndTime must be < participationStartTime',
   })
   participationStartTime: Date;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  participationEndTime: Date;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

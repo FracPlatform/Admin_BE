@@ -61,7 +61,7 @@ export class IaoEventService {
     participationEndTime.setDate(
       participationEndTime.getDate() + createIaoEventDto.iaoEventDuration,
     );
-    createIaoEventDto['participationEndTime'] = participationEndTime;
+    // createIaoEventDto['participationEndTime'] = participationEndTime;
     if (createIaoEventDto.whitelistAnnouncementTime > participationEndTime)
       error['whitelistAnnouncementTime'] =
         "Whitelist announcement time can't be earlier than Reference participation end time";
