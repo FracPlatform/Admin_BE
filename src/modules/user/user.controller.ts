@@ -6,9 +6,11 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Request } from 'express';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { Role } from '../auth/role.enum';
@@ -27,9 +29,9 @@ export class UserController {
   @ApiBearerAuth()
   @Roles(Role.HeadOfBD, Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Create new affiliate' })
-  async createAffiliate(@Body() data: CreateAffiliateDTO) {
+  async createAffiliate(@Body() data: CreateAffiliateDTO, @Req() req: Request) {
     try {
-      const affilate = await this.userService.createAffiliate(data);
+      const affilate = await this.userService.createAffiliate(data, req.user);
       return new ApiSuccessResponse().success(affilate, '');
     } catch (error) {
       throw error;
@@ -45,9 +47,10 @@ export class UserController {
   async deactivateUser(
     @Param('id') userId: string,
     @Body() data: DeactivateUserDTO,
+    @Req() req: Request,
   ) {
     try {
-      const user = await this.userService.deactiveUser(userId, data);
+      const user = await this.userService.deactiveUser(userId, data, req.user);
       return new ApiSuccessResponse().success(user, '');
     } catch (error) {
       throw error;
@@ -60,9 +63,9 @@ export class UserController {
   @ApiBearerAuth()
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Active User' })
-  async activeUser(@Param('id') userId: string) {
+  async activeUser(@Param('id') userId: string, @Req() req: Request) {
     try {
-      const user = await this.userService.activeUser(userId);
+      const user = await this.userService.activeUser(userId, req.user);
       return new ApiSuccessResponse().success(user, '');
     } catch (error) {
       throw error;

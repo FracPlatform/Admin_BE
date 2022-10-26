@@ -26,12 +26,27 @@ export enum USER_ROLE {
   AFFILIATE_SUB_2 = 4,
 }
 
+export class CreatedAffiliateBy {
+  createdAt: Date;
+  createdBy: string;
+}
+
+export class UpdatedAffiliateBy {
+  updatedAt: Date;
+  updatedBy: string;
+}
+
+export class DeactivatedAffiliateBy {
+  deactivatedAt: Date;
+  deactivatedBy: string;
+  comment: string;
+}
+
 export enum USER_STATUS {
   ACTIVE = 1,
   INACTIVE = 2,
 }
 @Schema({
-  timestamps: true,
   collection: 'User',
 })
 export class User {
@@ -65,8 +80,14 @@ export class User {
   @Prop({ type: Number })
   status?: number;
 
-  @Prop({ type: String })
-  comment?: string;
+  @Prop({ type: CreatedAffiliateBy })
+  createdAffiliateBy?: CreatedAffiliateBy;
+
+  @Prop({ type: UpdatedAffiliateBy, default: null })
+  updatedAffiliateBy?: UpdatedAffiliateBy;
+
+  @Prop({ type: DeactivatedAffiliateBy, default: null })
+  deactivatedAffiliateBy?: DeactivatedAffiliateBy;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
