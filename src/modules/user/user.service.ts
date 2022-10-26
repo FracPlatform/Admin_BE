@@ -9,11 +9,14 @@ import {
 import { CreateAffiliateDTO } from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
+import { InjectConnection } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 @Injectable()
 export class UserService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly userBuilderService: UserBuilderService,
+    @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
   async createAffiliate(createAffiliateDTO: CreateAffiliateDTO) {
@@ -54,7 +57,7 @@ export class UserService {
       });
       if (!admin) throw ApiError('E4', 'bd is invalid');
     }
-    
+
     const buildAffiliate =
       this.userBuilderService.createAffiliate(createAffiliateDTO);
 
@@ -65,6 +68,28 @@ export class UserService {
       buildAffiliate,
       { new: true },
     );
-    return newAffiliate;
+    let user;
+    if (!newAffiliate) {
+      // create new user
+      const session = await this.connection.startSession();
+      session.startTransaction();
+      try {
+        const buildUser = await this.userBuilderService.createUser(
+          createAffiliateDTO,
+          session,
+        );
+        user = await this.dataService.user.create(buildUser);
+        await session.commitTransaction();
+        user = user[0];
+      } catch (error) {
+        await session.abortTransaction();
+        console.log(error);
+        throw error;
+      } finally {
+        session.endSession();
+      }
+    }
+
+    return newAffiliate ? newAffiliate : user;
   }
 }

@@ -55,10 +55,10 @@ import { UserModule } from './modules/user/user.module';
     AssetModule,
     IaoEventModule,
     NftModule,
+    UserModule,
     IPFSMofule,
     SignerModule,
     DexModule,
-    UserModule,
   ],
   controllers: [AppController],
 })

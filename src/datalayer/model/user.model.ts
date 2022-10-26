@@ -13,11 +13,22 @@ export enum USER_NFT_STATUS {
 
 export const MAX_MASTER_COMMISION_RATE = 50;
 
+export enum USER_LANGUAGE {
+  EN = 'en',
+  CD = 'cn',
+  JA = 'ja',
+}
+
 export enum USER_ROLE {
   NORMAL = 1,
   MASTER_AFFILIATE = 2,
   AFFILIATE_SUB_1 = 3,
   AFFILIATE_SUB_2 = 4,
+}
+
+export enum USER_STATUS {
+  ACTIVE = 1,
+  DEACTIVATE = 2,
 }
 @Schema({
   timestamps: true,
@@ -41,11 +52,27 @@ export class User {
 
   @Prop({ type: Number })
   role: number;
+
+  @Prop({ type: String, default: USER_LANGUAGE.EN })
+  language?: string;
+
+  @Prop({ type: String, required: false })
+  referedBy?: string;
+
+  @Prop({ type: String })
+  userId?: string;
+
+  @Prop({ type: Number })
+  status?: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.plugin(paginate);
 UserSchema.plugin(aggregatePaginate);
 UserSchema.index({ userId: 1 });
-UserSchema.index({ walletAddress: 1 });
-
+UserSchema.index(
+  { walletAddress: 1 },
+  {
+    unique: true,
+  },
+);
