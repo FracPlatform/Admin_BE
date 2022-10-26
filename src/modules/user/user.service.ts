@@ -20,7 +20,7 @@ export class UserService {
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
-  async createAffiliate(createAffiliateDTO: CreateAffiliateDTO) {
+  async createAffiliate(createAffiliateDTO: CreateAffiliateDTO, admin: any) {
     const roleList = [
       USER_ROLE.AFFILIATE_SUB_1,
       USER_ROLE.AFFILIATE_SUB_2,
@@ -59,8 +59,10 @@ export class UserService {
       if (!admin) throw ApiError('E4', 'bd is invalid');
     }
 
-    const buildAffiliate =
-      this.userBuilderService.createAffiliate(createAffiliateDTO);
+    const buildAffiliate = this.userBuilderService.createAffiliate(
+      createAffiliateDTO,
+      admin,
+    );
 
     const newAffiliate = await this.dataService.user.findOneAndUpdate(
       {
@@ -78,6 +80,7 @@ export class UserService {
         const buildUser = await this.userBuilderService.createUser(
           createAffiliateDTO,
           session,
+          admin,
         );
         user = await this.dataService.user.create(buildUser);
         await session.commitTransaction();
@@ -94,35 +97,44 @@ export class UserService {
     return newAffiliate ? newAffiliate : user;
   }
 
-  async deactiveUser(userId: string, deactivateUserDTO: DeactivateUserDTO) {
+  async deactiveUser(
+    userId: string,
+    deactivateUserDTO: DeactivateUserDTO,
+    admin: any,
+  ) {
     const user = await this.dataService.user.findOne({
       userId: userId,
       status: USER_STATUS.ACTIVE,
     });
     if (!user) throw ApiError('E2', 'userId is invalid');
+    const buildUpdateUser = this.userBuilderService.deactivateUser(
+      admin.adminId,
+      deactivateUserDTO,
+    );
     const updateUser = await this.dataService.user.findOneAndUpdate(
       {
         userId: userId,
         status: USER_STATUS.ACTIVE,
       },
-      { status: USER_STATUS.INACTIVE, comment: deactivateUserDTO.comment },
+      { $set: buildUpdateUser },
       { new: true },
     );
     return updateUser;
   }
 
-  async activeUser(userId: string) {
+  async activeUser(userId: string, admin) {
     const user = await this.dataService.user.findOne({
       userId: userId,
       status: USER_STATUS.INACTIVE,
     });
     if (!user) throw ApiError('E2', 'userId is invalid');
+    const buildUser = this.userBuilderService.activeUser(admin.adminId);
     const updateUser = await this.dataService.user.findOneAndUpdate(
       {
         userId: userId,
         status: USER_STATUS.INACTIVE,
       },
-      { status: USER_STATUS.ACTIVE },
+      { $set: buildUser },
       { new: true },
     );
     return updateUser;

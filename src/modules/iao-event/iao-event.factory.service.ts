@@ -138,6 +138,7 @@ export class IaoEventBuilderService {
       registrationEndTime: iaoEvent.registrationEndTime,
       iaoEventDuration: iaoEvent.iaoEventDuration,
       participationStartTime: iaoEvent.participationStartTime,
+      participationEndTime: iaoEvent.participationEndTime,
       vaultType: iaoEvent.vaultType,
       acceptedCurrencyAddress: iaoEvent.acceptedCurrencyAddress,
       exchangeRate: iaoEvent.exchangeRate,
