@@ -5,8 +5,9 @@ import {
   ADMIN_STATUS,
   MAX_MASTER_COMMISION_RATE,
   USER_ROLE,
+  USER_STATUS,
 } from 'src/datalayer/model';
-import { CreateAffiliateDTO } from './dto/user.dto';
+import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
@@ -91,5 +92,39 @@ export class UserService {
     }
 
     return newAffiliate ? newAffiliate : user;
+  }
+
+  async deactiveUser(userId: string, deactivateUserDTO: DeactivateUserDTO) {
+    const user = await this.dataService.user.findOne({
+      userId: userId,
+      status: USER_STATUS.ACTIVE,
+    });
+    if (!user) throw ApiError('E2', 'userId is invalid');
+    const updateUser = await this.dataService.user.findOneAndUpdate(
+      {
+        userId: userId,
+        status: USER_STATUS.ACTIVE,
+      },
+      { status: USER_STATUS.INACTIVE, comment: deactivateUserDTO.comment },
+      { new: true },
+    );
+    return updateUser;
+  }
+
+  async activeUser(userId: string) {
+    const user = await this.dataService.user.findOne({
+      userId: userId,
+      status: USER_STATUS.INACTIVE,
+    });
+    if (!user) throw ApiError('E2', 'userId is invalid');
+    const updateUser = await this.dataService.user.findOneAndUpdate(
+      {
+        userId: userId,
+        status: USER_STATUS.INACTIVE,
+      },
+      { status: USER_STATUS.ACTIVE },
+      { new: true },
+    );
+    return updateUser;
   }
 }
