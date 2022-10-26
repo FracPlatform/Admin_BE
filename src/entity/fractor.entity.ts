@@ -27,7 +27,7 @@ export class FractorEntity {
   isBlocked: boolean;
   assignedBD: string;
   iaoFeeRate: number;
-  tradingFeeProfit: number
+  tradingFeeProfit: number;
   lastUpdatedBy: string;
   deactivatedBy: string;
   deactivetedOn: Date;
@@ -45,6 +45,9 @@ export class Profile {
   collections: CollectionItem[];
   isKYC: boolean;
   fractorId: string;
+  contactPhone: object;
+  walletAddress: string;
+  fractorAddress: string;
 }
 
 export class FacebookDetail {
