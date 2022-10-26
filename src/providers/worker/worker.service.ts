@@ -103,6 +103,17 @@ export class WorkerService {
       status: CLAIM_STATUS.SUCCESS,
       type,
     });
+
+    const SOCKET_EVENT_NAME =
+      requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_SUCCESSFUL
+        ? SOCKET_EVENT.CLAIM_FNFT_SUCCESSFUL_EVENT
+        : SOCKET_EVENT.CLAIM_FNFT_FAILURE_EVENT;
+
+    this.socketGateway.sendMessage(
+      SOCKET_EVENT_NAME,
+      requestData,
+      requestData.metadata.caller,
+    );
   }
 
   private async _handleSetAdminEvent(requestData: WorkerDataDto) {

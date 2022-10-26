@@ -32,6 +32,8 @@ import {
   PurchaseSchema,
   ClaimSchema,
   Claim,
+  RedemptionRequestSchema,
+  RedemptionRequest,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -54,6 +56,7 @@ import 'dotenv/config';
       { name: User.name, schema: UserSchema },
       { name: Purchase.name, schema: PurchaseSchema },
       { name: Claim.name, schema: ClaimSchema },
+      { name: RedemptionRequest.name, schema: RedemptionRequestSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],
