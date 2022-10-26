@@ -75,10 +75,7 @@ export class IaoEventController {
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Export whitelist' })
-  async exportWhitelist(
-    @GetUser() user,
-    @Query() filter: ExportWhitelistDto,
-  ) {
+  async exportWhitelist(@GetUser() user, @Query() filter: ExportWhitelistDto) {
     const data = await this.iaoEventService.exportWhitelist(user, filter);
     return new ApiSuccessResponse().success(data, '');
   }
@@ -137,9 +134,12 @@ export class IaoEventController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
-  async exportIaoEvent(@Res() res: Response) {
+  async exportIaoEvent(
+    @Res() res: Response,
+    @Query() filter: GetListIaoEventDto,
+  ) {
     try {
-      return await this.iaoEventService.exportIaoEvent(res);
+      return await this.iaoEventService.exportIaoEvent(res, filter);
     } catch (error) {
       throw error;
     }

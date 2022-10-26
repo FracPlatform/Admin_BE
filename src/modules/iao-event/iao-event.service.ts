@@ -419,7 +419,190 @@ export class IaoEventService {
     };
   }
 
-  async exportIaoEvent(res: any) {
+  async exportIaoEvent(res: any, filter: GetListIaoEventDto) {
+    const query = { isDeleted: false };
+    const dateQuery = [];
+    if (filter.keyword) {
+      query['$or'] = [
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          iaoEventId: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          tokenSymbol: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          FNFTcontractAddress: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    }
+    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(),
+        },
+      });
+    }
+    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
+      dateQuery.push(
+        {
+          registrationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          registrationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
+      dateQuery.push(
+        {
+          registrationEndTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationStartTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+      dateQuery.push(
+        {
+          participationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+      dateQuery.push({
+        $or: [
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.NON_VAULT,
+              },
+            ],
+          },
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.VAULT,
+              },
+              {
+                $expr: {
+                  $gte: [
+                    { $subtract: ['$totalSupply', '$availableSupply'] },
+                    {
+                      $multiply: [
+                        '$vaultUnlockThreshold',
+                        '$totalSupply',
+                        0.01,
+                      ],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+      dateQuery.push({
+        $and: [
+          {
+            participationEndTime: {
+              $lte: new Date(),
+            },
+          },
+          {
+            $expr: {
+              $lt: [
+                { $subtract: ['$totalSupply', '$availableSupply'] },
+                {
+                  $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }
+    if (filter.registrationFromDate) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(filter.registrationFromDate),
+        },
+      });
+    }
+    if (filter.registrationToDate) {
+      dateQuery.push({
+        registrationEndTime: {
+          $lte: new Date(filter.registrationToDate),
+        },
+      });
+    }
+    if (filter.particicationFromDate) {
+      dateQuery.push({
+        participationStartTime: {
+          $gte: new Date(filter.particicationFromDate),
+        },
+      });
+    }
+    if (filter.particicationToDate) {
+      dateQuery.push({
+        participationEndTime: {
+          $lte: new Date(filter.particicationToDate),
+        },
+      });
+    }
+    let sort: any = { $sort: {} };
+    if (filter.sortField && filter.sortType) {
+      sort['$sort'][filter.sortField] = filter.sortType;
+    } else {
+      sort = { $sort: { createdAt: -1 } };
+    }
+    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || 10 });
+    if (dateQuery.length) query['$and'] = dateQuery;
     const dataQuery = await this.dataService.iaoEvent.aggregate([
       {
         $match: {
@@ -501,6 +684,10 @@ export class IaoEventService {
           as: 'iaoRequest.items',
         },
       },
+      {
+        $match: query,
+      },
+      ...dataReturnFilter,
     ]);
     const assetTypes = await this.dataService.assetTypes.findMany({});
     const finalData = this.iaoEventBuilderService.convertExportedEvents(

@@ -16,7 +16,7 @@ export enum NFT_STATUS {
   FRACTIONLIZED = 3,
   OWNED = 4,
   REQUESTING = 5,
-  REQUEST_APPROVED = 6,
+  PROCESSING = 6,
   REDEEMED = 7,
 }
 

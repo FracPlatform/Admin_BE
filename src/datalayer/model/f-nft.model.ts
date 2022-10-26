@@ -91,11 +91,12 @@ FnftSchema.index(
   },
 );
 FnftSchema.index(
-  { iaoRequestId: 1, mintedStatus: 1 },
+  { iaoRequestId: 1, mintedStatus: 1, status: 1 },
   {
     unique: true,
     partialFilterExpression: {
       mintedStatus: { $eq: 1 },
+      status: { $eq: 1 },
       iaoRequestId: { $type: 'string' },
     },
   },
