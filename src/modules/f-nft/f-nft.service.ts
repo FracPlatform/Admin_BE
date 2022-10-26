@@ -16,6 +16,7 @@ import {
 import { NFT_STATUS, NFT_TYPE } from 'src/datalayer/model/nft.model';
 import {
   ASSET_STATUS,
+  F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
   IAO_REQUEST_STATUS,
 } from 'src/datalayer/model';
@@ -183,6 +184,8 @@ export class FnftService {
 
   async checkItems(iaoRequestId: string, data: CreateFnftDto) {
     if (iaoRequestId) {
+      this._checkDuplicateIaoRequest(iaoRequestId);
+
       const iaoRequest = await this.dataServices.iaoRequest.findOne({
         iaoId: iaoRequestId,
       });
@@ -197,7 +200,6 @@ export class FnftService {
 
       data.items = iaoRequest.items;
     }
-    console.log(data);
 
     if (!data.items.length)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'items not data');
@@ -205,6 +207,17 @@ export class FnftService {
     if (iaoRequestId) await this.checkStatusOfAssets(data.items);
 
     await this.checkStatusOfNfts(iaoRequestId, data);
+  }
+
+  private async _checkDuplicateIaoRequest(iaoRequestId: string) {
+    const fNFT = await this.dataServices.fnft.findOne({
+      iaoRequestId: iaoRequestId,
+      status: F_NFT_STATUS.ACTIVE,
+      mintedStatus: F_NFT_MINTED_STATUS.MINTED,
+    });
+    if (fNFT) {
+      throw ApiError(ErrorCode.DEFAULT_ERROR, `Already existed F-NFT minted from IAO request: ${iaoRequestId}`);
+    }
   }
 
   async checkStatusOfAssets(items: string[]) {
