@@ -19,8 +19,8 @@ import { CHAINID } from 'src/common/constants';
 import {
   VAULT_TYPE,
   MAXLENGTH_CONTRACT_ADDRESS,
-  MIN_IAO_EVENT_DURATION,
-  MAX_IAO_EVENT_DURATION,
+  // MIN_IAO_EVENT_DURATION,
+  // MAX_IAO_EVENT_DURATION,
   MAX_PERCENT_OFFERED,
   MAX_PERCENT_VAULT,
   MAXLENGTH_EVENT_NAME,
@@ -117,8 +117,8 @@ export class CreateIaoEventDto {
   @ApiProperty({ required: true })
   @IsNotEmpty()
   @IsNumber()
-  @Min(MIN_IAO_EVENT_DURATION)
-  @Max(MAX_IAO_EVENT_DURATION)
+  // @Min(MIN_IAO_EVENT_DURATION)
+  // @Max(MAX_IAO_EVENT_DURATION)
   iaoEventDuration: number;
 
   @ApiProperty({ required: true })
@@ -129,6 +129,12 @@ export class CreateIaoEventDto {
     message: 'registrationEndTime must be < participationStartTime',
   })
   participationStartTime: Date;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  participationEndTime: Date;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
