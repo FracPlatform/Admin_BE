@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
-import { USER_ROLE, USER_STATUS } from 'src/datalayer/model';
+import { User, USER_ROLE, USER_STATUS } from 'src/datalayer/model';
 import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
 
 @Injectable()
@@ -68,6 +68,39 @@ export class UserBuilderService {
         updatedAt: new Date(),
         updatedBy: adminId,
       },
+    };
+  }
+
+  getUserDetail(user: User, data: any) {
+    return {
+      userId: user.userId,
+      joinedOn: user.createdAt,
+      walletAddress: user.walletAddress,
+      status: user.status,
+      role: user.role,
+      commissionRate: user.masterCommissionRate,
+      maxSubFristCommissionRate: user.maxSubFristCommissionRate,
+      maxSubSecondCommissionRate: user.maxSubSecondCommissionRate,
+      bd: user.bd ? { adminId: user.bd, fullname: data.bd } : null,
+      createdAffiliateBy: {
+        adminId: user.createdAffiliateBy?.createdBy,
+        fullname: data.createdBy,
+        createdAt: user.createdAffiliateBy?.createdAt,
+      },
+      updatedAffiliateBy: {
+        adminId: user.updatedAffiliateBy?.updatedBy,
+        fullname: data.updatedBy,
+        createdAt: user.updatedAffiliateBy?.updatedAt,
+      },
+      deactivatedAffiliateBy: {
+        adminId: user.deactivatedAffiliateBy?.deactivatedAt,
+        fullname: data.deactivateBy,
+        createdAt: user.deactivatedAffiliateBy?.deactivatedAt,
+        comment: user.deactivatedAffiliateBy?.comment,
+      },
+      referralLink: user.referalCode,
+      email: user.email,
+      description: user.description,
     };
   }
 }
