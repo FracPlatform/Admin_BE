@@ -181,6 +181,7 @@ export class WorkerService {
         this.socketGateway.sendMessage(
           SOCKET_EVENT.MINT_NFT_EVENT,
           requestData,
+          requestData.metadata.mintBy,
         );
       }
     } catch (error) {
@@ -501,7 +502,11 @@ export class WorkerService {
         { session },
       );
       if (res)
-        this.socketGateway.sendMessage(SOCKET_EVENT.DEPOSIT_NFTS, requestData);
+        this.socketGateway.sendMessage(
+          SOCKET_EVENT.DEPOSIT_NFTS,
+          requestData,
+          requestData.metadata.sender,
+        );
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
