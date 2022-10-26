@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Phone } from '.';
 
 export type RedemptionRequestDocument = RedemptionRequest & Document;
 
@@ -30,8 +31,8 @@ export class RedemptionRequest {
   @Prop({ type: String })
   receiptAddress: string;
 
-  @Prop({ type: String })
-  contactPhone: string;
+  @Prop({ type: Phone })
+  contactPhone: Phone;
 
   @Prop({ type: String })
   note: string;
