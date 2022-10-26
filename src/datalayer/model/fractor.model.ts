@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { CollectionItem, CollectionItemSchema } from './collection-item.model';
+import { Phone } from './iao-request.model';
 const paginate = require('mongoose-paginate-v2');
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
@@ -98,6 +99,15 @@ export class Fractor {
 
   @Prop({ type: Date, default: null })
   deactivetedOn: Date;
+
+  @Prop({ type: Phone })
+  contactPhone: Phone;
+
+  @Prop({ type: String })
+  walletAddress: string;
+
+  @Prop({ type: String, default: '' })
+  fractorAddress: string;
 }
 
 export const FractorSchema = SchemaFactory.createForClass(Fractor);
