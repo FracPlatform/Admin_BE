@@ -9,13 +9,18 @@ import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
 export class UserBuilderService {
   constructor(private readonly dataService: IDataServices) {}
 
-  createAffiliate(createAffiliateDTO: CreateAffiliateDTO, user: any) {
+  createAffiliate(
+    createAffiliateDTO: CreateAffiliateDTO,
+    user: any,
+    referalCode,
+  ) {
     return {
       walletAddress: createAffiliateDTO.walletAddress,
       masterCommissionRate: createAffiliateDTO.masterCommissionRate,
       maxSubFristCommissionRate: createAffiliateDTO.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: createAffiliateDTO.maxSubSecondCommissionRate,
       bd: createAffiliateDTO.bd,
+      referalCode,
       role: USER_ROLE.MASTER_AFFILIATE,
       createdAffiliateBy: {
         createdAt: new Date(),
@@ -24,7 +29,12 @@ export class UserBuilderService {
     };
   }
 
-  async createUser(createAffiliateDTO: CreateAffiliateDTO, session, user: any) {
+  async createUser(
+    createAffiliateDTO: CreateAffiliateDTO,
+    session,
+    user: any,
+    referalCode,
+  ) {
     return {
       walletAddress: createAffiliateDTO.walletAddress,
       status: USER_STATUS.ACTIVE,
@@ -37,6 +47,7 @@ export class UserBuilderService {
       maxSubFristCommissionRate: createAffiliateDTO.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: createAffiliateDTO.maxSubSecondCommissionRate,
       bd: createAffiliateDTO.bd,
+      referalCode,
       role: USER_ROLE.MASTER_AFFILIATE,
       createdAffiliateBy: {
         createdAt: new Date(),

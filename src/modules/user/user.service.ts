@@ -12,6 +12,8 @@ import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import * as randomatic from 'randomatic';
+
 @Injectable()
 export class UserService {
   constructor(
@@ -59,9 +61,12 @@ export class UserService {
       if (!admin) throw ApiError('E4', 'bd is invalid');
     }
 
+    const referralCode = await this.randomReferal();
+
     const buildAffiliate = this.userBuilderService.createAffiliate(
       createAffiliateDTO,
       admin,
+      referralCode,
     );
 
     const newAffiliate = await this.dataService.user.findOneAndUpdate(
@@ -81,6 +86,7 @@ export class UserService {
           createAffiliateDTO,
           session,
           admin,
+          referralCode,
         );
         user = await this.dataService.user.create(buildUser);
         await session.commitTransaction();
@@ -172,5 +178,15 @@ export class UserService {
       data,
     );
     return affiliateDetail;
+  }
+
+  async randomReferal() {
+    const referral = randomatic('Aa0', Math.floor(Math.random() * 3) + 7);
+    const userExisted = await this.dataService.user.findOne({
+      referalCode: referral,
+    });
+    if (!userExisted) return referral;
+
+    return await this.randomReferal();
   }
 }
