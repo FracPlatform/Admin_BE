@@ -7,7 +7,9 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 
 export class CreateAffiliateDTO {
@@ -44,4 +46,12 @@ export class CreateAffiliateDTO {
   @IsOptional()
   @IsString()
   bd: string;
+}
+export class DeactivateUserDTO {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(2000)
+  @MinLength(1)
+  comment: string;
 }

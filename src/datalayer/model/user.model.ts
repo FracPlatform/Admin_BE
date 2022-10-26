@@ -28,7 +28,7 @@ export enum USER_ROLE {
 
 export enum USER_STATUS {
   ACTIVE = 1,
-  DEACTIVATE = 2,
+  INACTIVE = 2,
 }
 @Schema({
   timestamps: true,
@@ -64,6 +64,9 @@ export class User {
 
   @Prop({ type: Number })
   status?: number;
+
+  @Prop({ type: String })
+  comment?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
