@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -33,6 +34,27 @@ export class UserController {
     try {
       const affilate = await this.userService.createAffiliate(data, req.user);
       return new ApiSuccessResponse().success(affilate, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('/affiliate/:id')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Roles(
+    Role.SuperAdmin,
+    Role.OWNER,
+    Role.MasterBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+  )
+  @ApiOperation({ summary: 'Get affiliate detail' })
+  async getAffiliateDetail(@Param('id') userId: string) {
+    try {
+      const user = await this.userService.getAffiliateDetail(userId);
+      return new ApiSuccessResponse().success(user, '');
     } catch (error) {
       throw error;
     }

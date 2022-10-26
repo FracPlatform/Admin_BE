@@ -71,8 +71,8 @@ export class User {
   @Prop({ type: String, default: USER_LANGUAGE.EN })
   language?: string;
 
-  @Prop({ type: String, required: false })
-  referedBy?: string;
+  @Prop({ type: String})
+  referalCode?: string;
 
   @Prop({ type: String })
   userId?: string;
@@ -88,6 +88,15 @@ export class User {
 
   @Prop({ type: DeactivatedAffiliateBy, default: null })
   deactivatedAffiliateBy?: DeactivatedAffiliateBy;
+
+  @Prop({ type: Date })
+  createdAt?: Date;
+
+  @Prop({ type: String })
+  email?: string;
+
+  @Prop({ type: String })
+  description?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

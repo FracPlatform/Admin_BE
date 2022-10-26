@@ -139,4 +139,38 @@ export class UserService {
     );
     return updateUser;
   }
+
+  async getAffiliateDetail(userId: string) {
+    const affliate = await this.dataService.user.findOne({ userId });
+    const idList = [
+      affliate.bd,
+      affliate.createdAffiliateBy?.createdBy,
+      affliate.updatedAffiliateBy?.updatedBy,
+      affliate.deactivatedAffiliateBy?.deactivatedBy,
+    ];
+    const admin = await this.dataService.admin.findMany({
+      adminId: { $in: idList },
+    });
+    const bd = admin.find((ad) => ad.adminId === affliate.bd);
+    const createdBy = admin.find(
+      (ad) => ad.adminId === affliate.createdAffiliateBy?.createdBy,
+    );
+    const updatedBy = admin.find(
+      (ad) => ad.adminId === affliate.updatedAffiliateBy?.updatedBy,
+    );
+    const deactivateBy = admin.find(
+      (ad) => ad.adminId === affliate.deactivatedAffiliateBy?.deactivatedBy,
+    );
+    const data = {
+      bd: bd?.fullname,
+      createdBy: createdBy.fullname,
+      updatedBy: updatedBy.fullname,
+      deactivateBy: deactivateBy.fullname,
+    };
+    const affiliateDetail = this.userBuilderService.getUserDetail(
+      affliate,
+      data,
+    );
+    return affiliateDetail;
+  }
 }
