@@ -408,8 +408,8 @@ export class IaoEventService {
         iaoEvent.participationStartTime,
         iaoEvent.participationEndTime,
         iaoEvent.vaultType,
-        iaoEvent.fNftTotalSupply - iaoEvent.totalSupply >=
-          (iaoEvent.vaultUnlockThreshold * iaoEvent.fNftTotalSupply) / 100,
+        iaoEvent.totalSupply - iaoEvent.availableSupply >=
+          (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
       ),
     }));
 
@@ -900,7 +900,7 @@ export class IaoEventService {
       iaoEvent.participationStartTime,
       iaoEvent.participationEndTime,
       iaoEvent.vaultType,
-      fnft.totalSupply - iaoEvent.totalSupply >
+      fnft.totalSupply - iaoEvent.availableSupply >=
         (iaoEvent.vaultUnlockThreshold * fnft.totalSupply) / 100,
     );
     iaoEvent['currentStage'] = currentStage;
@@ -1382,7 +1382,7 @@ export class IaoEventService {
       currentStage = IAO_EVENT_STAGE.COMPLETED;
     else if (
       nowDate >= participationEndTime &&
-      type === VAULT_TYPE.NON_VAULT &&
+      type === VAULT_TYPE.VAULT &&
       vaultUnlockThreshold
     )
       currentStage = IAO_EVENT_STAGE.COMPLETED;
