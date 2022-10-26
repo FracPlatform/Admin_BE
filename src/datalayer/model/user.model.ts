@@ -4,6 +4,12 @@ const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type UserDocument = User & Document;
 
+export enum USER_LANGUAGE {
+  EN = 'en',
+  CD = 'cn',
+  JA = 'ja',
+}
+
 export enum USER_NFT_STATUS {
   OWNED = 4,
   REQUESTING = 5,
@@ -17,6 +23,12 @@ export enum USER_NFT_STATUS {
 export class User {
   @Prop({ type: String })
   walletAddress: string;
+
+  @Prop({ type: String, default: USER_LANGUAGE.EN })
+  language?: string;
+
+  @Prop({ type: String, required: false })
+  referedBy?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

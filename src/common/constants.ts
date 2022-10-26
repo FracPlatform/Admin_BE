@@ -140,3 +140,9 @@ export const TOKEN_STANDARD_BY_ID = {
   0: TokenStandard.ERC_721,
   1: TokenStandard.ERC_1155,
 };
+
+export const REDEMPTION_REQUEST_TYPE = {
+  APPROVE: 1,
+  REJECT: 2,
+  REDEEM: 3,
+};
