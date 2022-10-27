@@ -96,14 +96,23 @@ export class WorkerService {
       requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE
         ? CLAIM_TYPE.REFUND
         : CLAIM_TYPE.FNFT;
+    let decimalToken = 18;
+    if (requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE) {
+      const iaoEventDetail = await this.dataServices.iaoEvent.findOne({
+        iaoEventId: this.commonService.decodeHexToString(
+          requestData.metadata.id,
+        ),
+      });
+      decimalToken = iaoEventDetail.currencyDecimal;
+    }
+
     await this.dataServices.claim.create({
       amount: requestData.metadata.amount,
       buyerAddress: requestData.metadata.sender,
       iaoEventId: this.commonService.decodeHexToString(requestData.metadata.id),
       status: CLAIM_STATUS.SUCCESS,
       type,
-      decimal:
-        requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE ? 18 : 18,
+      decimal: decimalToken,
     });
 
     const SOCKET_EVENT_NAME =
