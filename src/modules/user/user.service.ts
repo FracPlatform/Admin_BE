@@ -196,7 +196,7 @@ export class UserService {
   async getAllUsers(filter: FilterUserDto) {
     const { offset, limit } = filter;
     const match: Record<string, any> = {};
-    let sort: Record<string, any> = {};
+    const sort: Record<string, any> = {};
     const pipeline: PipelineStage[] = [];
 
     if (filter.hasOwnProperty('textSearch')) {
