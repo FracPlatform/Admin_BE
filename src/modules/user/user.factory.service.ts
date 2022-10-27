@@ -82,7 +82,7 @@ export class UserBuilderService {
     };
   }
 
-  getUserDetail(user: User, data: any) {
+  getAffiliateDetail(user: User, data: any) {
     return {
       userId: user.userId,
       joinedOn: user.createdAt,
@@ -110,6 +110,34 @@ export class UserBuilderService {
         comment: user.deactivatedAffiliateBy?.comment,
       },
       referralLink: user.referalCode,
+      email: user.email,
+      description: user.description,
+    };
+  }
+
+  getUserDetail(user: User, data: any) {
+    return {
+      userId: user.userId,
+      joinedOn: user.createdAt,
+      walletAddress: user.walletAddress,
+      status: user.status,
+      role: user.role,
+      affiliate: data.referedBy
+        ? {
+            userId: data.referedBy.userId,
+            walletAddress: data.referedBy.walletAddress,
+            role: data.referedBy.role,
+            commissionRate: data.commissionRate,
+          }
+        : null,
+      deactivatedUserBy: data.deactivateBy
+        ? {
+            adminId: data.deactivateBy.adminId,
+            fullname: data.deactivateBy.fullname,
+            createdAt: user.deactivatedAffiliateBy.deactivatedAt,
+            comment: user.deactivatedAffiliateBy?.comment,
+          }
+        : null,
       email: user.email,
       description: user.description,
     };

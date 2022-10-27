@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from 'src/common/api';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   ADMIN_STATUS,
   MAX_MASTER_COMMISION_RATE,
+  User,
   USER_ROLE,
   USER_STATUS,
 } from 'src/datalayer/model';
@@ -173,11 +174,47 @@ export class UserService {
       updatedBy: updatedBy.fullname,
       deactivateBy: deactivateBy.fullname,
     };
-    const affiliateDetail = this.userBuilderService.getUserDetail(
+    const affiliateDetail = this.userBuilderService.getAffiliateDetail(
       affliate,
       data,
     );
     return affiliateDetail;
+  }
+
+  async getUserDetail(userId: string) {
+    const user = await this.dataService.user.findOne({ userId });
+    if (!user) throw ApiError('', 'User not found');
+    const referedBy: User = await this.dataService.user.findOne({
+      walletAddress: user?.referedBy,
+    });
+    let commissionRate = 0;
+    let deactivateBy = null;
+    if (user.status === USER_STATUS.INACTIVE) {
+      deactivateBy = await this.dataService.admin.findOne({
+        adminId: user.deactivatedAffiliateBy?.deactivatedBy,
+      });
+    }
+    if (referedBy) {
+      commissionRate = this._getCommissionRateAffiliate(referedBy);
+    }
+    const data = {
+      commissionRate,
+      referedBy,
+      deactivateBy,
+    };
+    const userDetail = this.userBuilderService.getUserDetail(user, data);
+    return userDetail;
+  }
+
+  private _getCommissionRateAffiliate(affiliate: User): number {
+    switch (affiliate.role) {
+      case USER_ROLE.MASTER_AFFILIATE:
+        return affiliate.masterCommissionRate;
+      case USER_ROLE.AFFILIATE_SUB_1:
+        return affiliate.maxSubFristCommissionRate;
+      case USER_ROLE.AFFILIATE_SUB_2:
+        return affiliate.maxSubSecondCommissionRate;
+    }
   }
 
   async randomReferal() {
