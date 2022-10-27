@@ -187,7 +187,6 @@ export class UserService {
     const referedBy: User = await this.dataService.user.findOne({
       walletAddress: user?.referedBy,
     });
-    let commissionRate = 0;
     let deactivateBy = null;
     if (user.status === USER_STATUS.INACTIVE) {
       deactivateBy = await this.dataService.admin.findOne({
