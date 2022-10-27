@@ -104,7 +104,7 @@ export class UserBuilderService {
         createdAt: user.updatedAffiliateBy?.updatedAt,
       },
       deactivatedAffiliateBy: {
-        adminId: user.deactivatedAffiliateBy?.deactivatedAt,
+        adminId: user.deactivatedAffiliateBy?.deactivatedBy,
         fullname: data.deactivateBy,
         createdAt: user.deactivatedAffiliateBy?.deactivatedAt,
         comment: user.deactivatedAffiliateBy?.comment,
@@ -132,7 +132,7 @@ export class UserBuilderService {
         : null,
       deactivatedUserBy: data.deactivateBy
         ? {
-            adminId: data.deactivateBy.adminId,
+            adminId: user.deactivatedAffiliateBy.deactivatedBy,
             fullname: data.deactivateBy.fullname,
             createdAt: user.deactivatedAffiliateBy.deactivatedAt,
             comment: user.deactivatedAffiliateBy?.comment,

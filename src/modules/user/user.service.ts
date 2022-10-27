@@ -8,15 +8,27 @@ import {
   USER_ROLE,
   USER_STATUS,
 } from 'src/datalayer/model';
-import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
+import {
+  CreateAffiliateDTO,
+  DeactivateUserDTO,
+  FilterUserDto,
+} from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import * as randomatic from 'randomatic';
+import { Utils } from 'src/common/utils';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFET,
+  SORT_AGGREGATE,
+} from 'src/common/constants';
+import { ListDocument } from 'src/common/common-type';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(
     private readonly dataService: IDataServices,
     private readonly userBuilderService: UserBuilderService,
@@ -179,6 +191,71 @@ export class UserService {
       data,
     );
     return affiliateDetail;
+  }
+
+  async getAllUsers(filter: FilterUserDto) {
+    const { offset, limit } = filter;
+    const match: Record<string, any> = {};
+    const sort: Record<string, any> = {};
+    const pipeline: PipelineStage[] = [];
+
+    if (filter.hasOwnProperty('textSearch')) {
+      const textSearch = filter.textSearch.trim();
+      Object.assign(match, {
+        ...match,
+        $or: [
+          { userId: Utils.queryInsensitive(textSearch) },
+          { email: Utils.queryInsensitive(textSearch) },
+          { walletAddress: Utils.queryInsensitive(textSearch) },
+        ],
+      });
+    }
+
+    if (filter.hasOwnProperty('role')) {
+      Object.assign(match, {
+        ...match,
+        role: { $in: [Number(filter.role)] },
+      });
+    }
+
+    if (filter.hasOwnProperty('status')) {
+      Object.assign(match, {
+        ...match,
+        status: { $in: [Number(filter.status)] },
+      });
+    }
+    pipeline.push({
+      $match: match,
+    });
+
+    if (filter.sortField && filter.sortType) {
+      sort[filter.sortField] = filter.sortType;
+    } else {
+      sort['createdAt'] = SORT_AGGREGATE.DESC;
+    }
+
+    const $facet: any = {
+      count: [{ $count: 'totalItem' }],
+      items: [
+        { $sort: sort },
+        { $skip: offset || DEFAULT_OFFET },
+        { $limit: limit || DEFAULT_LIMIT },
+      ],
+    };
+
+    pipeline.push({ $facet });
+
+    const data = await this.dataService.user.aggregate(pipeline, {
+      collation: { locale: 'en_US', strength: 1 },
+    });
+
+    const [result] = data;
+    const [total] = result.count;
+
+    return {
+      totalDocs: total ? total.totalItem : 0,
+      docs: result.items || [],
+    } as ListDocument;
   }
 
   async getUserDetail(userId: string) {
