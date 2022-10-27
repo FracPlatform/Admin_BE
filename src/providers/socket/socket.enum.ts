@@ -15,4 +15,5 @@ export enum SOCKET_EVENT {
   DEPOSIT_FUND_EVENT = 'deposit-funds-event',
   CLAIM_FNFT_SUCCESSFUL_EVENT = 'claim-fnft-successful-event',
   CLAIM_FNFT_FAILURE_EVENT = 'claim-fnft-failure-event',
+  MERGE_FNFT_EVENT = 'merge-fnft-event',
 }

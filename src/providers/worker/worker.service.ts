@@ -82,6 +82,8 @@ export class WorkerService {
         case CONTRACT_EVENTS.DEPOSIT_FUND_EVENT:
           await this._handleDepositFundEvent(requestData);
           break;
+        case CONTRACT_EVENTS.MERGE_FNFT:
+          await this._handleMergeFNFTEvent(requestData);
         default:
           break;
       }
@@ -617,6 +619,36 @@ export class WorkerService {
         SOCKET_EVENT.DEPOSIT_FUND_EVENT,
         requestData,
         requestData.metadata.buyer,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  private async _handleMergeFNFTEvent(requestData: WorkerDataDto) {
+    const listTokenIds = requestData.metadata.tokenIds.map(
+      (tokenId) => `${PREFIX_ID.NFT}-${tokenId}`,
+    );
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      await this.dataServices.nft.updateMany(
+        {
+          tokenId: {
+            $in: listTokenIds,
+          },
+        },
+        {
+          status: NFT_STATUS.OWNED,
+        },
+      );
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.MERGE_FNFT_EVENT,
+        requestData,
+        requestData.metadata.receiver,
       );
     } catch (error) {
       await session.abortTransaction();

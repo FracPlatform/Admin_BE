@@ -106,6 +106,7 @@ export const CONTRACT_EVENTS = {
   DEPOSIT_FUND_EVENT: 'DepositFundEvent',
   CLAIM_FNFT_SUCCESSFUL: 'WithdrawFNFTEvent',
   CLAIM_FNFT_FAILURE: 'WithdrawFundEvent',
+  MERGE_FNFT: 'getNFTEvent',
 };
 
 export enum CHAINID {
