@@ -127,7 +127,7 @@ export class UserBuilderService {
             userId: data.referedBy.userId,
             walletAddress: data.referedBy.walletAddress,
             role: data.referedBy.role,
-            commissionRate: data.commissionRate,
+            commissionRate: data.referedBy.masterCommissionRate,
           }
         : null,
       deactivatedUserBy: data.deactivateBy

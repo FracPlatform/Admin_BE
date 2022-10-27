@@ -194,27 +194,12 @@ export class UserService {
         adminId: user.deactivatedAffiliateBy?.deactivatedBy,
       });
     }
-    if (referedBy) {
-      commissionRate = this._getCommissionRateAffiliate(referedBy);
-    }
     const data = {
-      commissionRate,
       referedBy,
       deactivateBy,
     };
     const userDetail = this.userBuilderService.getUserDetail(user, data);
     return userDetail;
-  }
-
-  private _getCommissionRateAffiliate(affiliate: User): number {
-    switch (affiliate.role) {
-      case USER_ROLE.MASTER_AFFILIATE:
-        return affiliate.masterCommissionRate;
-      case USER_ROLE.AFFILIATE_SUB_1:
-        return affiliate.maxSubFristCommissionRate;
-      case USER_ROLE.AFFILIATE_SUB_2:
-        return affiliate.maxSubSecondCommissionRate;
-    }
   }
 
   async randomReferal() {
