@@ -134,7 +134,7 @@ export class AdminService {
 
     try {
       // create referral
-      const referral = [Role.FractorBD, Role.MasterBD].includes(data.role)
+      const referral = [Role.FractorBD].includes(data.role)
         ? await this.randomReferal()
         : null;
 
