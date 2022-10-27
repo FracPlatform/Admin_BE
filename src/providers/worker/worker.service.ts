@@ -99,9 +99,11 @@ export class WorkerService {
     await this.dataServices.claim.create({
       amount: requestData.metadata.amount,
       buyerAddress: requestData.metadata.sender,
-      iaoEventId: requestData.metadata.id,
+      iaoEventId: this.commonService.decodeHexToString(requestData.metadata.id),
       status: CLAIM_STATUS.SUCCESS,
       type,
+      decimal:
+        requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE ? 18 : 18,
     });
 
     const SOCKET_EVENT_NAME =
@@ -112,7 +114,7 @@ export class WorkerService {
     this.socketGateway.sendMessage(
       SOCKET_EVENT_NAME,
       requestData,
-      requestData.metadata.caller,
+      requestData.metadata.sender,
     );
   }
 
