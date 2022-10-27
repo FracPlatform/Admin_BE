@@ -53,6 +53,15 @@ export class User {
   @Prop({ type: String })
   walletAddress: string;
 
+  @Prop({ type: Date, default: null })
+  confirmationLinkExpireTime?: Date;
+
+  @Prop({ type: Boolean, default: false })
+  isEmailConfirmed?: boolean;
+
+  @Prop({ type: String, required: false })
+  referedBy?: string;
+
   @Prop({ type: Number })
   masterCommissionRate: number;
 
@@ -71,7 +80,7 @@ export class User {
   @Prop({ type: String, default: USER_LANGUAGE.EN })
   language?: string;
 
-  @Prop({ type: String})
+  @Prop({ type: String })
   referalCode?: string;
 
   @Prop({ type: String })
