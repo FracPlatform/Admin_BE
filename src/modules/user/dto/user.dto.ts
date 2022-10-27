@@ -12,6 +12,48 @@ import {
   MinLength,
 } from 'class-validator';
 
+export class FilterUserDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  textSearch: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'NORMAL = 1, MASTER = 2, SUB_1 = 3, SUB_2 = 4 ',
+  })
+  @IsOptional()
+  role: string;
+
+  @ApiProperty({ required: false, description: '1- Active, 0 - Inactive' })
+  @IsOptional()
+  status: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  offset: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({ message: 'E0' })
+  sortField: string;
+
+  @ApiProperty({ required: false, description: '-1 => DESC, 1 => ASC' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  sortType: number;
+}
+
 export class CreateAffiliateDTO {
   @ApiProperty({ required: true })
   @IsNotEmpty()

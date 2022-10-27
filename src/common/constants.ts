@@ -79,6 +79,11 @@ export const DEFAULT_OFFET = 0;
 
 export const DEFAULT_LIMIT = 10;
 
+export enum SORT_AGGREGATE {
+  ASC = 1,
+  DESC = -1,
+}
+
 export enum PREFIX_ID {
   FRACTOR = 'FRT',
   ADMIN = 'ADM',
