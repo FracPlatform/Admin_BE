@@ -205,7 +205,7 @@ export class UserService {
         ...match,
         $or: [
           { userId: Utils.queryInsensitive(textSearch) },
-          { email: Utils.queryInsensitive(textSearch) },
+          { emailConfirmed: Utils.queryInsensitive(textSearch) },
           { walletAddress: Utils.queryInsensitive(textSearch) },
         ],
       });
@@ -226,6 +226,17 @@ export class UserService {
     }
     pipeline.push(
       {
+        $addFields: {
+          emailConfirmed: {
+            $cond: {
+              if: { $eq: ['$isEmailConfirmed', true] },
+              then: '$email',
+              else: null,
+            },
+          },
+        },
+      },
+      {
         $match: match,
       },
       {
@@ -234,9 +245,8 @@ export class UserService {
           createdAt: 1,
           walletAddress: 1,
           role: 1,
-          email: 1,
           status: 1,
-          isEmailConfirmed: 1,
+          emailConfirmed: 1,
         },
       },
     );
