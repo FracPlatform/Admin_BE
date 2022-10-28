@@ -224,9 +224,22 @@ export class UserService {
         status: { $in: [Number(filter.status)] },
       });
     }
-    pipeline.push({
-      $match: match,
-    });
+    pipeline.push(
+      {
+        $match: match,
+      },
+      {
+        $project: {
+          userId: 1,
+          createdAt: 1,
+          walletAddress: 1,
+          role: 1,
+          email: 1,
+          status: 1,
+          isEmailConfirmed: 1,
+        },
+      },
+    );
 
     if (filter.sortField && filter.sortType) {
       sort[filter.sortField] = filter.sortType;
