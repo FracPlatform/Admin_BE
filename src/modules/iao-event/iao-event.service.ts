@@ -913,7 +913,7 @@ export class IaoEventService {
 
     const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
 
-    if (existsIAOEvent)
+    if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
@@ -955,7 +955,7 @@ export class IaoEventService {
 
     const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
 
-    if (existsIAOEvent)
+    if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
