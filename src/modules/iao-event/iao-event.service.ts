@@ -984,7 +984,7 @@ export class IaoEventService {
       $or: [
         {
           'iaoEventName.en': {
-            $regex: dto.iaoEventName.en.trim(),
+            $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
             $options: 'i',
           },
         },
@@ -994,7 +994,7 @@ export class IaoEventService {
     if (dto.iaoEventName.cn)
       query['$or'].push({
         'iaoEventName.cn': {
-          $regex: dto.iaoEventName.cn.trim(),
+          $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
           $options: 'i',
         },
       });
@@ -1002,7 +1002,7 @@ export class IaoEventService {
     if (dto.iaoEventName.jp)
       query['$or'].push({
         'iaoEventName.jp': {
-          $regex: dto.iaoEventName.jp.trim(),
+          $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
           $options: 'i',
         },
       });
