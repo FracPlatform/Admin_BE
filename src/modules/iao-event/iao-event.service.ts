@@ -907,7 +907,7 @@ export class IaoEventService {
       status: IAO_EVENT_STATUS.ACTIVE,
       isDeleted: false,
     });
-    if (checkFnft)
+    if (checkFnft && checkFnft.iaoEventId !== id)
       error['FNFTcontractAddress'] =
         'This F-NFT has been selected for another IAO event';
 
