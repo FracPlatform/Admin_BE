@@ -599,9 +599,7 @@ export class IaoEventService {
     } else {
       sort = { $sort: { createdAt: -1 } };
     }
-    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
-    if (filter.limit !== -1)
-      dataReturnFilter.push({ $limit: filter.limit || 10 });
+    const dataReturnFilter = [sort];
     if (dateQuery.length) query['$and'] = dateQuery;
     const dataQuery = await this.dataService.iaoEvent.aggregate([
       {
