@@ -82,36 +82,7 @@ export class IaoEventService {
       error['FNFTcontractAddress'] =
         'This F-NFT has been selected for another IAO event';
 
-    const query: any = {
-      $or: [
-        {
-          'iaoEventName.en': {
-            $regex: createIaoEventDto.iaoEventName.en.trim(),
-            $options: 'i',
-          },
-        },
-      ],
-    };
-
-    if (createIaoEventDto.iaoEventName.cn)
-      query['$or'].push({
-        'iaoEventName.cn': {
-          $regex: createIaoEventDto.iaoEventName.cn.trim(),
-          $options: 'i',
-        },
-      });
-
-    if (createIaoEventDto.iaoEventName.jp)
-      query['$or'].push({
-        'iaoEventName.jp': {
-          $regex: createIaoEventDto.iaoEventName.jp.trim(),
-          $options: 'i',
-        },
-      });
-
-    const existsIAOEvent = await this.dataService.iaoEvent.findOne({
-      ...query,
-    });
+    const existsIAOEvent = await this.checkIaoEventName(createIaoEventDto);
 
     if (existsIAOEvent)
       error['iaoEventName'] =
@@ -917,12 +888,36 @@ export class IaoEventService {
     updateIaoEventDto: UpdateIaoEventDto,
     user: any,
   ) {
+    const error = {};
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.DRAFT,
     });
     if (!iaoEvent) throw ApiError('', 'Data not exists');
+    const fnft = await this.dataService.fnft.findOne({
+      contractAddress: updateIaoEventDto.FNFTcontractAddress,
+      status: F_NFT_STATUS.ACTIVE,
+    });
+    if (!fnft)
+      error['FNFTcontractAddress'] = 'F-NFT contractAddress is invalid';
+
+    const checkFnft = await this.dataService.iaoEvent.findOne({
+      FNFTcontractAddress: updateIaoEventDto.FNFTcontractAddress,
+      status: IAO_EVENT_STATUS.ACTIVE,
+      isDeleted: false,
+    });
+    if (checkFnft)
+      error['FNFTcontractAddress'] =
+        'This F-NFT has been selected for another IAO event';
+
+    const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
+
+    if (existsIAOEvent)
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
+
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
       updateIaoEventDto,
       user,
@@ -948,13 +943,22 @@ export class IaoEventService {
     updateIaoEventDto: UpdateIaoEventDto,
     user: any,
   ) {
+    const error = {};
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
       status: IAO_EVENT_STATUS.ACTIVE,
     });
+
     if (!iaoEvent) throw ApiError('', 'Data not exists');
+
+    const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
+
+    if (existsIAOEvent)
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoOnChain(
       updateIaoEventDto,
       user,
@@ -973,6 +977,39 @@ export class IaoEventService {
       },
     );
     return id;
+  }
+
+  async checkIaoEventName(dto) {
+    const query: any = {
+      $or: [
+        {
+          'iaoEventName.en': {
+            $regex: dto.iaoEventName.en.trim(),
+            $options: 'i',
+          },
+        },
+      ],
+    };
+
+    if (dto.iaoEventName.cn)
+      query['$or'].push({
+        'iaoEventName.cn': {
+          $regex: dto.iaoEventName.cn.trim(),
+          $options: 'i',
+        },
+      });
+
+    if (dto.iaoEventName.jp)
+      query['$or'].push({
+        'iaoEventName.jp': {
+          $regex: dto.iaoEventName.jp.trim(),
+          $options: 'i',
+        },
+      });
+
+    return await this.dataService.iaoEvent.findOne({
+      ...query,
+    });
   }
 
   async remove(id: string, user: any) {
