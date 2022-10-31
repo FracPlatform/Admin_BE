@@ -916,7 +916,23 @@ export class IaoEventService {
     if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
+
+    try {
+      const { currencySymbol, currencyDecimal } = await Utils.getCurrencySymbol(
+        updateIaoEventDto.acceptedCurrencyAddress,
+      );
+      updateIaoEventDto['currencySymbol'] = currencySymbol;
+      updateIaoEventDto['currencyDecimal'] = +currencyDecimal;
+    } catch (err) {
+      error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
+    }
+
     if (Object.keys(error).length > 0) throw ApiError('', '', error);
+
+    updateIaoEventDto['totalSupply'] = fnft.totalSupply;
+    updateIaoEventDto['availableSupply'] = fnft.totalSupply;
+    updateIaoEventDto['tokenSymbol'] = fnft.tokenSymbol;
+    updateIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
 
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
       updateIaoEventDto,
