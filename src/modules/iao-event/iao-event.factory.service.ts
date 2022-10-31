@@ -3,6 +3,7 @@ import {
   ALLOCATION_TYPE_BY_ID,
   ASSET_CATEGORY_BY_ID,
   CHAIN_NAME_BY_ID,
+  DEFAULT_BD_COMMISSION_RATE,
   PREFIX_ID,
   VAULT_TYPE_BY_ID,
 } from 'src/common/constants';
@@ -69,7 +70,7 @@ export class IaoEventBuilderService {
       tokenSymbol: createIaoEventDto['tokenSymbol'],
       revenue: {
         status: REVENUE_STATUS.PENDING,
-        bdCommissionRate: 5,
+        bdCommissionRate: DEFAULT_BD_COMMISSION_RATE,
         comment: '',
         updatedBy: user.adminId,
         updatedAt: new Date(),
