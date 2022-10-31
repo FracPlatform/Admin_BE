@@ -1,4 +1,8 @@
-import { EventName } from 'src/datalayer/model';
+import {
+  EventName,
+  IAO_EVENT_STAGE,
+  REVENUE_STATUS,
+} from 'src/datalayer/model';
 
 export class CreateIAOEventEntity {
   iaoEventId: string;
@@ -32,6 +36,7 @@ export class CreateIAOEventEntity {
   availableSupply: number;
   tokenSymbol: string;
   currencyDecimal: number;
+  revenueStatus: REVENUE_STATUS;
 }
 
 export class IAOEventDetailEntity {
@@ -127,4 +132,24 @@ export class ExportedIAOEventEntity {
   updatedOn: string;
   lastWhitelistUpdatedBy: string;
   lastWhitelistUpdatedOn: string;
+}
+
+export class IaoRevenueEntity {
+  iaoEventName: string;
+  iaoEventId: string;
+  registrationStartTime: string;
+  registrationEndTime: string;
+  participationStartTime: string;
+  participationEndTime: string;
+  revenueStatus: REVENUE_STATUS;
+  soldAmount: number;
+  participatedAmount: number;
+  progress: number;
+  participants: number;
+  vaultUnlockThreshold: number;
+  acceptedCurrencySymbol: string;
+  tokenSymbol: string;
+  eventPhotoUrl: string;
+  eventBannerUrl: string;
+  stage: IAO_EVENT_STAGE;
 }
