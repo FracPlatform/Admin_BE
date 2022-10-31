@@ -353,6 +353,11 @@ export class IaoRevenueService {
     if (!iaoEventId)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'IAO event does not exist');
     if (
+      body.bdCommissionRate &&
+      iaoEvent.revenue.status > REVENUE_STATUS.IN_REVIEW
+    )
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update IAO revenue');
+    if (
       body.comment &&
       iaoEvent.revenue.status !== REVENUE_STATUS.APPROVED &&
       iaoEvent.revenue.status !== REVENUE_STATUS.REJECTED
