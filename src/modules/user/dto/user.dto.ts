@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsEnum,
   IsEthereumAddress,
   IsNotEmpty,
   IsNumber,
@@ -11,6 +12,10 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+
+export enum QUERY_TYPE {
+  AFFILIATE = 1,
+}
 
 export class FilterUserDto {
   @ApiProperty({ required: false })
@@ -52,6 +57,13 @@ export class FilterUserDto {
   @Type(() => Number)
   @IsNumber()
   sortType: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @IsEnum(QUERY_TYPE)
+  queryType: number;
 }
 
 export class CreateAffiliateDTO {

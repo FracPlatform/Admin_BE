@@ -12,6 +12,7 @@ import {
   CreateAffiliateDTO,
   DeactivateUserDTO,
   FilterUserDto,
+  QUERY_TYPE,
 } from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
@@ -199,6 +200,16 @@ export class UserService {
     const sort: Record<string, any> = {};
     const pipeline: PipelineStage[] = [];
 
+    if (filter.queryType === QUERY_TYPE.AFFILIATE) {
+      match['role'] = {
+        $in: [
+          USER_ROLE.MASTER_AFFILIATE,
+          USER_ROLE.AFFILIATE_SUB_1,
+          USER_ROLE.AFFILIATE_SUB_2,
+        ],
+      };
+    }
+
     if (filter.hasOwnProperty('textSearch')) {
       const textSearch = filter.textSearch.trim();
       Object.assign(match, {
@@ -247,6 +258,10 @@ export class UserService {
           role: 1,
           status: 1,
           emailConfirmed: 1,
+          createdAffiliateBy: 1,
+          masterId: 1,
+          subFirstId: 1,
+          timeAcceptOffer: 1,
         },
       },
     );
@@ -274,10 +289,14 @@ export class UserService {
 
     const [result] = data;
     const [total] = result.count;
-
+    const items = result.items.map((item) => {
+      if (item.role === USER_ROLE.MASTER_AFFILIATE)
+        item.timeAcceptOffer = item.createdAffiliateBy?.createdAt;
+      return item;
+    });
     return {
       totalDocs: total ? total.totalItem : 0,
-      docs: result.items || [],
+      docs: items || [],
     } as ListDocument;
   }
 
