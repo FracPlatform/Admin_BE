@@ -1,4 +1,12 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { AdminDocument } from 'src/datalayer/model';
@@ -8,12 +16,12 @@ import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
 import { GetListIaoRevenueDto } from './dto/get-list-iao-revenue.dto';
+import { UpdateIaoRevenueDto } from './dto/update-iao-revenue.dto';
 import { IaoRevenueService } from './revenue.service';
 
 @Controller('revenue')
 @ApiTags('IAO Revenue')
-@UseGuards(RolesGuard)
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class IaoRevenueController {
   constructor(private readonly iaoRevenueService: IaoRevenueService) {}
@@ -58,6 +66,24 @@ export class IaoRevenueController {
       const responseData = await this.iaoRevenueService.getIaoRevenueDetail(
         iaoEventId,
         user,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update IAO Revenue' })
+  @Roles(Role.SuperAdmin, Role.OWNER)
+  async updateIaoRevenue(
+    @Param('id') iaoEventId: string,
+    @Body() body: UpdateIaoRevenueDto,
+  ) {
+    try {
+      const responseData = await this.iaoRevenueService.updateIaoRevenue(
+        iaoEventId,
+        body,
       );
       return new ApiSuccessResponse().success(responseData, '');
     } catch (error) {

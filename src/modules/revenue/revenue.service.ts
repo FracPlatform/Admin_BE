@@ -15,6 +15,7 @@ import { IaoRevenueBuilderService } from './revenue.factory';
 import { Role } from '../auth/role.enum';
 import { ApiError } from 'src/common/api';
 import { ErrorCode } from 'src/common/constants';
+import { UpdateIaoRevenueDto } from './dto/update-iao-revenue.dto';
 @Injectable()
 export class IaoRevenueService {
   constructor(
@@ -342,5 +343,34 @@ export class IaoRevenueService {
         fractor,
       );
     return iaoEventDetail;
+  }
+
+  async updateIaoRevenue(iaoEventId: string, body: UpdateIaoRevenueDto) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId,
+      isDeleted: false,
+    });
+    if (!iaoEventId)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'IAO event does not exist');
+    if (
+      body.comment &&
+      iaoEvent.revenue.status !== REVENUE_STATUS.APPROVED &&
+      iaoEvent.revenue.status !== REVENUE_STATUS.REJECTED
+    )
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update IAO revenue');
+    const res = await this.dataService.iaoEvent.findOneAndUpdate(
+      {
+        iaoEventId,
+        isDeleted: false,
+        updatedAt: iaoEvent['updatedAt'],
+      },
+      {
+        $set: {
+          'revenue.bdCommissionRate': body.bdCommissionRate,
+          'revenue.comment': body.comment,
+        },
+      },
+    );
+    if (res) return { success: true };
   }
 }
