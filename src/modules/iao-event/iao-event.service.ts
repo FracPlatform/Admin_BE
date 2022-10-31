@@ -1674,7 +1674,9 @@ export class IaoEventService {
     }
     //
     const groups = iaoEventList.reduce((groups, iao) => {
-      const day = moment(iao.date).format('YYYY-MM-DD');
+      const day = iao.date
+        .toLocaleString('en', { timeZone: calenderDTO.timezone })
+        .split(',')[0];
       if (!groups[day]) {
         groups[day] = [];
       }

@@ -280,7 +280,7 @@ export class IaoEventBuilderService {
       if (type === IAO_EVENT_CALENDER.PARTICIPATION_START)
         obj.date = iao.participationStartTime;
       if (type === IAO_EVENT_CALENDER.PARTICIPATION_END)
-        obj.date = iao.registrationEndTime;
+        obj.date = iao.participationEndTime;
 
       return obj;
     });
