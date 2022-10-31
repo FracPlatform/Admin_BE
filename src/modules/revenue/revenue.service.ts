@@ -6,12 +6,15 @@ import {
   IAO_EVENT_STAGE,
   IAO_EVENT_STATUS,
   REVENUE_STATUS,
+  UserDocument,
   VAULT_TYPE,
 } from 'src/datalayer/model';
 import { GetListIaoRevenueDto } from './dto/get-list-iao-revenue.dto';
 import { get } from 'lodash';
 import { IaoRevenueBuilderService } from './revenue.factory';
 import { Role } from '../auth/role.enum';
+import { ApiError } from 'src/common/api';
+import { ErrorCode } from 'src/common/constants';
 @Injectable()
 export class IaoRevenueService {
   constructor(
@@ -49,12 +52,12 @@ export class IaoRevenueService {
         },
       ];
     }
-    if (filter.status) query['revenueStatus'] = filter.status;
+    if (filter.status) query['revenue.status'] = filter.status;
     if (filter.status === REVENUE_STATUS.PENDING) {
       query['participationEndTime'] = { $lte: new Date() };
     }
     if (filter.status === REVENUE_STATUS.IN_REVIEW) {
-      query['revenueStatus'] = REVENUE_STATUS.PENDING;
+      query['revenue.status'] = REVENUE_STATUS.PENDING;
       query['participationEndTime'] = { $gte: new Date() };
     }
     if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
@@ -299,5 +302,45 @@ export class IaoRevenueService {
       totalDocs: count,
       docs: finalData,
     };
+  }
+
+  async getIaoRevenueDetail(iaoEventId: string, user: AdminDocument) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId,
+      isDeleted: false,
+    });
+    if (!iaoEventId)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'IAO event does not exist');
+
+    const iaoRequest = await this.dataService.iaoRequest.findOne({
+      iaoId: iaoEvent.iaoRequestId,
+    });
+    const fractor = await this.dataService.fractor.findOne({
+      fractorId: iaoRequest.ownerId,
+    });
+    if (user.role === Role.FractorBD) {
+      const listFractorOfBD = await this.dataService.fractor.findMany({
+        assignBD: user.adminId,
+      });
+      const mappedListFractorOfBDId = listFractorOfBD.map(
+        (fractor) => fractor.fractorId,
+      );
+      if (!mappedListFractorOfBDId.includes(fractor.fractorId))
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'You can not access this IAO event',
+        );
+    }
+    const whiteList = await this.dataService.whitelist.findOne({
+      iaoEventId: iaoEvent.iaoEventId,
+    });
+
+    const iaoEventDetail =
+      this.iaoRevenuebuilderService.convertIaorevenueDetail(
+        iaoEvent,
+        whiteList,
+        fractor,
+      );
+    return iaoEventDetail;
   }
 }

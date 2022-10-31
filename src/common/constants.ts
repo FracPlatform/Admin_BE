@@ -152,3 +152,5 @@ export const REDEMPTION_REQUEST_TYPE = {
   REJECT: 2,
   REDEEM: 3,
 };
+
+export const DEFAULT_BD_COMMISSION_RATE = 5;

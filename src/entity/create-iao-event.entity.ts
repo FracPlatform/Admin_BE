@@ -1,6 +1,7 @@
 import {
   EventName,
   IAO_EVENT_STAGE,
+  Revenue,
   REVENUE_STATUS,
 } from 'src/datalayer/model';
 
@@ -36,7 +37,7 @@ export class CreateIAOEventEntity {
   availableSupply: number;
   tokenSymbol: string;
   currencyDecimal: number;
-  revenueStatus: REVENUE_STATUS;
+  revenue: Revenue;
 }
 
 export class IAOEventDetailEntity {
@@ -135,13 +136,13 @@ export class ExportedIAOEventEntity {
 }
 
 export class IaoRevenueEntity {
-  iaoEventName: string;
+  iaoEventName: EventName;
   iaoEventId: string;
-  registrationStartTime: string;
-  registrationEndTime: string;
-  participationStartTime: string;
-  participationEndTime: string;
-  revenueStatus: REVENUE_STATUS;
+  registrationStartTime: Date;
+  registrationEndTime: Date;
+  participationStartTime: Date;
+  participationEndTime: Date;
+  revenue: Revenue;
   soldAmount: number;
   participatedAmount: number;
   progress: number;
@@ -152,4 +153,11 @@ export class IaoRevenueEntity {
   eventPhotoUrl: string;
   eventBannerUrl: string;
   stage: IAO_EVENT_STAGE;
+}
+
+export class IaoRevenueDetaiLEntity extends IaoRevenueEntity {
+  platformGrossCommission: number;
+  fractorNetRevenue: number;
+  bdCommission: number;
+  platformNetCommission: number;
 }
