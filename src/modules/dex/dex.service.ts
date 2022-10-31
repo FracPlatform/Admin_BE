@@ -53,7 +53,7 @@ export class DexService {
         feeReceive: affiliateOfUser.commissionRate,
       });
     } else if (affiliateOfUser.role === USER_ROLE.AFFILIATE_SUB_1) {
-      let masterAffiliate = await this.dataService.user.findOne({
+      const masterAffiliate = await this.dataService.user.findOne({
         walletAddress: affiliateOfUser.masterId,
       });
       // rate for sub1
@@ -70,10 +70,10 @@ export class DexService {
           masterAffiliate.commissionRate - affiliateOfUser.commissionRate,
       });
     } else if (affiliateOfUser.role === USER_ROLE.AFFILIATE_SUB_2) {
-      let masterAffiliate = await this.dataService.user.findOne({
+      const masterAffiliate = await this.dataService.user.findOne({
         walletAddress: affiliateOfUser.masterId,
       });
-      let sub1Affiliate = await this.dataService.user.findOne({
+      const sub1Affiliate = await this.dataService.user.findOne({
         walletAddress: affiliateOfUser.subFirstId,
       });
       // rate for sub1
