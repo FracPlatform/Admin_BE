@@ -13,6 +13,7 @@ import { ListDocument } from '../iao-request/iao-request.service';
 import {
   ChangeStatusDto,
   FilterRedemptionRequestDto,
+  UpdateCommentDto,
 } from './dto/redemption-request.dto';
 import { RedemptionRequestBuilderService } from './redemption-request.factory.service';
 import { ApiError } from 'src/common/api';
@@ -307,6 +308,27 @@ export class RedemptionRequestService {
         updatedAt: currentRequest['updatedAt'],
       },
       dataUpdate,
+      { new: true },
+    );
+  }
+
+  async update(id: string, user: any, updateCommentDto: UpdateCommentDto) {
+    const currentRedemptionRequest =
+      await this.dataService.redemptionRequest.findOne({ requestId: id });
+
+    if (currentRedemptionRequest.status === REDEMPTION_REQUEST_STATUS.IN_REVIEW)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'status invalid');
+
+    return await this.dataService.redemptionRequest.findOneAndUpdate(
+      {
+        requestId: id,
+        status: { $ne: REDEMPTION_REQUEST_STATUS.IN_REVIEW },
+        updatedAt: currentRedemptionRequest['updatedAt'],
+      },
+      {
+        reviewComment: updateCommentDto.reviewComment,
+        reviewedBy: user.adminId,
+      },
       { new: true },
     );
   }

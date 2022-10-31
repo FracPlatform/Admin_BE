@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { Roles } from '../auth/roles.decorator';
 import {
   ChangeStatusDto,
   FilterRedemptionRequestDto,
+  UpdateCommentDto,
 } from './dto/redemption-request.dto';
 import { RedemptionRequestService } from './redemption-request.service';
 
@@ -60,5 +62,18 @@ export class RedemptionRequestController {
       changeStatusDto,
     );
     return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Put(':id')
+  @Roles(Role.SuperAdmin)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Edit Review Comment' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateCommentDto: UpdateCommentDto,
+    @GetUser() user,
+  ) {
+    const response = await this.redemptionService.update(id, user, updateCommentDto);
+    return new ApiSuccessResponse().success(response, '');
   }
 }

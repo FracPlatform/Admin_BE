@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
   IsInt,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -66,6 +67,14 @@ export class ChangeStatusDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
+  @IsString()
+  @MaxLength(2500)
+  reviewComment: string;
+}
+
+export class UpdateCommentDto {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
   @IsString()
   @MaxLength(2500)
   reviewComment: string;

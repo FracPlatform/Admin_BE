@@ -113,6 +113,15 @@ export class CustodianshipInfo {
   @Prop({ type: [DigitalAssetFileSchema] })
   files: DigitalAssetFile[];
 
+  @Prop({ type: Number })
+  storedByFrac?: number;
+
+  @Prop({ type: String })
+  warehousePublic?: string;
+
+  @Prop({ type: String })
+  warehousePrivate?: string;
+
   @Prop({ type: [ShipmentInfoSchema] })
   listShipmentInfo: ShipmentInfo[];
 }

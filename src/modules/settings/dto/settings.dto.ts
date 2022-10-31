@@ -68,37 +68,31 @@ export class IaoRequest {
 
 export class DigitalAssetLabel {
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   0: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   1: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   2: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   3: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   6: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   9: string;
@@ -126,61 +120,51 @@ export class DigitalAsset {
 
 export class PhysicalAssetLabel {
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   0: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   1: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   2: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   3: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   4: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   5: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   6: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   7: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   8: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   9: string;
