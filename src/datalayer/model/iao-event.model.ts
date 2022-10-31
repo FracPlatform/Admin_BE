@@ -18,6 +18,14 @@ export enum IAO_EVENT_STAGE {
   FAILED = 6,
 }
 
+export enum REVENUE_STATUS {
+  PENDING = 0,
+  IN_REVIEW = 1,
+  APPROVE = 2,
+  REJECTED = 3,
+  CLOSED = 4,
+}
+
 export const MAXLENGTH_CONTRACT_ADDRESS = 256;
 export const MAX_IAO_EVENT_DURATION = 99;
 export const MAXLENGTH_EVENT_NAME = 256;
@@ -173,6 +181,9 @@ export class IAOEvent {
 
   @Prop({ type: Number })
   currencyDecimal: number;
+
+  @Prop({ type: Number, default: REVENUE_STATUS.PENDING })
+  revenueStatus: REVENUE_STATUS;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);
