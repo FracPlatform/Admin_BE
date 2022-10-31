@@ -1,6 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PREFIX_ID } from 'src/common/constants';
-import { IaoRevenueEntity } from 'src/entity/create-iao-event.entity';
+import {
+  Fractor,
+  FractorDocument,
+  IAOEvent,
+  IAOEventDocument,
+  REVENUE_STATUS,
+  Whitelist,
+  WhitelistDocument,
+} from 'src/datalayer/model';
+import {
+  IAOEventDetailEntity,
+  IaoRevenueDetaiLEntity,
+  IaoRevenueEntity,
+} from 'src/entity/create-iao-event.entity';
 import { IaoEventService } from '../iao-event/iao-event.service';
 
 @Injectable()
@@ -15,7 +28,7 @@ export class IaoRevenueBuilderService {
         registrationEndTime: iaoRevenue.registrationEndTime,
         participationStartTime: iaoRevenue.participationStartTime,
         participationEndTime: iaoRevenue.participationEndTime,
-        revenueStatus: iaoRevenue.revenueStatus,
+        revenue: iaoRevenue.revenue,
         soldAmount: iaoRevenue.soldAmount,
         participatedAmount: iaoRevenue.participatedAmount,
         progress: iaoRevenue.progress,
@@ -37,5 +50,62 @@ export class IaoRevenueBuilderService {
       };
     });
     return listIaoRevenue;
+  }
+
+  convertIaorevenueDetail(
+    iaoEvent: IAOEvent,
+    whiteList: Whitelist,
+    fractor: Fractor,
+  ) {
+    const soldAmount = iaoEvent.totalSupply - iaoEvent.availableSupply;
+    const participatedAmount = soldAmount * iaoEvent.exchangeRate;
+    const progress = (soldAmount / iaoEvent.totalSupply) * 100;
+    const platformGrossCommission =
+      (participatedAmount *
+        (iaoEvent.revenue.status !== REVENUE_STATUS.APPROVED
+          ? fractor.iaoFeeRate
+          : iaoEvent.revenue.platformCommissionRate)) /
+      100;
+    const fractorNetRevenue = participatedAmount - platformGrossCommission;
+    const bdCommission =
+      (platformGrossCommission * iaoEvent.revenue.bdCommissionRate) / 100;
+    const platformNetCommission = platformGrossCommission - bdCommission;
+    const iaoEventDetail: IaoRevenueDetaiLEntity = {
+      iaoEventId: iaoEvent.iaoEventId,
+      iaoEventName: iaoEvent.iaoEventName,
+      registrationStartTime: iaoEvent.registrationStartTime,
+      registrationEndTime: iaoEvent.registrationEndTime,
+      participationStartTime: iaoEvent.participationStartTime,
+      participationEndTime: iaoEvent.participationEndTime,
+      revenue: {
+        platformCommissionRate:
+          iaoEvent.revenue.status !== REVENUE_STATUS.APPROVED &&
+          fractor.iaoFeeRate,
+        ...iaoEvent.revenue,
+      },
+      soldAmount,
+      participatedAmount,
+      progress,
+      participants: whiteList.whiteListAddresses.length,
+      vaultUnlockThreshold: iaoEvent.vaultUnlockThreshold,
+      acceptedCurrencySymbol: iaoEvent.acceptedCurrencySymbol,
+      tokenSymbol: iaoEvent.tokenSymbol,
+      eventBannerUrl: iaoEvent.eventBannerUrl,
+      eventPhotoUrl: iaoEvent.eventPhotoUrl,
+      stage: this.iaoEventService.checkCurrentStage(
+        iaoEvent.registrationStartTime,
+        iaoEvent.registrationEndTime,
+        iaoEvent.participationStartTime,
+        iaoEvent.participationEndTime,
+        iaoEvent.vaultType,
+        iaoEvent.totalSupply - iaoEvent.availableSupply >=
+          (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
+      ),
+      platformGrossCommission,
+      fractorNetRevenue,
+      bdCommission,
+      platformNetCommission,
+    };
+    return iaoEventDetail;
   }
 }

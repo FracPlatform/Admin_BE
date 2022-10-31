@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { async } from 'rxjs';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
@@ -34,6 +34,30 @@ export class IaoRevenueController {
     try {
       const responseData = await this.iaoRevenueService.getListIaoRevenue(
         filter,
+        user,
+      );
+      return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get IAO Revenue detail' })
+  @Roles(
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+    Role.FractorBD,
+  )
+  async getIaoRevenueDetail(
+    @Param('id') iaoEventId: string,
+    @GetUser() user: AdminDocument,
+  ) {
+    try {
+      const responseData = await this.iaoRevenueService.getIaoRevenueDetail(
+        iaoEventId,
         user,
       );
       return new ApiSuccessResponse().success(responseData, '');

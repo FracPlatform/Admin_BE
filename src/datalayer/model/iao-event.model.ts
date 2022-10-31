@@ -21,9 +21,20 @@ export enum IAO_EVENT_STAGE {
 export enum REVENUE_STATUS {
   PENDING = 0,
   IN_REVIEW = 1,
-  APPROVE = 2,
+  APPROVED = 2,
   REJECTED = 3,
   CLOSED = 4,
+}
+
+export class Revenue {
+  status: REVENUE_STATUS;
+  platformCommissionRate?: number;
+  bdCommissionRate: number;
+  comment: string;
+  finalizedBy?: string;
+  finalizedOn?: Date;
+  updatedBy: string;
+  updatedAt: Date;
 }
 
 export const MAXLENGTH_CONTRACT_ADDRESS = 256;
@@ -182,8 +193,8 @@ export class IAOEvent {
   @Prop({ type: Number })
   currencyDecimal: number;
 
-  @Prop({ type: Number, default: REVENUE_STATUS.PENDING })
-  revenueStatus: REVENUE_STATUS;
+  @Prop({ type: () => Revenue })
+  revenue: Revenue;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);

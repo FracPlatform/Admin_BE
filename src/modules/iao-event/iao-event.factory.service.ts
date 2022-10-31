@@ -67,7 +67,13 @@ export class IaoEventBuilderService {
       totalSupply: createIaoEventDto['totalSupply'],
       availableSupply: createIaoEventDto['availableSupply'],
       tokenSymbol: createIaoEventDto['tokenSymbol'],
-      revenueStatus: REVENUE_STATUS.PENDING,
+      revenue: {
+        status: REVENUE_STATUS.PENDING,
+        bdCommissionRate: 5,
+        comment: '',
+        updatedBy: user.adminId,
+        updatedAt: new Date(),
+      },
     };
   }
 
