@@ -63,7 +63,7 @@ export class User {
   referedBy?: string;
 
   @Prop({ type: Number })
-  masterCommissionRate: number;
+  commissionRate: number;
 
   @Prop({ type: Number })
   maxSubFristCommissionRate: number;

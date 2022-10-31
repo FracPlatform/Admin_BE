@@ -16,7 +16,7 @@ export class UserBuilderService {
   ) {
     return {
       walletAddress: createAffiliateDTO.walletAddress,
-      masterCommissionRate: createAffiliateDTO.masterCommissionRate,
+      commissionRate: createAffiliateDTO.commissionRate,
       maxSubFristCommissionRate: createAffiliateDTO.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: createAffiliateDTO.maxSubSecondCommissionRate,
       bd: createAffiliateDTO.bd,
@@ -43,7 +43,7 @@ export class UserBuilderService {
         PREFIX_ID.USER,
         session,
       ),
-      masterCommissionRate: createAffiliateDTO.masterCommissionRate,
+      commissionRate: createAffiliateDTO.commissionRate,
       maxSubFristCommissionRate: createAffiliateDTO.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: createAffiliateDTO.maxSubSecondCommissionRate,
       bd: createAffiliateDTO.bd,
@@ -89,7 +89,7 @@ export class UserBuilderService {
       walletAddress: user.walletAddress,
       status: user.status,
       role: user.role,
-      commissionRate: user.masterCommissionRate,
+      commissionRate: user.commissionRate,
       maxSubFristCommissionRate: user.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: user.maxSubSecondCommissionRate,
       bd: user.bd ? { adminId: user.bd, fullname: data.bd } : null,
@@ -127,7 +127,7 @@ export class UserBuilderService {
             userId: data.referedBy.userId,
             walletAddress: data.referedBy.walletAddress,
             role: data.referedBy.role,
-            commissionRate: data.referedBy.masterCommissionRate,
+            commissionRate: data.referedBy.commissionRate,
           }
         : null,
       deactivatedUserBy: data.deactivateBy

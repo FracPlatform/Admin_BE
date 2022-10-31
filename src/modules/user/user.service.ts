@@ -56,13 +56,13 @@ export class UserService {
       );
     if (
       createAffiliateDTO.maxSubSecondCommissionRate >
-        createAffiliateDTO.masterCommissionRate ||
+        createAffiliateDTO.commissionRate ||
       createAffiliateDTO.maxSubSecondCommissionRate >
         createAffiliateDTO.maxSubFristCommissionRate
     )
       throw ApiError(
         'E35',
-        'maxSubSecondCommissionRate must be less than masterCommissionRate and maxSubFristCommissionRate',
+        'maxSubSecondCommissionRate must be less than commissionRate and maxSubFristCommissionRate',
       );
 
     if (createAffiliateDTO.bd) {
