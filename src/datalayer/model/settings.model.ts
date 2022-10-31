@@ -77,7 +77,7 @@ export class Settings {
   iaoRequest: IaoRequest;
 
   @Prop({ type: CustodianshipLabel })
-  custodianshipLable: CustodianshipLabel;
+  custodianshipLabel: CustodianshipLabel;
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings);

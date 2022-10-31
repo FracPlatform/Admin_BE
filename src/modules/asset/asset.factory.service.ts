@@ -10,6 +10,7 @@ import {
   CreateShipmentInfoDto,
   UpdateShipmentInfoDto,
 } from './dto/shipment-infor.dto';
+import { UpdateCustodianshipDto } from './dto/update-custodianship-status.dto';
 
 @Injectable()
 export class AssetBuilderService {
@@ -154,5 +155,18 @@ export class AssetBuilderService {
       lastUpdatedBy: user.adminId,
     };
     return newShipmentInfo;
+  }
+
+  async updateCustodianship(user: any, update: UpdateCustodianshipDto) {
+    const dataUpdate = {
+      $set: {
+        'custodianship.status': update.status,
+        'custodianship.storedByFrac': update.storedByFrac,
+        'custodianship.warehousePublic': update.warehousePublic,
+        'custodianship.warehousePrivate': update.warehousePrivate,
+        lastUpdatedBy: user.adminId,
+      },
+    };
+    return dataUpdate;
   }
 }

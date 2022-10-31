@@ -1,10 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import { ApiError } from 'src/common/api';
+import { ErrorCode } from 'src/common/constants';
 import { UpdateSettingsDto } from './dto/settings.dto';
 
 @Injectable()
 export class SettingsBuilderService {
 
   updateSetting(currentSettings, data: UpdateSettingsDto) {
+    for (const key in data.custodianshipLabel) {
+      for (const key2 in data.custodianshipLabel[key]) {
+        if (key2 === 'en') {
+          for (const key3 in data.custodianshipLabel[key][key2]) {
+            if (!data.custodianshipLabel[key][key2][key3])
+              throw ApiError(
+                ErrorCode.DEFAULT_ERROR,
+                `${key3} should not be empty`,
+              );
+          }
+        }
+      }
+    }
+    
     const dataUpdate = {
       assetItem: data.assetItem ? { 
         maxFile: data.assetItem?.maxFile || currentSettings.assetItem.maxFile,
@@ -22,17 +38,17 @@ export class SettingsBuilderService {
         physicalAsset: {
           en: data.custodianshipLabel?.physicalAsset?.en || currentSettings.custodianshipLabel.physicalAsset.en,
           cn: data.custodianshipLabel?.physicalAsset?.cn || currentSettings.custodianshipLabel.physicalAsset.cn,
-          jp: data.custodianshipLabel?.physicalAsset?.ja || currentSettings.custodianshipLabel.physicalAsset.jp,
+          ja: data.custodianshipLabel?.physicalAsset?.ja || currentSettings.custodianshipLabel.physicalAsset.ja,
         },
         digitalAssetForNft:{
           en: data.custodianshipLabel?.digitalAssetForNft?.en || currentSettings.custodianshipLabel.digitalAssetForNft.en,
           cn: data.custodianshipLabel?.digitalAssetForNft?.cn || currentSettings.custodianshipLabel.digitalAssetForNft.cn,
-          jp: data.custodianshipLabel?.digitalAssetForNft?.ja || currentSettings.custodianshipLabel.digitalAssetForNft.jp,
+          ja: data.custodianshipLabel?.digitalAssetForNft?.ja || currentSettings.custodianshipLabel.digitalAssetForNft.ja,
         },
         digitalAssetForNonNft:{
           en: data.custodianshipLabel?.digitalAssetForNonNft?.en || currentSettings.custodianshipLabel.digitalAssetForNonNft.en,
           cn: data.custodianshipLabel?.digitalAssetForNonNft?.cn || currentSettings.custodianshipLabel.digitalAssetForNonNft.cn,
-          jp: data.custodianshipLabel?.digitalAssetForNonNft?.ja || currentSettings.custodianshipLabel.digitalAssetForNonNft.jp,
+          ja: data.custodianshipLabel?.digitalAssetForNonNft?.ja || currentSettings.custodianshipLabel.digitalAssetForNonNft.ja,
         },
       } : undefined,
     };
