@@ -106,6 +106,15 @@ export class User {
 
   @Prop({ type: String })
   description?: string;
+
+  @Prop({ type: String })
+  masterId?: string;
+
+  @Prop({ type: String })
+  subFirstId?: string;
+
+  @Prop({ type: Date })
+  timeAcceptOffer?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
