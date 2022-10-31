@@ -24,6 +24,7 @@ import { SignerModule } from './modules/signer/signer.module';
 import { DexModule } from './modules/dex/dex.module';
 import { RedemptionRequestModule } from './modules/redemption-request/redemption-request.module';
 import { UserModule } from './modules/user/user.module';
+import { IaoRevenueModule } from './modules/revenue/revenue.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { UserModule } from './modules/user/user.module';
     SignerModule,
     RedemptionRequestModule,
     DexModule,
+    IaoRevenueModule,
   ],
   controllers: [AppController],
 })

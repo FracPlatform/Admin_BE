@@ -13,6 +13,7 @@ import {
   FNFT_DECIMAL,
   IAO_EVENT_CALENDER,
   ON_CHAIN_STATUS,
+  REVENUE_STATUS,
 } from 'src/datalayer/model';
 import {
   CreateIAOEventEntity,
@@ -66,6 +67,7 @@ export class IaoEventBuilderService {
       totalSupply: createIaoEventDto['totalSupply'],
       availableSupply: createIaoEventDto['availableSupply'],
       tokenSymbol: createIaoEventDto['tokenSymbol'],
+      revenueStatus: REVENUE_STATUS.PENDING,
     };
   }
 
