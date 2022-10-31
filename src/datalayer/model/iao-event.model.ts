@@ -193,11 +193,11 @@ IaoEventSchema.index({ registrationEndTime: 1 });
 IaoEventSchema.index({ participationStartTime: 1 });
 IaoEventSchema.index({ participationEndTime: 1 });
 IaoEventSchema.index(
-  { FNFTcontractAddress: 1, isDeleted: 1 },
+  { FNFTcontractAddress: 1 },
   {
     unique: true,
     partialFilterExpression: {
-      isDeleted: { $eq: false },
+      isDeleted: false,
     },
   },
 );
