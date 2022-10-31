@@ -8,6 +8,7 @@ import {
   F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
   F_NFT_TYPE,
+  IAOEvent,
 } from 'src/datalayer/model';
 
 @Injectable()
@@ -81,6 +82,7 @@ export class FnftBuilderService {
     currentNftIds: string[],
     listNft: any,
     relatedAdminList: any,
+    iaoEvent: IAOEvent,
   ) {
     const items = [];
 
@@ -113,6 +115,7 @@ export class FnftBuilderService {
       fractionalizedOn: data.fractionalizedOn,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      iaoEventId: iaoEvent?.iaoEventId || "",
     };
     return fnft;
   }

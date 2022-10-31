@@ -312,12 +312,16 @@ export class FnftService {
         ErrorCode.DEFAULT_ERROR,
         'related Admin not already exists',
       );
+    const iaoEvent = await this.dataServices.iaoEvent.findOne({
+      "FNFTcontractAddress": currentFnft.contractAddress
+    });
 
     return await this.fnftBuilderService.convertFnftDetail(
       currentFnft,
       currentFnft.items,
       listNft,
       relatedAdminList,
+      iaoEvent,
     );
   }
 
