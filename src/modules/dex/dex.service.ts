@@ -41,7 +41,7 @@ export class DexService {
       walletAddress: web3Service.toChecksumAddress(walletAddress),
     });
     const affiliateOfUser = await this.dataService.user.findOne({
-      walletAddress: user.referedBy,
+      walletAddress: user?.referedBy,
     });
     if (!affiliateOfUser) {
       return res;
