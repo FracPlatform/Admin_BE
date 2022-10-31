@@ -1,8 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { async } from 'rxjs';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
-import { Admin, AdminDocument } from 'src/datalayer/model';
+import { AdminDocument } from 'src/datalayer/model';
 import { GetUser } from '../auth/get-user.decorator';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
