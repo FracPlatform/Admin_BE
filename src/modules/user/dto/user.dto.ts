@@ -66,7 +66,7 @@ export class CreateAffiliateDTO {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Max(50, { message: 'E10' })
   @Min(20, { message: 'E24' })
-  masterCommissionRate: number;
+  commissionRate: number;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()
