@@ -61,7 +61,6 @@ export class ChangeStatusDto {
   @IsEnum([
     REDEMPTION_REQUEST_TYPE.APPROVE,
     REDEMPTION_REQUEST_TYPE.REJECT,
-    REDEMPTION_REQUEST_TYPE.REDEEM,
   ])
   readonly type: number;
 

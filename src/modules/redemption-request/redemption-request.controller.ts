@@ -51,7 +51,7 @@ export class RedemptionRequestController {
   @Post('change-status/:requestId')
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Approve/Reject redemption request' })
-  async approveRequest(
+  async changeStatus(
     @GetUser() user,
     @Param('requestId') requestId: string,
     @Body() changeStatusDto: ChangeStatusDto,
@@ -60,6 +60,20 @@ export class RedemptionRequestController {
       user,
       requestId,
       changeStatusDto,
+    );
+    return new ApiSuccessResponse().success(data, '');
+  }
+
+  @Post('confirm/:requestId')
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'Confirm redemption request' })
+  async confirmRequest(
+    @GetUser() user,
+    @Param('requestId') requestId: string,
+  ) {
+    const data = await this.redemptionService.confirmRequest(
+      user,
+      requestId,
     );
     return new ApiSuccessResponse().success(data, '');
   }

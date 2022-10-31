@@ -624,19 +624,21 @@ export class AssetService {
         'Cannot update custodianship status',
       );
 
-    if (update.storedByFrac && asset.status >= ASSET_STATUS.EXCHANGE)
-      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot update storedByFrac');
+    if (asset.category === CategoryType.PHYSICAL) {
+      if (update.storedByFrac && asset.status >= ASSET_STATUS.EXCHANGE)
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot update storedByFrac');
 
-    if (
-      (update.warehousePrivate || update.warehousePublic) &&
-      ((typeof update.storedByFrac !== 'undefined' && !update.storedByFrac) ||
-        (typeof update.storedByFrac == 'undefined' &&
-          !asset.custodianship.storedByFrac))
-    )
-      throw ApiError(
-        ErrorCode.DEFAULT_ERROR,
-        'Cannot update warehousePublic || warehousePrivate',
-      );
+      if (
+        (update.warehousePrivate || update.warehousePublic) &&
+        ((typeof update.storedByFrac !== 'undefined' && !update.storedByFrac) ||
+          (typeof update.storedByFrac == 'undefined' &&
+            !asset.custodianship.storedByFrac))
+      )
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'Cannot update warehousePublic || warehousePrivate',
+        );
+    }
 
     const dataUpdate = await this.assetBuilderService.updateCustodianship(
       user,

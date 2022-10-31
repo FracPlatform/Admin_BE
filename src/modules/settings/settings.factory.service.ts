@@ -34,6 +34,9 @@ export class SettingsBuilderService {
       iaoRequest: data.iaoRequest ? {
         maxItem: data.iaoRequest?.maxItem || currentSettings.iaoRequest.maxItem,
       } : undefined,
+      withdrawalThreshold: data.withdrawalThreshold ? {
+        minWithdrawalThreshold: data.withdrawalThreshold?.minWithdrawalThreshold || currentSettings.withdrawalThreshold.minWithdrawalThreshold,
+      } : undefined,
       custodianshipLabel: data.custodianshipLabel ? {
         physicalAsset: {
           en: data.custodianshipLabel?.physicalAsset?.en || currentSettings.custodianshipLabel.physicalAsset.en,

@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsString,
-  IsNotEmpty,
   IsOptional,
   IsNumber,
   MaxLength,
@@ -24,7 +23,7 @@ export class AssetItem {
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01, { message: 'E26' })
   @Max(999999.99)
   maxSizeOfFile: number;
@@ -50,7 +49,7 @@ export class Custodianship {
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01, { message: 'E26' })
   @Max(999999.99)
   maxSizeOfFile: number;
@@ -64,6 +63,16 @@ export class IaoRequest {
   @Min(1, { message: 'E24' })
   @Max(999999, { message: 'E24' })
   maxItem: number;
+}
+
+export class WithdrawalThreshold {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(999999999999.99)
+  minWithdrawalThreshold: number;
 }
 
 export class DigitalAssetLabel {
@@ -228,6 +237,12 @@ export class UpdateSettingsDto {
   @ValidateNested({ each: true })
   @Type(() => IaoRequest)
   iaoRequest: IaoRequest;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => WithdrawalThreshold)
+  withdrawalThreshold: WithdrawalThreshold;
 
   @ApiProperty({ required: false })
   @IsOptional()

@@ -144,5 +144,4 @@ export const TOKEN_STANDARD_BY_ID = {
 export const REDEMPTION_REQUEST_TYPE = {
   APPROVE: 1,
   REJECT: 2,
-  REDEEM: 3,
 };
