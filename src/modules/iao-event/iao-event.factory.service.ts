@@ -156,6 +156,12 @@ export class IaoEventBuilderService {
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
       updatedAt: new Date(),
+      acceptedCurrencySymbol: iaoEvent['currencySymbol'],
+      currencyDecimal: iaoEvent['currencyDecimal'],
+      totalSupply: iaoEvent['totalSupply'],
+      availableSupply: iaoEvent['availableSupply'],
+      tokenSymbol: iaoEvent['tokenSymbol'],
+      iaoRequestId: iaoEvent['iaoRequestId'],
     };
   }
 
