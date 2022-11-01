@@ -6,7 +6,6 @@ import { ChangeStatusDto } from './dto/redemption-request.dto';
 
 @Injectable()
 export class RedemptionRequestBuilderService {
-
   convertDetail(data) {
     const crBy = data.Fractor.length ? true : false;
     const redemption: RedemptionRequestDetailEntity = {
@@ -45,17 +44,9 @@ export class RedemptionRequestBuilderService {
       status:
         data.type === REDEMPTION_REQUEST_TYPE.APPROVE
           ? REDEMPTION_REQUEST_STATUS.PROCESSING
-          : data.type === REDEMPTION_REQUEST_TYPE.REJECT
-          ? REDEMPTION_REQUEST_STATUS.REJECTED
-          : REDEMPTION_REQUEST_STATUS.REDEEMED,
-      reviewedBy:
-        data.type !== REDEMPTION_REQUEST_TYPE.REDEEM
-          ? currentAdminId
-          : undefined,
-      reviewComment:
-        data.type !== REDEMPTION_REQUEST_TYPE.REDEEM
-          ? data.reviewComment
-          : undefined,
+          : REDEMPTION_REQUEST_STATUS.REJECTED,
+      reviewedBy: currentAdminId,
+      reviewComment: data.reviewComment,
     };
     return dataUpdate;
   }

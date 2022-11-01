@@ -17,7 +17,7 @@ import {
 } from './dto/redemption-request.dto';
 import { RedemptionRequestBuilderService } from './redemption-request.factory.service';
 import { ApiError } from 'src/common/api';
-import { REDEMPTION_REQUEST_STATUS } from 'src/datalayer/model';
+import { ASSET_STATUS, REDEMPTION_REQUEST_STATUS } from 'src/datalayer/model';
 
 @Injectable()
 export class RedemptionRequestService {
@@ -284,12 +284,7 @@ export class RedemptionRequestService {
     if (!currentRequest)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'requestId not already exists');
 
-    const STATUS_CHECK =
-      data.type === REDEMPTION_REQUEST_TYPE.REDEEM
-        ? REDEMPTION_REQUEST_STATUS.PROCESSING
-        : REDEMPTION_REQUEST_STATUS.IN_REVIEW;
-
-    if (currentRequest.status !== STATUS_CHECK)
+    if (currentRequest.status !== REDEMPTION_REQUEST_STATUS.IN_REVIEW)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'status invalid');
 
     if (data.type === REDEMPTION_REQUEST_TYPE.REJECT && !data.reviewComment)
@@ -304,12 +299,67 @@ export class RedemptionRequestService {
     return await this.dataService.redemptionRequest.findOneAndUpdate(
       {
         requestId,
-        status: STATUS_CHECK,
+        status: REDEMPTION_REQUEST_STATUS.IN_REVIEW,
         updatedAt: currentRequest['updatedAt'],
       },
       dataUpdate,
       { new: true },
     );
+  }
+
+  async confirmRequest(user: any, requestId: string) {
+    const currentRequest = await this.dataService.redemptionRequest.findOne({
+      requestId,
+    });
+    if (!currentRequest)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'requestId not already exists');
+
+    if (currentRequest.status !== REDEMPTION_REQUEST_STATUS.PROCESSING)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'status invalid');
+
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    try {
+      const updareRequest = await this.dataService.redemptionRequest.updateOne(
+        {
+          requestId,
+          status: REDEMPTION_REQUEST_STATUS.PROCESSING,
+          updatedAt: currentRequest['updatedAt'],
+        },
+        {
+          status: REDEMPTION_REQUEST_STATUS.REDEEMED,
+        },
+        { session },
+      );
+      if (updareRequest.modifiedCount === 0)
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'Cannot confirm redemption request',
+        );
+
+      // update asset status
+      const updateAsset = await this.dataService.asset.updateMany(
+        {
+          itemId: currentRequest.items,
+          deleted: false,
+        },
+        {
+          status: ASSET_STATUS.REDEEMED,
+        },
+        { session },
+      );
+      if (updateAsset.modifiedCount === 0)
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot update asset status');
+
+      await session.commitTransaction();
+      return { success: true };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
   async update(id: string, user: any, updateCommentDto: UpdateCommentDto) {
