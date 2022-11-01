@@ -3,6 +3,7 @@ import {
   IAO_EVENT_STAGE,
   Revenue,
   REVENUE_STATUS,
+  VAULT_TYPE,
 } from 'src/datalayer/model';
 
 export class CreateIAOEventEntity {
@@ -153,6 +154,7 @@ export class IaoRevenueEntity {
   eventPhotoUrl: string;
   eventBannerUrl: string;
   stage: IAO_EVENT_STAGE;
+  vaultType: VAULT_TYPE;
 }
 
 export class IaoRevenueDetaiLEntity extends IaoRevenueEntity {
@@ -162,4 +164,25 @@ export class IaoRevenueDetaiLEntity extends IaoRevenueEntity {
   platformNetCommission: number;
   assignBD: object;
   fractor: object;
+}
+
+export class ExportedIaoRevenueEntity {
+  iaoEventId: string;
+  participationStartTime: string;
+  participationEndTime: string;
+  iaoEventName: EventName;
+  vaultType: string;
+  stage: string;
+  revenueStatus: string;
+  acceptedCurrencySymbol: string;
+  participatedAmount: number;
+  grossRevenue: number;
+  platformComissionRate: string;
+  platformGrossCommission: number;
+  fractorNetRevenue: number;
+  bdCommission: number;
+  assignBD: string;
+  fractor: string;
+  finalizedOn: string;
+  finalizedBy: string;
 }

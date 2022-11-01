@@ -5,6 +5,7 @@ import {
   Param,
   Put,
   Query,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -44,6 +45,27 @@ export class IaoRevenueController {
         user,
       );
       return new ApiSuccessResponse().success(responseData, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('export')
+  @ApiOperation({ summary: 'Export IAO Revenue detail' })
+  @Roles(
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+    Role.SuperAdmin,
+    Role.OWNER,
+    Role.FractorBD,
+  )
+  async exxportIaoRevenue(
+    @Query() filter: GetListIaoRevenueDto,
+    @GetUser() user: AdminDocument,
+    @Res() res: any,
+  ) {
+    try {
+      return await this.iaoRevenueService.exportIaoRevenue(filter, user, res);
     } catch (error) {
       throw error;
     }
