@@ -1,12 +1,149 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
+  IsNotEmptyObject,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
+  ValidateNested,
 } from 'class-validator';
+
+export class DataLabel {
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  0: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  1: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  2: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  3: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  4: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  5: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  6: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  7: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  8: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  @MaxLength(256)
+  9: string;
+}
+
+export class DataLabelNotEmpty {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  0: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  1: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  2: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  3: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  4: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  5: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  6: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  7: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  8: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(256)
+  9: string;
+}
+
+export class Label {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => DataLabelNotEmpty)
+  en: DataLabelNotEmpty;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => DataLabel)
+  cn: DataLabel;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => DataLabel)
+  ja: DataLabel;
+}
 
 export enum EDITABLE_CUSTODIANSHIP_STATUS {
   FRACTOR = 0,
@@ -23,6 +160,13 @@ export class UpdateCustodianshipDto {
     description: '0 => Fractor, 1 => In review, 2 => Frac',
   })
   status: EDITABLE_CUSTODIANSHIP_STATUS;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNotEmptyObject()
+  @ValidateNested({ each: true })
+  @Type(() => Label)
+  label: Label;
 
   @ApiProperty({
     required: false,

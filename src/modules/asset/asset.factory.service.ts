@@ -157,10 +157,22 @@ export class AssetBuilderService {
     return newShipmentInfo;
   }
 
-  async updateCustodianship(user: any, update: UpdateCustodianshipDto) {
+  async updateCustodianship(
+    user: any,
+    currentasset,
+    update: UpdateCustodianshipDto,
+  ) {
+    const dataLabel = update.label
+      ? {
+          en: update.label?.en || currentasset.custodianship?.label?.en,
+          cn: update.label?.cn || currentasset.custodianship?.label?.cn,
+          ja: update.label?.ja || currentasset.custodianship?.label?.ja,
+        }
+      : undefined;
     const dataUpdate = {
       $set: {
         'custodianship.status': update.status,
+        'custodianship.label': dataLabel,
         'custodianship.storedByFrac': update.storedByFrac,
         'custodianship.warehousePublic': update.warehousePublic,
         'custodianship.warehousePrivate': update.warehousePrivate,
