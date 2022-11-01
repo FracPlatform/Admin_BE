@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PREFIX_ID } from 'src/common/constants';
 import {
+  Admin,
   Fractor,
   FractorDocument,
   IAOEvent,
@@ -56,6 +57,7 @@ export class IaoRevenueBuilderService {
     iaoEvent: IAOEvent,
     whiteList: Whitelist,
     fractor: Fractor,
+    bd: Admin,
   ) {
     const soldAmount = iaoEvent.totalSupply - iaoEvent.availableSupply;
     const participatedAmount = soldAmount * iaoEvent.exchangeRate;
@@ -92,6 +94,14 @@ export class IaoRevenueBuilderService {
       tokenSymbol: iaoEvent.tokenSymbol,
       eventBannerUrl: iaoEvent.eventBannerUrl,
       eventPhotoUrl: iaoEvent.eventPhotoUrl,
+      fractor: {
+        fractorId: fractor.fractorId,
+        fullname: fractor.fullname,
+      },
+      assignBD: {
+        adminId: bd.adminId,
+        fullname: bd.fullname,
+      },
       stage: this.iaoEventService.checkCurrentStage(
         iaoEvent.registrationStartTime,
         iaoEvent.registrationEndTime,

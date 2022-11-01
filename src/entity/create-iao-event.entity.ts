@@ -160,4 +160,6 @@ export class IaoRevenueDetaiLEntity extends IaoRevenueEntity {
   fractorNetRevenue: number;
   bdCommission: number;
   platformNetCommission: number;
+  assignBD: object;
+  fractor: object;
 }
