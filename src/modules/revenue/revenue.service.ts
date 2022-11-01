@@ -14,8 +14,10 @@ import { get } from 'lodash';
 import { IaoRevenueBuilderService } from './revenue.factory';
 import { Role } from '../auth/role.enum';
 import { ApiError } from 'src/common/api';
-import { ErrorCode } from 'src/common/constants';
+import { CVS_NAME, ErrorCode } from 'src/common/constants';
 import { UpdateIaoRevenueDto } from './dto/update-iao-revenue.dto';
+import moment = require('moment');
+const XLSX = require('xlsx');
 @Injectable()
 export class IaoRevenueService {
   constructor(
@@ -246,6 +248,51 @@ export class IaoRevenueService {
         },
       },
       {
+        $lookup: {
+          from: 'IAORequest',
+          localField: 'iaoRequestId',
+          foreignField: 'iaoId',
+          as: 'iaoRequest',
+        },
+      },
+      {
+        $unwind: {
+          path: '$iaoRequest',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fractor',
+          localField: 'iaoRequest.ownerId',
+          foreignField: 'fractorId',
+          as: 'fractor',
+        },
+      },
+      {
+        $unwind: {
+          path: '$fractor',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'fractor.assignedBD',
+          foreignField: 'adminId',
+          as: 'bd',
+        },
+      },
+      {
+        $unwind: {
+          path: '$bd',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          iaoRequest: 0,
+        },
+      },
+      {
         $addFields: {
           iaoEventId: {
             $toInt: { $substr: ['$iaoEventId', 3, -1] },
@@ -282,7 +329,7 @@ export class IaoRevenueService {
     if (filter.sortField && filter.sortType) {
       sort['$sort'][filter.sortField] = filter.sortType;
     } else {
-      sort = { $sort: { participationStartTime: -1 } };
+      sort = { $sort: { participationStartTime: 1 } };
     }
     const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
     if (filter.limit !== -1)
@@ -303,6 +350,397 @@ export class IaoRevenueService {
       totalDocs: count,
       docs: finalData,
     };
+  }
+
+  async exportIaoRevenue(
+    filter: GetListIaoRevenueDto,
+    user: AdminDocument,
+    res: any,
+  ) {
+    const query = {};
+    const dateQuery = [];
+    if (filter.keyword) {
+      query['$or'] = [
+        {
+          iaoEventId: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'fractor.name': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          'bd.name': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    }
+    if (filter.status) query['revenue.status'] = filter.status;
+    if (filter.status === REVENUE_STATUS.PENDING) {
+      query['participationEndTime'] = { $lte: new Date() };
+    }
+    if (filter.status === REVENUE_STATUS.IN_REVIEW) {
+      query['revenue.status'] = REVENUE_STATUS.PENDING;
+      query['participationEndTime'] = { $gte: new Date() };
+    }
+    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(),
+        },
+      });
+    }
+    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
+      dateQuery.push(
+        {
+          registrationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          registrationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
+      dateQuery.push(
+        {
+          registrationEndTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationStartTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+      dateQuery.push(
+        {
+          participationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+      dateQuery.push({
+        $or: [
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.NON_VAULT,
+              },
+            ],
+          },
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.VAULT,
+              },
+              {
+                $expr: {
+                  $gte: [
+                    { $subtract: ['$totalSupply', '$availableSupply'] },
+                    {
+                      $multiply: [
+                        '$vaultUnlockThreshold',
+                        '$totalSupply',
+                        0.01,
+                      ],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+      dateQuery.push({
+        $and: [
+          {
+            participationEndTime: {
+              $lte: new Date(),
+            },
+          },
+          {
+            $expr: {
+              $lt: [
+                { $subtract: ['$totalSupply', '$availableSupply'] },
+                {
+                  $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }
+
+    if (filter.startFrom)
+      dateQuery.push({
+        participationStartTime: {
+          $gte: filter.startFrom,
+        },
+      });
+    if (filter.startTo)
+      dateQuery.push({
+        participationStartTime: {
+          $lte: filter.startTo,
+        },
+      });
+    if (dateQuery.length) query['$and'] = dateQuery;
+    const agg = [];
+    if (user.role === Role.FractorBD) {
+      const listFractor = await this.dataService.fractor.findMany({
+        assignedBD: user.adminId,
+      });
+      const mappedListFractorId = listFractor.map(
+        (fractor) => fractor.fractorId,
+      );
+      agg.push([
+        {
+          $lookup: {
+            from: 'IAORequest',
+            localField: 'iaoRequestId',
+            foreignField: 'iaoId',
+            as: 'iaoRequest',
+          },
+        },
+        {
+          $unwind: '$iaoRequest',
+        },
+        {
+          $match: {
+            $expr: {
+              $in: ['$iaoRequest.ownerId', mappedListFractorId],
+            },
+          },
+        },
+        {
+          $project: {
+            iaoRequest: 0,
+          },
+        },
+      ]);
+    }
+    agg.push(
+      {
+        $match: {
+          isDeleted: false,
+          status: IAO_EVENT_STATUS.ACTIVE,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Whitelist',
+          localField: 'iaoEventId',
+          foreignField: 'iaoEventId',
+          as: 'whitelist',
+        },
+      },
+      {
+        $unwind: {
+          path: '$whitelist',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'IAORequest',
+          localField: 'iaoRequestId',
+          foreignField: 'iaoId',
+          as: 'iaoRequest',
+        },
+      },
+      {
+        $unwind: {
+          path: '$iaoRequest',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Fractor',
+          localField: 'iaoRequest.ownerId',
+          foreignField: 'fractorId',
+          as: 'fractor',
+        },
+      },
+      {
+        $unwind: {
+          path: '$fractor',
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'fractor.assignedBD',
+          foreignField: 'adminId',
+          as: 'bd',
+        },
+      },
+      {
+        $unwind: {
+          path: '$bd',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: 'Admin',
+          localField: 'revenue.finalizedBy',
+          foreignField: 'adminId',
+          as: 'finalizedByAdmin',
+        },
+      },
+      {
+        $unwind: {
+          path: '$finalizedByAdmin',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          iaoRequest: 0,
+        },
+      },
+      {
+        $addFields: {
+          iaoEventId: {
+            $toInt: { $substr: ['$iaoEventId', 3, -1] },
+          },
+          participants: {
+            $cond: {
+              if: { $isArray: '$whitelist.whiteListAddresses' },
+              then: { $size: '$whitelist.whiteListAddresses' },
+              else: 0,
+            },
+          },
+          soldAmount: { $subtract: ['$totalSupply', '$availableSupply'] },
+          participatedAmount: {
+            $multiply: [
+              { $subtract: ['$totalSupply', '$availableSupply'] },
+              '$exchangeRate',
+            ],
+          },
+          progress: {
+            $multiply: [
+              { $subtract: ['$totalSupply', '$availableSupply'] },
+              { $divide: [1, '$totalSupply'] },
+              100,
+            ],
+          },
+        },
+      },
+      {
+        $match: query,
+      },
+    );
+
+    let sort: any = { $sort: {} };
+    if (filter.sortField && filter.sortType) {
+      sort['$sort'][filter.sortField] = filter.sortType;
+    } else {
+      sort = { $sort: { participationStartTime: 1 } };
+    }
+    const dataReturnFilter = [sort];
+    agg.push({
+      $facet: {
+        data: dataReturnFilter,
+      },
+    });
+    const dataQuery = await this.dataService.iaoEvent.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+    const data = get(dataQuery, [0, 'data']);
+    const finalData =
+      this.iaoRevenuebuilderService.convertExportedIaoRevenue(data);
+    const headings = [
+      [
+        'Event ID',
+        'Participation Start Time (UTC)',
+        'Participation End Time (UTC)',
+        'Event Name',
+        'Event Type',
+        'IAO Stage',
+        'Revenue Status',
+        'Currency',
+        'Participated Amount',
+        'Gross Revenue',
+        "Platform's Commission Rate",
+        "Platform's Commission",
+        "Fractor's NET Revenue",
+        "BD's Commission",
+        'Fractor',
+        'BD',
+        'Finalized on (UTC)',
+        'Finalized by',
+      ],
+    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(finalData, {
+      origin: 'A2',
+      skipHeader: true,
+      header: [
+        'iaoEventId',
+        'participationStartTime',
+        'participationEndTime',
+        'iaoEventName',
+        'vaultType',
+        'stage',
+        'revenueStatus',
+        'acceptedCurrencySymbol',
+        'participatedAmount',
+        'grossRevenue',
+        'platformComissionRate',
+        'platformGrossCommission',
+        'fractorNetRevenue',
+        'bdCommission',
+        'fractor',
+        'assignBD',
+        'finalizedOn',
+        'finalizedBy',
+      ],
+    });
+    XLSX.utils.sheet_add_aoa(ws, headings, { origin: 'A1' });
+    XLSX.utils.book_append_sheet(wb, ws);
+    const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
+    res.attachment(`${CVS_NAME.IAO_REVENUE}${moment().format('DDMMYY')}.csv`);
+    return res.status(200).send(buffer);
   }
 
   async getIaoRevenueDetail(iaoEventId: string, user: AdminDocument) {

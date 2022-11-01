@@ -122,6 +122,7 @@ export enum CHAINID {
 export enum CVS_NAME {
   WHITELIST = '[Frac]_IAOwhitelist_',
   IAO_EVENT = '[Frac]_IAOeventlist_',
+  IAO_REVENUE = '[Frac]_IAOrevenuelist_',
 }
 
 export const VAULT_TYPE_BY_ID = {
