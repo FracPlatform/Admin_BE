@@ -107,16 +107,16 @@ export class IaoRequestService {
     // filter submitted
     if (filter.submittedFrom && filter.submittedTo) {
       query['createdAt'] = {
-        $gte: moment(filter.submittedFrom, 'DD-MM-YYYY').toDate(),
-        $lte: moment(filter.submittedTo, 'DD-MM-YYYY').toDate(),
+        $gte: filter.submittedFrom,
+        $lte: filter.submittedTo,
       };
     } else if (filter.submittedFrom) {
       query['createdAt'] = {
-        $gte: moment(filter.submittedFrom, 'DD-MM-YYYY').toDate(),
+        $gte: filter.submittedFrom,
       };
     } else if (filter.submittedTo) {
       query['createdAt'] = {
-        $lte: moment(filter.submittedTo, 'DD-MM-YYYY').toDate(),
+        $lte: filter.submittedTo,
       };
     }
     if (filter.submittedBy) {
@@ -129,16 +129,16 @@ export class IaoRequestService {
     // filter 1st reviewed
     if (filter._1stReviewedFrom && filter._1stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._1stReviewedFrom, 'DD-MM-YYYY').toDate(),
-        $lte: moment(filter._1stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $gte: filter._1stReviewedFrom,
+        $lte: filter._1stReviewedTo,
       };
     } else if (filter._1stReviewedFrom) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._1stReviewedFrom, 'DD-MM-YYYY').toDate(),
+        $gte: filter._1stReviewedFrom,
       };
     } else if (filter._1stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $lte: moment(filter._1stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $lte: filter._1stReviewedTo,
       };
     }
     if (filter._1stReviewedBy) {
@@ -151,16 +151,16 @@ export class IaoRequestService {
     // filter 2st reviewed
     if (filter._2stReviewedFrom && filter._2stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._2stReviewedFrom, 'DD-MM-YYYY').toDate(),
-        $lte: moment(filter._2stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $gte: filter._2stReviewedFrom,
+        $lte: filter._2stReviewedTo,
       };
     } else if (filter._2stReviewedFrom) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._2stReviewedFrom, 'DD-MM-YYYY').toDate(),
+        $gte: filter._2stReviewedFrom,
       };
     } else if (filter._2stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $lte: moment(filter._2stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $lte: filter._2stReviewedTo,
       };
     }
     if (filter._2stReviewedBy) {
