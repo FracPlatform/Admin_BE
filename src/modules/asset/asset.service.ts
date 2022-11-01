@@ -642,6 +642,7 @@ export class AssetService {
 
     const dataUpdate = await this.assetBuilderService.updateCustodianship(
       user,
+      asset,
       update,
     );
 
