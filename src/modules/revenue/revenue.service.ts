@@ -332,6 +332,9 @@ export class IaoRevenueService {
           'You can not access this IAO event',
         );
     }
+    const bd = await this.dataService.admin.findOne({
+      adminId: fractor.assignedBD,
+    });
     const whiteList = await this.dataService.whitelist.findOne({
       iaoEventId: iaoEvent.iaoEventId,
     });
@@ -341,6 +344,7 @@ export class IaoRevenueService {
         iaoEvent,
         whiteList,
         fractor,
+        bd,
       );
     return iaoEventDetail;
   }
