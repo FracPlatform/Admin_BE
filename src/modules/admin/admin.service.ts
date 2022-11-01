@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
@@ -98,11 +94,10 @@ export class AdminService {
       sort = { $sort: { createdAt: -1 } };
     }
 
-    const dataReturnFilter = [
-      sort,
-      { $skip: filter.offset || DEFAULT_OFFET },
-      { $limit: filter.limit || DEFAULT_LIMIT },
-    ];
+    const dataReturnFilter = [sort, { $skip: filter.offset || DEFAULT_OFFET }];
+
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || DEFAULT_LIMIT });
 
     agg.push({
       $facet: {
@@ -110,7 +105,7 @@ export class AdminService {
         data: dataReturnFilter,
       },
     });
-    
+
     const dataQuery = await this.dataServices.admin.aggregate(agg, {
       collation: { locale: 'en' },
     });
@@ -139,7 +134,7 @@ export class AdminService {
         : null;
 
       const web3Service = new Web3ETH();
-      data.walletAddress = web3Service.toChecksumAddress(data.walletAddress)
+      data.walletAddress = web3Service.toChecksumAddress(data.walletAddress);
 
       const adminObj = await this.adminBuilderService.createAdmin(
         data,
