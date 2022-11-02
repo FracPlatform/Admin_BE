@@ -63,6 +63,17 @@ export class DigitalAssetLable {
   9: string;
 }
 
+export class Banner {
+  @Prop({ type: String })
+  url: string;
+
+  @Prop({ type: Boolean, default: false })
+  isActive?: boolean;
+
+  @Prop({ type: String, default: null })
+  hyperlink?: string;
+}
+
 @Schema({
   timestamps: true,
   collection: 'Settings',
@@ -85,6 +96,9 @@ export class Settings {
 
   @Prop({ type: CustodianshipLabel })
   custodianshipLabel: CustodianshipLabel;
+
+  @Prop({ type: Array<Banner>, default: [] })
+  banner: Banner[];
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings);

@@ -9,6 +9,10 @@ import {
   Min,
   Max,
   IsInt,
+  IsNotEmpty,
+  IsUrl,
+  IsBoolean,
+  IsArray,
 } from 'class-validator';
 
 export class AssetItem {
@@ -142,37 +146,37 @@ export class PhysicalAssetLabel {
   @IsString()
   @MaxLength(256)
   2: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
   3: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
   4: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
   5: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
   6: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
   7: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
   8: string;
-  
+
   @ApiProperty({ required: true })
   @IsString()
   @MaxLength(256)
@@ -249,4 +253,37 @@ export class UpdateSettingsDto {
   @ValidateNested({ each: true })
   @Type(() => CustodianshipLabel)
   custodianshipLabel: CustodianshipLabel;
+}
+
+export class UploadBannerDTO {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsUrl({
+    require_protocol: true,
+    require_valid_protocol: true,
+  })
+  url: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  isActive: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsUrl({
+    require_protocol: true,
+    require_valid_protocol: true,
+  })
+  @MaxLength(2048)
+  hyperlink: string;
+}
+
+export class SettingBanner {
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UploadBannerDTO)
+  banner: UploadBannerDTO[];
 }

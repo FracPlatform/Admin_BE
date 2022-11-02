@@ -133,6 +133,11 @@ export class IaoEventService {
           { itemId: { $in: items } },
           { $set: { status: ASSET_STATUS.IAO_EVENT } },
         );
+        await this.dataService.iaoRequest.updateOne(
+          { iaoId: fnft.iaoRequestId },
+          { $set: { iaoEventId: iaoEvent.iaoEventId } },
+          { session },
+        );
       }
 
       await session.commitTransaction();

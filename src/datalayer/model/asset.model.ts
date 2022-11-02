@@ -244,6 +244,9 @@ export class Asset {
 
   @Prop({ type: CustodianshipInfoSchema })
   custodianship?: CustodianshipInfo;
+
+  @Prop({ type: String })
+  updatedFrom?: string;
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
