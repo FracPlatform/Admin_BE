@@ -5,12 +5,10 @@ import {
   FilterIAORequestDto,
 } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
-import moment = require('moment');
 import {
   AssetType,
   IAORequest,
   Asset,
-  Fractor,
   IAO_REQUEST_STATUS,
   ASSET_STATUS,
 } from 'src/datalayer/model';

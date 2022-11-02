@@ -8,7 +8,6 @@ import {
   IsEnum,
   ValidationOptions,
   registerDecorator,
-  IsNotEmpty,
   IsDate,
 } from 'class-validator';
 import { IAO_REQUEST_STATUS, IAO_REQUEST_TYPE } from 'src/datalayer/model';
