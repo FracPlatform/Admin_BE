@@ -438,6 +438,7 @@ export class IaoRequestService {
                 documents: 1,
                 status: 1,
                 typeId: 1,
+                custodianship: 1,
                 _id: 1,
               },
             },
@@ -533,6 +534,7 @@ export class IaoRequestService {
             documents: '$item.documents',
             category: '$assetType.category',
             type: '$assetType.name',
+            custodianship: '$item.custodianship',
           },
         },
       });
