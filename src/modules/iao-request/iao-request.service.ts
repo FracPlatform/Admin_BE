@@ -879,7 +879,7 @@ export class IaoRequestService {
           ownerId: iaoRequest.ownerId,
           status: IAO_REQUEST_STATUS.IN_REVIEW,
         },
-        { $set: { status: IAO_REQUEST_STATUS.DRAFT } },
+        { status: IAO_REQUEST_STATUS.DRAFT, updatedBy: user.adminId },
         { session },
       );
       if (updateIaoRequest.modifiedCount === 0)
@@ -900,7 +900,9 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN, inDraft: true },
+          status: ASSET_STATUS.OPEN,
+          inDraft: true,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -930,12 +932,11 @@ export class IaoRequestService {
       throw 'Second review is not exists';
 
     const update = {
-      $set: {
-        firstReviewer: {
-          ...iaoRequest.firstReviewer,
-          comment: dto.firstComment,
-        },
+      firstReviewer: {
+        ...iaoRequest.firstReviewer,
+        comment: dto.firstComment,
       },
+      updatedBy: user.adminId,
     };
 
     if (dto.secondComment && iaoRequest.secondReviewer) {
