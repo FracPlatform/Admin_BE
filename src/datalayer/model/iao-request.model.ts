@@ -15,10 +15,6 @@ export enum IAO_REQUEST_TYPE {
   NON_VAULT = 2,
 }
 
-export enum UPDATED_FROM {
-  ADMIN = 1,
-}
-
 export const MAX_IAO_REQUEST_COMMENT = 2000;
 export const MAX_IAO_REQUEST_NOTE = 3000;
 export const MAX_LENGTH_PHONE = 16;
