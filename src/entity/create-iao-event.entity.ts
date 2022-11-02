@@ -2,7 +2,6 @@ import {
   EventName,
   IAO_EVENT_STAGE,
   Revenue,
-  REVENUE_STATUS,
   VAULT_TYPE,
 } from 'src/datalayer/model';
 

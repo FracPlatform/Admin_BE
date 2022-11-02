@@ -6,7 +6,6 @@ import {
   IAO_EVENT_STAGE,
   IAO_EVENT_STATUS,
   REVENUE_STATUS,
-  UserDocument,
   VAULT_TYPE,
 } from 'src/datalayer/model';
 import { GetListIaoRevenueDto } from './dto/get-list-iao-revenue.dto';
