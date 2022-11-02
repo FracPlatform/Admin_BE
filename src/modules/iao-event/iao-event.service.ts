@@ -324,6 +324,17 @@ export class IaoEventService {
     const agg = [];
     agg.push(
       {
+        $lookup: {
+          from: 'Fnft',
+          localField: 'FNFTcontractAddress',
+          foreignField: 'contractAddress',
+          as: 'fnft',
+        },
+      },
+      {
+        $unwind: '$fnft',
+      },
+      {
         $project: {
           iaoEventId: '$iaoEventId',
           createdAt: '$createdAt',
@@ -343,6 +354,7 @@ export class IaoEventService {
           eventPhotoUrl: '$eventPhotoUrl',
           eventBannerUrl: '$eventBannerUrl',
           isDeleted: '$isDeleted',
+          fnftId: '$fnft.fnftId',
         },
       },
       {
