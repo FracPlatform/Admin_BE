@@ -61,7 +61,7 @@ export class IaoEventService {
     participationEndTime.setDate(
       participationEndTime.getDate() + createIaoEventDto.iaoEventDuration,
     );
-    createIaoEventDto['participationEndTime'] = participationEndTime;
+    // createIaoEventDto['participationEndTime'] = participationEndTime;
     if (createIaoEventDto.whitelistAnnouncementTime > participationEndTime)
       error['whitelistAnnouncementTime'] =
         "Whitelist announcement time can't be earlier than Reference participation end time";
@@ -82,46 +82,18 @@ export class IaoEventService {
       error['FNFTcontractAddress'] =
         'This F-NFT has been selected for another IAO event';
 
-    const query: any = {
-      $or: [
-        {
-          'iaoEventName.en': {
-            $regex: createIaoEventDto.iaoEventName.en.trim(),
-            $options: 'i',
-          },
-        },
-      ],
-    };
-
-    if (createIaoEventDto.iaoEventName.cn)
-      query['$or'].push({
-        'iaoEventName.cn': {
-          $regex: createIaoEventDto.iaoEventName.cn.trim(),
-          $options: 'i',
-        },
-      });
-
-    if (createIaoEventDto.iaoEventName.jp)
-      query['$or'].push({
-        'iaoEventName.jp': {
-          $regex: createIaoEventDto.iaoEventName.jp.trim(),
-          $options: 'i',
-        },
-      });
-
-    const existsIAOEvent = await this.dataService.iaoEvent.findOne({
-      ...query,
-    });
+    const existsIAOEvent = await this.checkIaoEventName(createIaoEventDto);
 
     if (existsIAOEvent)
       error['iaoEventName'] =
         'IAO event name has existed. Please enter another value.';
 
     try {
-      const currencySymbol = await Utils.getCurrencySymbol(
+      const { currencySymbol, currencyDecimal } = await Utils.getCurrencySymbol(
         createIaoEventDto.acceptedCurrencyAddress,
       );
       createIaoEventDto['currencySymbol'] = currencySymbol;
+      createIaoEventDto['currencyDecimal'] = +currencyDecimal;
     } catch (err) {
       error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
     }
@@ -192,7 +164,7 @@ export class IaoEventService {
           },
         },
         {
-          fNftSymbol: {
+          tokenSymbol: {
             $regex: Utils.escapeRegex(filter.keyword.trim()),
             $options: 'i',
           },
@@ -344,7 +316,7 @@ export class IaoEventService {
     if (filter.particicationToDate) {
       dateQuery.push({
         participationEndTime: {
-          $lte: new Date(filter.particicationFromDate),
+          $lte: new Date(filter.particicationToDate),
         },
       });
     }
@@ -407,8 +379,8 @@ export class IaoEventService {
         iaoEvent.participationStartTime,
         iaoEvent.participationEndTime,
         iaoEvent.vaultType,
-        iaoEvent.fNftTotalSupply - iaoEvent.totalSupply >=
-          (iaoEvent.vaultUnlockThreshold * iaoEvent.fNftTotalSupply) / 100,
+        iaoEvent.totalSupply - iaoEvent.availableSupply >=
+          (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
       ),
     }));
 
@@ -418,7 +390,188 @@ export class IaoEventService {
     };
   }
 
-  async exportIaoEvent(res: any) {
+  async exportIaoEvent(res: any, filter: GetListIaoEventDto) {
+    const query = { isDeleted: false };
+    const dateQuery = [];
+    if (filter.keyword) {
+      query['$or'] = [
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          iaoEventId: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          tokenSymbol: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+        {
+          FNFTcontractAddress: {
+            $regex: Utils.escapeRegex(filter.keyword.trim()),
+            $options: 'i',
+          },
+        },
+      ];
+    }
+    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(),
+        },
+      });
+    }
+    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
+      dateQuery.push(
+        {
+          registrationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          registrationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
+      dateQuery.push(
+        {
+          registrationEndTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationStartTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+      dateQuery.push(
+        {
+          participationStartTime: {
+            $lte: new Date(),
+          },
+        },
+        {
+          participationEndTime: {
+            $gte: new Date(),
+          },
+        },
+      );
+    }
+    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+      dateQuery.push({
+        $or: [
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.NON_VAULT,
+              },
+            ],
+          },
+          {
+            $and: [
+              {
+                participationEndTime: {
+                  $lte: new Date(),
+                },
+              },
+              {
+                vaultType: VAULT_TYPE.VAULT,
+              },
+              {
+                $expr: {
+                  $gte: [
+                    { $subtract: ['$totalSupply', '$availableSupply'] },
+                    {
+                      $multiply: [
+                        '$vaultUnlockThreshold',
+                        '$totalSupply',
+                        0.01,
+                      ],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      });
+    }
+
+    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+      dateQuery.push({
+        $and: [
+          {
+            participationEndTime: {
+              $lte: new Date(),
+            },
+          },
+          {
+            $expr: {
+              $lt: [
+                { $subtract: ['$totalSupply', '$availableSupply'] },
+                {
+                  $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+                },
+              ],
+            },
+          },
+        ],
+      });
+    }
+    if (filter.registrationFromDate) {
+      dateQuery.push({
+        registrationStartTime: {
+          $gte: new Date(filter.registrationFromDate),
+        },
+      });
+    }
+    if (filter.registrationToDate) {
+      dateQuery.push({
+        registrationEndTime: {
+          $lte: new Date(filter.registrationToDate),
+        },
+      });
+    }
+    if (filter.particicationFromDate) {
+      dateQuery.push({
+        participationStartTime: {
+          $gte: new Date(filter.particicationFromDate),
+        },
+      });
+    }
+    if (filter.particicationToDate) {
+      dateQuery.push({
+        participationEndTime: {
+          $lte: new Date(filter.particicationToDate),
+        },
+      });
+    }
+    let sort: any = { $sort: {} };
+    if (filter.sortField && filter.sortType) {
+      sort['$sort'][filter.sortField] = filter.sortType;
+    } else {
+      sort = { $sort: { createdAt: -1 } };
+    }
+    const dataReturnFilter = [sort];
+    if (dateQuery.length) query['$and'] = dateQuery;
     const dataQuery = await this.dataService.iaoEvent.aggregate([
       {
         $match: {
@@ -500,6 +653,10 @@ export class IaoEventService {
           as: 'iaoRequest.items',
         },
       },
+      {
+        $match: query,
+      },
+      ...dataReturnFilter,
     ]);
     const assetTypes = await this.dataService.assetTypes.findMany({});
     const finalData = this.iaoEventBuilderService.convertExportedEvents(
@@ -712,7 +869,7 @@ export class IaoEventService {
       iaoEvent.participationStartTime,
       iaoEvent.participationEndTime,
       iaoEvent.vaultType,
-      fnft.totalSupply - iaoEvent.totalSupply >
+      fnft.totalSupply - iaoEvent.availableSupply >=
         (iaoEvent.vaultUnlockThreshold * fnft.totalSupply) / 100,
     );
     iaoEvent['currentStage'] = currentStage;
@@ -731,12 +888,52 @@ export class IaoEventService {
     updateIaoEventDto: UpdateIaoEventDto,
     user: any,
   ) {
+    const error = {};
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.DRAFT,
     });
     if (!iaoEvent) throw ApiError('', 'Data not exists');
+    const fnft = await this.dataService.fnft.findOne({
+      contractAddress: updateIaoEventDto.FNFTcontractAddress,
+      status: F_NFT_STATUS.ACTIVE,
+    });
+    if (!fnft)
+      error['FNFTcontractAddress'] = 'F-NFT contractAddress is invalid';
+
+    const checkFnft = await this.dataService.iaoEvent.findOne({
+      FNFTcontractAddress: updateIaoEventDto.FNFTcontractAddress,
+      status: IAO_EVENT_STATUS.ACTIVE,
+      isDeleted: false,
+    });
+    if (checkFnft && checkFnft.iaoEventId !== id)
+      error['FNFTcontractAddress'] =
+        'This F-NFT has been selected for another IAO event';
+
+    const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
+
+    if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+
+    try {
+      const { currencySymbol, currencyDecimal } = await Utils.getCurrencySymbol(
+        updateIaoEventDto.acceptedCurrencyAddress,
+      );
+      updateIaoEventDto['currencySymbol'] = currencySymbol;
+      updateIaoEventDto['currencyDecimal'] = +currencyDecimal;
+    } catch (err) {
+      error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
+    }
+
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
+
+    updateIaoEventDto['totalSupply'] = fnft.totalSupply;
+    updateIaoEventDto['availableSupply'] = fnft.totalSupply;
+    updateIaoEventDto['tokenSymbol'] = fnft.tokenSymbol;
+    updateIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
+
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
       updateIaoEventDto,
       user,
@@ -762,13 +959,22 @@ export class IaoEventService {
     updateIaoEventDto: UpdateIaoEventDto,
     user: any,
   ) {
+    const error = {};
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
       status: IAO_EVENT_STATUS.ACTIVE,
     });
+
     if (!iaoEvent) throw ApiError('', 'Data not exists');
+
+    const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
+
+    if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoOnChain(
       updateIaoEventDto,
       user,
@@ -787,6 +993,39 @@ export class IaoEventService {
       },
     );
     return id;
+  }
+
+  async checkIaoEventName(dto) {
+    const query: any = {
+      $or: [
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
+            $options: 'i',
+          },
+        },
+      ],
+    };
+
+    if (dto.iaoEventName.cn)
+      query['$or'].push({
+        'iaoEventName.cn': {
+          $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
+          $options: 'i',
+        },
+      });
+
+    if (dto.iaoEventName.jp)
+      query['$or'].push({
+        'iaoEventName.jp': {
+          $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
+          $options: 'i',
+        },
+      });
+
+    return await this.dataService.iaoEvent.findOne({
+      ...query,
+    });
   }
 
   async remove(id: string, user: any) {
@@ -1194,7 +1433,7 @@ export class IaoEventService {
       currentStage = IAO_EVENT_STAGE.COMPLETED;
     else if (
       nowDate >= participationEndTime &&
-      type === VAULT_TYPE.NON_VAULT &&
+      type === VAULT_TYPE.VAULT &&
       vaultUnlockThreshold
     )
       currentStage = IAO_EVENT_STAGE.COMPLETED;
@@ -1435,7 +1674,9 @@ export class IaoEventService {
     }
     //
     const groups = iaoEventList.reduce((groups, iao) => {
-      const day = moment(iao.date).format('YYYY-MM-DD');
+      const day = iao.date
+        .toLocaleString('en', { timeZone: calenderDTO.timezone })
+        .split(',')[0];
       if (!groups[day]) {
         groups[day] = [];
       }

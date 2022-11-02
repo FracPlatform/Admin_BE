@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsEmpty,
   IsEthereumAddress,
   IsNumber,
@@ -76,7 +75,7 @@ export class UploadIntervalDto {
   csv: Express.Multer.File;
 }
 
-export class LoginDto {
+export class LoginDexDto {
   @ApiProperty({ required: false })
   message: string;
 

@@ -22,21 +22,27 @@ export class SettingsService {
     const currentSettings = await this.dataServices.settings.findOne({
       settingsName: SETTINGS_NAME_DEFAULT,
     });
-    if (!currentSettings) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Settings invalid');
+    if (!currentSettings)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Settings invalid');
 
     return currentSettings;
   }
 
   async updateSettings(data: UpdateSettingsDto) {
-    if (!Object.entries(data).length) throw ApiError(ErrorCode.DEFAULT_ERROR, 'No Data');   
+    if (!Object.entries(data).length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'No Data');
 
     const currentSettings = await this.dataServices.settings.findOne({
       settingsName: SETTINGS_NAME_DEFAULT,
     });
-    if (!currentSettings) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Settings invalid');
+    if (!currentSettings)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Settings invalid');
 
-    const updateSettings = await this.settingsBuilderService.updateSetting(currentSettings, data);
-    
+    const updateSettings = await this.settingsBuilderService.updateSetting(
+      currentSettings,
+      data,
+    );
+
     return await this.dataServices.settings.findOneAndUpdate(
       {
         settingsName: SETTINGS_NAME_DEFAULT,

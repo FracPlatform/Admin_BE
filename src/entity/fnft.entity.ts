@@ -51,6 +51,7 @@ export class FnftDetailEntity {
   adminUpdated: object;
   fnftId?: string;
   deleted?: boolean;
+  iaoEventId?: string;
   fractionalizedOn?: Date;
   createdAt?: Date;
   updatedAt?: Date;

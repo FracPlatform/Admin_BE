@@ -8,6 +8,7 @@ import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { CategoryType, MAX_PHOTOS, MIN_PHOTOS } from 'src/datalayer/model';
 import {
+  ASSET_STATUS,
   CUSTODIANSHIP_STATUS,
   MEDIA_TYPE,
 } from 'src/datalayer/model/asset.model';
@@ -23,7 +24,7 @@ import { Role } from 'src/modules/auth/role.enum';
 import { Utils } from 'src/common/utils';
 import { EditDepositedNftDto } from './dto/edit-deposited-nft.dto';
 import { UpdateCustodianshipFile } from './dto/edit-file.dto';
-import { UpdateCustodianshipStatusDto } from './dto/update-custodianship-status.dto';
+import { UpdateCustodianshipDto } from './dto/update-custodianship-status.dto';
 import {
   CreateShipmentInfoDto,
   UpdateShipmentInfoDto,
@@ -607,37 +608,53 @@ export class AssetService {
     return { success: true };
   }
 
-  async updateCustodianshipStatus(
+  async updateCustodianship(
     assetId: string,
-    updateStatus: UpdateCustodianshipStatusDto,
+    update: UpdateCustodianshipDto,
     user: any,
   ) {
     const asset = await this.dataServices.asset.findOne({
       itemId: assetId,
     });
     if (!asset) throw ApiError('', `Id of Asset is invalid`);
-    if (asset.custodianship.status > CUSTODIANSHIP_STATUS.FRAC)
+
+    if (update.status && asset.custodianship.status > CUSTODIANSHIP_STATUS.FRAC)
       throw ApiError(
         ErrorCode.DEFAULT_ERROR,
         'Cannot update custodianship status',
       );
+
+    if (asset.category === CategoryType.PHYSICAL) {
+      if (update.storedByFrac && asset.status >= ASSET_STATUS.EXCHANGE)
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot update storedByFrac');
+
+      if (
+        (update.warehousePrivate || update.warehousePublic) &&
+        ((typeof update.storedByFrac !== 'undefined' && !update.storedByFrac) ||
+          (typeof update.storedByFrac == 'undefined' &&
+            !asset.custodianship.storedByFrac))
+      )
+        throw ApiError(
+          ErrorCode.DEFAULT_ERROR,
+          'Cannot update warehousePublic || warehousePrivate',
+        );
+    }
+
+    const dataUpdate = await this.assetBuilderService.updateCustodianship(
+      user,
+      asset,
+      update,
+    );
+
     const updatedAsset = await this.dataServices.asset.findOneAndUpdate(
       {
         itemId: assetId,
         updatedAt: asset['updatedAt'],
       },
-      {
-        $set: {
-          'custodianship.status': updateStatus.status,
-          lastUpdatedBy: user.adminId,
-        },
-      },
+      dataUpdate,
     );
     if (!updatedAsset)
-      throw ApiError(
-        ErrorCode.DEFAULT_ERROR,
-        'Can not update custodianship status',
-      );
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update custodianship');
     return { success: true };
   }
 

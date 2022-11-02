@@ -329,6 +329,10 @@ export class Utils {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   }
 
+  public static queryInsensitive(value) {
+    return { $regex: Utils.escapeRegex(value), $options: 'i' };
+  }
+
   public static async getNftContractAddress() {
     const contractProxy = await new Web3ETH().getContractInstance();
     const nftContractAddress = await contractProxy.methods
@@ -350,12 +354,13 @@ export class Utils {
     const copyDate = new Date(date);
     return new Date(copyDate.setHours(copyDate.getHours() - hours));
   }
-  
+
   public static async getCurrencySymbol(currencyAddress) {
     const contract20 = await new Web3ETH().getContract20Instance(
       currencyAddress,
     );
     const currencySymbol = await contract20.methods.symbol().call();
-    return currencySymbol;
+    const currencyDecimal = await contract20.methods.decimals().call();
+    return { currencySymbol, currencyDecimal };
   }
 }

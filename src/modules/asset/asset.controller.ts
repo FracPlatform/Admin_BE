@@ -33,7 +33,7 @@ import { UpdateCustodianshipFile } from './dto/edit-file.dto';
 import { FilterAssetDto } from './dto/filter-asset.dto';
 import { FilterDocumentDto } from './dto/filter-document.dto';
 import { CreateShipmentInfoDto, UpdateShipmentInfoDto } from './dto/shipment-infor.dto';
-import { UpdateCustodianshipStatusDto } from './dto/update-custodianship-status.dto';
+import { UpdateCustodianshipDto } from './dto/update-custodianship-status.dto';
 
 @Controller('asset')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -186,16 +186,16 @@ export class AssetController {
     }
   }
 
-  @Put('custodianship/update-status/:assetId')
-  @ApiOperation({ summary: 'Update custodianship status' })
+  @Put('custodianship/:assetId')
+  @ApiOperation({ summary: 'Update custodianship' })
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
-  async updateCustodianshipStatus(
+  async updateCustodianship(
     @Param('assetId') assetId: string,
-    @Body() updateStatus: UpdateCustodianshipStatusDto,
+    @Body() updateStatus: UpdateCustodianshipDto,
     @GetUser() user: any,
   ) {
     try {
-      const responseData = await this.assetService.updateCustodianshipStatus(
+      const responseData = await this.assetService.updateCustodianship(
         assetId,
         updateStatus,
         user,

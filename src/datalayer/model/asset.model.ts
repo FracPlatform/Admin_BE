@@ -72,6 +72,25 @@ export class Specifications extends SpecificationField {
   value: string;
 }
 
+export class Label {
+  en: DataLabel;
+  cn: DataLabel;
+  ja: DataLabel;
+}
+
+export class DataLabel {
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+  5: string;
+  6: string;
+  7: string;
+  8: string;
+  9: string;
+}
+
 @Schema({
   timestamps: false,
   collection: 'ShipmentInfo',
@@ -110,8 +129,20 @@ export class CustodianshipInfo {
   @Prop({ type: Number })
   status: CUSTODIANSHIP_STATUS;
 
+  @Prop({ type: Label })
+  label: Label;
+
   @Prop({ type: [DigitalAssetFileSchema] })
   files: DigitalAssetFile[];
+
+  @Prop({ type: Number })
+  storedByFrac?: number;
+
+  @Prop({ type: String })
+  warehousePublic?: string;
+
+  @Prop({ type: String })
+  warehousePrivate?: string;
 
   @Prop({ type: [ShipmentInfoSchema] })
   listShipmentInfo: ShipmentInfo[];

@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { DEFAULT_LIMIT, DEFAULT_OFFET, ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { get } from 'lodash';
@@ -20,6 +16,7 @@ import { ApiError } from 'src/common/api';
 import * as randomatic from 'randomatic';
 import { Role } from '../auth/role.enum';
 import { Admin, ADMIN_STATUS } from 'src/datalayer/model';
+import { Web3ETH } from '../../blockchain/web3.eth';
 
 @Injectable()
 export class AdminService {
@@ -97,11 +94,10 @@ export class AdminService {
       sort = { $sort: { createdAt: -1 } };
     }
 
-    const dataReturnFilter = [
-      sort,
-      { $skip: filter.offset || DEFAULT_OFFET },
-      { $limit: filter.limit || DEFAULT_LIMIT },
-    ];
+    const dataReturnFilter = [sort, { $skip: filter.offset || DEFAULT_OFFET }];
+
+    if (filter.limit !== -1)
+      dataReturnFilter.push({ $limit: filter.limit || DEFAULT_LIMIT });
 
     agg.push({
       $facet: {
@@ -110,8 +106,6 @@ export class AdminService {
       },
     });
 
-    console.log(112, JSON.stringify(agg));
-    
     const dataQuery = await this.dataServices.admin.aggregate(agg, {
       collation: { locale: 'en' },
     });
@@ -135,9 +129,12 @@ export class AdminService {
 
     try {
       // create referral
-      const referral = [Role.FractorBD, Role.MasterBD].includes(data.role)
+      const referral = [Role.FractorBD].includes(data.role)
         ? await this.randomReferal()
         : null;
+
+      const web3Service = new Web3ETH();
+      data.walletAddress = web3Service.toChecksumAddress(data.walletAddress);
 
       const adminObj = await this.adminBuilderService.createAdmin(
         data,

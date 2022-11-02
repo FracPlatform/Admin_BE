@@ -24,7 +24,11 @@ import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
 import { WorkerDataDto } from './dto/worker-data.dto';
 import { NFT_STATUS } from 'src/datalayer/model/nft.model';
-import { ASSET_STATUS, REVIEW_STATUS } from 'src/datalayer/model/asset.model';
+import {
+  ASSET_STATUS,
+  CUSTODIANSHIP_STATUS,
+  REVIEW_STATUS,
+} from 'src/datalayer/model/asset.model';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CommonService } from 'src/common-service/common.service';
@@ -82,6 +86,8 @@ export class WorkerService {
         case CONTRACT_EVENTS.DEPOSIT_FUND_EVENT:
           await this._handleDepositFundEvent(requestData);
           break;
+        case CONTRACT_EVENTS.MERGE_FNFT:
+          await this._handleMergeFNFTEvent(requestData);
         default:
           break;
       }
@@ -96,13 +102,35 @@ export class WorkerService {
       requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE
         ? CLAIM_TYPE.REFUND
         : CLAIM_TYPE.FNFT;
+    let decimalToken = 18;
+    if (requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_FAILURE) {
+      const iaoEventDetail = await this.dataServices.iaoEvent.findOne({
+        iaoEventId: this.commonService.decodeHexToString(
+          requestData.metadata.id,
+        ),
+      });
+      decimalToken = iaoEventDetail.currencyDecimal;
+    }
+
     await this.dataServices.claim.create({
       amount: requestData.metadata.amount,
       buyerAddress: requestData.metadata.sender,
-      iaoEventId: requestData.metadata.id,
+      iaoEventId: this.commonService.decodeHexToString(requestData.metadata.id),
       status: CLAIM_STATUS.SUCCESS,
       type,
+      decimal: decimalToken,
     });
+
+    const SOCKET_EVENT_NAME =
+      requestData.eventName === CONTRACT_EVENTS.CLAIM_FNFT_SUCCESSFUL
+        ? SOCKET_EVENT.CLAIM_FNFT_SUCCESSFUL_EVENT
+        : SOCKET_EVENT.CLAIM_FNFT_FAILURE_EVENT;
+
+    this.socketGateway.sendMessage(
+      SOCKET_EVENT_NAME,
+      requestData,
+      requestData.metadata.sender,
+    );
   }
 
   private async _handleSetAdminEvent(requestData: WorkerDataDto) {
@@ -181,6 +209,7 @@ export class WorkerService {
         this.socketGateway.sendMessage(
           SOCKET_EVENT.MINT_NFT_EVENT,
           requestData,
+          requestData.metadata.mintBy,
         );
       }
     } catch (error) {
@@ -501,7 +530,11 @@ export class WorkerService {
         { session },
       );
       if (res)
-        this.socketGateway.sendMessage(SOCKET_EVENT.DEPOSIT_NFTS, requestData);
+        this.socketGateway.sendMessage(
+          SOCKET_EVENT.DEPOSIT_NFTS,
+          requestData,
+          requestData.metadata.sender,
+        );
       await session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
@@ -590,6 +623,57 @@ export class WorkerService {
         SOCKET_EVENT.DEPOSIT_FUND_EVENT,
         requestData,
         requestData.metadata.buyer,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  private async _handleMergeFNFTEvent(requestData: WorkerDataDto) {
+    const listTokenIds = requestData.metadata.tokenIds.map(
+      (tokenId) => `${PREFIX_ID.NFT}-${tokenId}`,
+    );
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      await this.dataServices.nft.updateMany(
+        {
+          tokenId: {
+            $in: listTokenIds,
+          },
+        },
+        {
+          status: NFT_STATUS.OWNED,
+        },
+        { session },
+      );
+      const listOwnedNfts = await this.dataServices.nft.findMany({
+        tokenId: {
+          $in: listTokenIds,
+        },
+      });
+      const listOwnedAssets = listOwnedNfts.map((nft) => nft.assetId);
+      await this.dataServices.asset.updateMany(
+        {
+          itemId: {
+            $in: listOwnedAssets,
+          },
+        },
+        {
+          $set: {
+            'custodianship.status':
+              CUSTODIANSHIP_STATUS.AVAILABLE_FOR_USER_TO_REDEEM,
+          },
+        },
+        { session },
+      );
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.MERGE_FNFT_EVENT,
+        requestData,
+        requestData.metadata.receiver,
       );
     } catch (error) {
       await session.abortTransaction();

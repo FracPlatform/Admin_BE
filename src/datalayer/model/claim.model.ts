@@ -31,6 +31,9 @@ export class Claim {
 
   @Prop({ type: Number })
   type?: number;
+
+  @Prop({ type: Number })
+  decimal?: number;
 }
 
 export const ClaimSchema = SchemaFactory.createForClass(Claim);

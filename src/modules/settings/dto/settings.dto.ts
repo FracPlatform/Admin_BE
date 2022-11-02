@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsString,
-  IsNotEmpty,
   IsOptional,
   IsNumber,
   MaxLength,
@@ -24,7 +23,7 @@ export class AssetItem {
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01, { message: 'E26' })
   @Max(999999.99)
   maxSizeOfFile: number;
@@ -50,7 +49,7 @@ export class Custodianship {
   @ApiProperty({ required: false })
   @IsOptional()
   @Type(() => Number)
-  @IsNumber()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0.01, { message: 'E26' })
   @Max(999999.99)
   maxSizeOfFile: number;
@@ -66,39 +65,43 @@ export class IaoRequest {
   maxItem: number;
 }
 
+export class WithdrawalThreshold {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(999999999999.99)
+  minWithdrawalThreshold: number;
+}
+
 export class DigitalAssetLabel {
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   0: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   1: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   2: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   3: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   6: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   9: string;
@@ -126,61 +129,51 @@ export class DigitalAsset {
 
 export class PhysicalAssetLabel {
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   0: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   1: string;
 
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   2: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   3: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   4: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   5: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   6: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   7: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   8: string;
   
   @ApiProperty({ required: true })
-  @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   9: string;
@@ -244,6 +237,12 @@ export class UpdateSettingsDto {
   @ValidateNested({ each: true })
   @Type(() => IaoRequest)
   iaoRequest: IaoRequest;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => WithdrawalThreshold)
+  withdrawalThreshold: WithdrawalThreshold;
 
   @ApiProperty({ required: false })
   @IsOptional()

@@ -18,6 +18,25 @@ export enum IAO_EVENT_STAGE {
   FAILED = 6,
 }
 
+export enum REVENUE_STATUS {
+  PENDING = 0,
+  IN_REVIEW = 1,
+  APPROVED = 2,
+  REJECTED = 3,
+  CLOSED = 4,
+}
+
+export class Revenue {
+  status: REVENUE_STATUS;
+  platformCommissionRate?: number;
+  bdCommissionRate: number;
+  comment: string;
+  finalizedBy?: string;
+  finalizedOn?: Date;
+  updatedBy: string;
+  updatedAt: Date;
+}
+
 export const MAXLENGTH_CONTRACT_ADDRESS = 256;
 export const MAX_IAO_EVENT_DURATION = 99;
 export const MAXLENGTH_EVENT_NAME = 256;
@@ -170,6 +189,12 @@ export class IAOEvent {
 
   @Prop({ type: String })
   acceptedCurrencySymbol: string;
+
+  @Prop({ type: Number })
+  currencyDecimal: number;
+
+  @Prop({ type: () => Revenue })
+  revenue: Revenue;
 }
 
 export const IaoEventSchema = SchemaFactory.createForClass(IAOEvent);
@@ -178,4 +203,12 @@ IaoEventSchema.index({ registrationStartTime: 1 });
 IaoEventSchema.index({ registrationEndTime: 1 });
 IaoEventSchema.index({ participationStartTime: 1 });
 IaoEventSchema.index({ participationEndTime: 1 });
-IaoEventSchema.index({ FNFTcontractAddress: 1 });
+IaoEventSchema.index(
+  { FNFTcontractAddress: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      isDeleted: false,
+    },
+  },
+);

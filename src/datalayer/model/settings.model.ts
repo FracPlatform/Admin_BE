@@ -19,6 +19,10 @@ export class IaoRequest {
   maxItem: number;
 }
 
+export class WithdrawalThreshold {
+  minWithdrawalThreshold: number;
+}
+
 export class CustodianshipLabel {
   physicalAsset: PhysicalAsset;
   digitalAssetForNft: DigitalAsset;
@@ -76,8 +80,11 @@ export class Settings {
   @Prop({ type: IaoRequest })
   iaoRequest: IaoRequest;
 
+  @Prop({ type: WithdrawalThreshold })
+  withdrawalThreshold: WithdrawalThreshold;
+
   @Prop({ type: CustodianshipLabel })
-  custodianshipLable: CustodianshipLabel;
+  custodianshipLabel: CustodianshipLabel;
 }
 
 export const SettingsSchema = SchemaFactory.createForClass(Settings);

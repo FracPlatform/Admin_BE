@@ -56,11 +56,11 @@ export class NftService {
           break;
         case ASSET_CATEGORY.DIGITAL_NFT:
           query['assetCategory'] = CategoryType.VIRTUAL;
-          query['isMintNFT'] = true;
+          query['asset.isMintNFT'] = true;
           break;
         case ASSET_CATEGORY.DIGITAL_NON_NFT:
           query['assetCategory'] = CategoryType.VIRTUAL;
-          query['isMintNFT'] = false;
+          query['asset.isMintNFT'] = false;
           break;
         default:
           break;
@@ -159,7 +159,6 @@ export class NftService {
     });
     const data = get(dataQuery, [0, 'data']);
     const count = get(dataQuery, [0, 'count', 0, 'count']) || 0;
-
     return {
       totalDocs: count,
       docs: data,
