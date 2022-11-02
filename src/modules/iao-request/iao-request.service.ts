@@ -415,26 +415,6 @@ export class IaoRequestService {
         },
       },
       {
-        $lookup: {
-          from: Fractor.name,
-          let: { fractorId: '$ownerId' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ['$$fractorId', '$fractorId'] },
-              },
-            },
-            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
-          ],
-          as: 'updatedBys',
-        },
-      },
-      {
-        $addFields: {
-          updatedBy: { $arrayElemAt: ['$updatedBys', 0] },
-        },
-      },
-      {
         $addFields: {
           sizeOfItem: { $size: '$items' },
         },
@@ -595,6 +575,19 @@ export class IaoRequestService {
     const iaos = await this.dataService.iaoRequest.aggregate(agg);
 
     if (iaos.length === 0) throw 'No data exists';
+    if (iaos[0].updatedBy) {
+      const admin = await this.dataService.admin.findOne({
+        adminId: iaos[0].updatedBy,
+      });
+      const fractor = await this.dataService.fractor.findOne({
+        fractorId: iaos[0].updatedBy,
+      });
+      const updatedBy = {
+        fractorId: admin ? admin.adminId : fractor.fractorId,
+        fullname: admin ? admin.fullname : fractor.fullname,
+      };
+      iaos[0].updatedBy = updatedBy;
+    }
     const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
     return iao;
   }
@@ -621,10 +614,9 @@ export class IaoRequestService {
         updatedAt: iaoRequest['updatedAt'],
       },
       {
-        $set: {
-          firstReviewer: { ...firstReview },
-          status: IAO_REQUEST_STATUS.APPROVED_A,
-        },
+        firstReviewer: { ...firstReview },
+        status: IAO_REQUEST_STATUS.APPROVED_A,
+        updatedBy: user.adminId,
       },
     );
     if (updateIaoRequest.modifiedCount === 0)
@@ -659,10 +651,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            secondReviewer: { ...secondReview },
-            status: IAO_REQUEST_STATUS.APPROVED_B,
-          },
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.APPROVED_B,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -683,7 +674,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.IAO_APPROVED },
+          status: ASSET_STATUS.IAO_APPROVED,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -725,10 +717,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            firstReviewer: { ...firstReview },
-            status: IAO_REQUEST_STATUS.REJECTED,
-          },
+          firstReviewer: { ...firstReview },
+          status: IAO_REQUEST_STATUS.REJECTED,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -749,7 +740,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN },
+          status: ASSET_STATUS.OPEN,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -791,10 +783,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            secondReviewer: { ...secondReview },
-            status: IAO_REQUEST_STATUS.REJECTED,
-          },
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.REJECTED,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -815,7 +806,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN },
+          status: ASSET_STATUS.OPEN,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
