@@ -24,7 +24,11 @@ import { SOCKET_EVENT } from '../socket/socket.enum';
 import { SocketGateway } from '../socket/socket.gateway';
 import { WorkerDataDto } from './dto/worker-data.dto';
 import { NFT_STATUS } from 'src/datalayer/model/nft.model';
-import { ASSET_STATUS, REVIEW_STATUS } from 'src/datalayer/model/asset.model';
+import {
+  ASSET_STATUS,
+  CUSTODIANSHIP_STATUS,
+  REVIEW_STATUS,
+} from 'src/datalayer/model/asset.model';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { CommonService } from 'src/common-service/common.service';
@@ -643,6 +647,27 @@ export class WorkerService {
         {
           status: NFT_STATUS.OWNED,
         },
+        { session },
+      );
+      const listOwnedNfts = await this.dataServices.nft.findMany({
+        tokenId: {
+          $in: listTokenIds,
+        },
+      });
+      const listOwnedAssets = listOwnedNfts.map((nft) => nft.assetId);
+      await this.dataServices.asset.updateMany(
+        {
+          itemId: {
+            $in: listOwnedAssets,
+          },
+        },
+        {
+          $set: {
+            'custodianship.status':
+              CUSTODIANSHIP_STATUS.AVAILABLE_FOR_USER_TO_REDEEM,
+          },
+        },
+        { session },
       );
       await session.commitTransaction();
       this.socketGateway.sendMessage(
