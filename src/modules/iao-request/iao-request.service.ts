@@ -569,6 +569,7 @@ export class IaoRequestService {
         updatedAt: { $first: '$updatedAt' },
         updatedBy: { $first: '$updatedBy' },
         bd: { $first: '$bd' },
+        iaoEventId: { $first: '$iaoEventId' },
       },
     });
 
