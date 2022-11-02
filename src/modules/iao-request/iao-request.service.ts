@@ -583,7 +583,7 @@ export class IaoRequestService {
       const fractor = await this.dataService.fractor.findOne({
         fractorId: iaos[0].updatedBy,
       });
-      let updatedBy = {
+      const updatedBy = {
         fractorId: admin ? admin.adminId : fractor.fractorId,
         fullname: admin ? admin.fullname : fractor.fullname,
       };
