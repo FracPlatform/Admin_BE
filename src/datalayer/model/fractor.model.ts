@@ -19,9 +19,12 @@ export enum SocialType {
 }
 
 export class FractorRevenue {
+  isWithdrawed: boolean;
   balance: number;
   currencyContract: string;
-  tokenSymbol: string;
+  acceptedCurrencySymbol: string;
+  fnftContractAddress: string;
+  exchangeRate: number;
   iaoEventId: string;
 }
 
