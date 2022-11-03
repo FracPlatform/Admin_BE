@@ -35,6 +35,7 @@ import {
   DownloadCollectedFeeDto,
   GetIntervalSettingsDto,
   GetTradeDto,
+  DownloadTradeDto,
 } from './dto/dex.dto';
 
 @Controller('dex-admin')
@@ -182,5 +183,10 @@ export class DexAdminController {
   @Get('admin/trades')
   async getTrades(@Query() filter: GetTradeDto) {
     return await this.dexAdminService.getTrades(filter);
+  }
+
+  @Get('admin/download-trades')
+  async downloadTrades(@Query() filter: DownloadTradeDto) {
+    return await this.dexAdminService.downloadTrades(filter);
   }
 }
