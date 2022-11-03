@@ -112,6 +112,7 @@ export const CONTRACT_EVENTS = {
   CLAIM_FNFT_SUCCESSFUL: 'WithdrawFNFTEvent',
   CLAIM_FNFT_FAILURE: 'WithdrawFundEvent',
   MERGE_FNFT: 'getNFTEvent',
+  APPROVE_IAO_REVENUE_EVENT: 'SetFractorRevenueEvent',
 };
 
 export enum CHAINID {
