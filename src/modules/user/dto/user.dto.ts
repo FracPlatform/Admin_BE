@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsEnum,
   IsEthereumAddress,
   IsNotEmpty,
   IsNumber,
@@ -11,6 +12,59 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
+
+export enum QUERY_TYPE {
+  AFFILIATE = 1,
+}
+
+export class FilterUserDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  textSearch: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'NORMAL = 1, MASTER = 2, SUB_1 = 3, SUB_2 = 4 ',
+  })
+  @IsOptional()
+  role: string;
+
+  @ApiProperty({ required: false, description: '1- Active, 0 - Inactive' })
+  @IsOptional()
+  status: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  offset: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString({ message: 'E0' })
+  sortField: string;
+
+  @ApiProperty({ required: false, description: '-1 => DESC, 1 => ASC' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  sortType: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @IsEnum(QUERY_TYPE)
+  queryType: number;
+}
 
 export class CreateAffiliateDTO {
   @ApiProperty({ required: true })
@@ -24,7 +78,7 @@ export class CreateAffiliateDTO {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Max(50, { message: 'E10' })
   @Min(20, { message: 'E24' })
-  masterCommissionRate: number;
+  commissionRate: number;
 
   @ApiProperty({ required: true })
   @IsNotEmpty()

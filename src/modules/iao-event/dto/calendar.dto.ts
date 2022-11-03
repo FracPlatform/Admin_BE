@@ -31,4 +31,9 @@ export class CalenderDTO {
   @Type(() => Number)
   @IsNumber({}, { each: true })
   iaoEventStage: number[];
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsString()
+  timezone: string;
 }

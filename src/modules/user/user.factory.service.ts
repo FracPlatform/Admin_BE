@@ -16,7 +16,7 @@ export class UserBuilderService {
   ) {
     return {
       walletAddress: createAffiliateDTO.walletAddress,
-      masterCommissionRate: createAffiliateDTO.masterCommissionRate,
+      commissionRate: createAffiliateDTO.commissionRate,
       maxSubFristCommissionRate: createAffiliateDTO.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: createAffiliateDTO.maxSubSecondCommissionRate,
       bd: createAffiliateDTO.bd,
@@ -43,7 +43,7 @@ export class UserBuilderService {
         PREFIX_ID.USER,
         session,
       ),
-      masterCommissionRate: createAffiliateDTO.masterCommissionRate,
+      commissionRate: createAffiliateDTO.commissionRate,
       maxSubFristCommissionRate: createAffiliateDTO.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: createAffiliateDTO.maxSubSecondCommissionRate,
       bd: createAffiliateDTO.bd,
@@ -82,14 +82,14 @@ export class UserBuilderService {
     };
   }
 
-  getUserDetail(user: User, data: any) {
+  getAffiliateDetail(user: User, data: any) {
     return {
       userId: user.userId,
       joinedOn: user.createdAt,
       walletAddress: user.walletAddress,
       status: user.status,
       role: user.role,
-      commissionRate: user.masterCommissionRate,
+      commissionRate: user.commissionRate,
       maxSubFristCommissionRate: user.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: user.maxSubSecondCommissionRate,
       bd: user.bd ? { adminId: user.bd, fullname: data.bd } : null,
@@ -104,12 +104,40 @@ export class UserBuilderService {
         createdAt: user.updatedAffiliateBy?.updatedAt,
       },
       deactivatedAffiliateBy: {
-        adminId: user.deactivatedAffiliateBy?.deactivatedAt,
+        adminId: user.deactivatedAffiliateBy?.deactivatedBy,
         fullname: data.deactivateBy,
         createdAt: user.deactivatedAffiliateBy?.deactivatedAt,
         comment: user.deactivatedAffiliateBy?.comment,
       },
       referralLink: user.referalCode,
+      email: user.email,
+      description: user.description,
+    };
+  }
+
+  getUserDetail(user: User, data: any) {
+    return {
+      userId: user.userId,
+      joinedOn: user.createdAt,
+      walletAddress: user.walletAddress,
+      status: user.status,
+      role: user.role,
+      affiliate: data.referedBy
+        ? {
+            userId: data.referedBy.userId,
+            walletAddress: data.referedBy.walletAddress,
+            role: data.referedBy.role,
+            commissionRate: data.referedBy.commissionRate,
+          }
+        : null,
+      deactivatedUserBy: data.deactivateBy
+        ? {
+            adminId: user.deactivatedAffiliateBy.deactivatedBy,
+            fullname: data.deactivateBy.fullname,
+            createdAt: user.deactivatedAffiliateBy.deactivatedAt,
+            comment: user.deactivatedAffiliateBy?.comment,
+          }
+        : null,
       email: user.email,
       description: user.description,
     };

@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { PREFIX_ID } from 'src/common/constants';
-import { AdminDetailEntity, AdminEntity, InformationAdmin, ListAdminEntity } from 'src/entity';
+import {
+  AdminDetailEntity,
+  AdminEntity,
+  InformationAdmin,
+  ListAdminEntity,
+} from 'src/entity';
 import { ADMIN_STATUS } from 'src/datalayer/model';
 import { CreateAdminDto, UpdateAdminDto } from './dto/admin.dto';
 
 @Injectable()
 export class AdminBuilderService {
-  constructor(private readonly dataServices: IDataServices) { }
+  constructor(private readonly dataServices: IDataServices) {}
 
   async createAdmin(
     data: CreateAdminDto,
@@ -32,6 +37,7 @@ export class AdminBuilderService {
         PREFIX_ID.ADMIN,
         session,
       ),
+      commissionRate: data.commissionRate,
     };
     return asset;
   }
@@ -42,6 +48,7 @@ export class AdminBuilderService {
       fullname: data.name,
       description: data.description,
       lastUpdateBy: currentAdminId,
+      commissionRate: data.commissionRate || 0,
     };
     return dataUpdate;
   }
@@ -78,12 +85,17 @@ export class AdminBuilderService {
       role: data.role,
       status: data.status,
       referral: data.referral,
-      adminCreated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.createBy),
-      adminUpdated: relatedAdminList.find((adminInfo) => adminInfo.adminId == data.lastUpdateBy),
+      adminCreated: relatedAdminList.find(
+        (adminInfo) => adminInfo.adminId == data.createBy,
+      ),
+      adminUpdated: relatedAdminList.find(
+        (adminInfo) => adminInfo.adminId == data.lastUpdateBy,
+      ),
       adminId: data.adminId,
       deleted: data.deleted,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      commissionRate: data.commissionRate,
     };
     return admin;
   }
@@ -95,6 +107,7 @@ export class AdminBuilderService {
       description: data.description,
       adminId: data.adminId,
       role: data.role,
+      commissionRate: data.commissionRate,
     };
     return information;
   }

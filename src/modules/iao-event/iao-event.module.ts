@@ -9,5 +9,6 @@ import { S3Module } from 'src/s3/s3.module';
   imports: [DataServicesModule, S3Module],
   controllers: [IaoEventController],
   providers: [IaoEventService, IaoEventBuilderService],
+  exports: [IaoEventService],
 })
 export class IaoEventModule {}

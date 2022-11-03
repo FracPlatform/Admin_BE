@@ -3,6 +3,7 @@ import {
   ALLOCATION_TYPE_BY_ID,
   ASSET_CATEGORY_BY_ID,
   CHAIN_NAME_BY_ID,
+  DEFAULT_BD_COMMISSION_RATE,
   PREFIX_ID,
   VAULT_TYPE_BY_ID,
 } from 'src/common/constants';
@@ -13,6 +14,7 @@ import {
   FNFT_DECIMAL,
   IAO_EVENT_CALENDER,
   ON_CHAIN_STATUS,
+  REVENUE_STATUS,
 } from 'src/datalayer/model';
 import {
   CreateIAOEventEntity,
@@ -66,6 +68,13 @@ export class IaoEventBuilderService {
       totalSupply: createIaoEventDto['totalSupply'],
       availableSupply: createIaoEventDto['availableSupply'],
       tokenSymbol: createIaoEventDto['tokenSymbol'],
+      revenue: {
+        status: REVENUE_STATUS.PENDING,
+        bdCommissionRate: DEFAULT_BD_COMMISSION_RATE,
+        comment: '',
+        updatedBy: user.adminId,
+        updatedAt: new Date(),
+      },
     };
   }
 
@@ -154,6 +163,12 @@ export class IaoEventBuilderService {
       whitelistAnnouncementTime: iaoEvent.whitelistAnnouncementTime,
       updatedBy: user.adminId,
       updatedAt: new Date(),
+      acceptedCurrencySymbol: iaoEvent['currencySymbol'],
+      currencyDecimal: iaoEvent['currencyDecimal'],
+      totalSupply: iaoEvent['totalSupply'],
+      availableSupply: iaoEvent['availableSupply'],
+      tokenSymbol: iaoEvent['tokenSymbol'],
+      iaoRequestId: iaoEvent['iaoRequestId'],
     };
   }
 
@@ -265,7 +280,7 @@ export class IaoEventBuilderService {
       if (type === IAO_EVENT_CALENDER.PARTICIPATION_START)
         obj.date = iao.participationStartTime;
       if (type === IAO_EVENT_CALENDER.PARTICIPATION_END)
-        obj.date = iao.registrationEndTime;
+        obj.date = iao.participationEndTime;
 
       return obj;
     });

@@ -1,21 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from 'src/common/api';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import {
   ADMIN_STATUS,
   MAX_MASTER_COMMISION_RATE,
+  User,
   USER_ROLE,
   USER_STATUS,
 } from 'src/datalayer/model';
-import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
+import {
+  CreateAffiliateDTO,
+  DeactivateUserDTO,
+  FilterUserDto,
+  QUERY_TYPE,
+} from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
 import { InjectConnection } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
+import mongoose, { PipelineStage } from 'mongoose';
 import * as randomatic from 'randomatic';
+import { Utils } from 'src/common/utils';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFET,
+  SORT_AGGREGATE,
+} from 'src/common/constants';
+import { ListDocument } from 'src/common/common-type';
 
 @Injectable()
 export class UserService {
+  private readonly logger = new Logger(UserService.name);
   constructor(
     private readonly dataService: IDataServices,
     private readonly userBuilderService: UserBuilderService,
@@ -43,13 +57,13 @@ export class UserService {
       );
     if (
       createAffiliateDTO.maxSubSecondCommissionRate >
-        createAffiliateDTO.masterCommissionRate ||
+        createAffiliateDTO.commissionRate ||
       createAffiliateDTO.maxSubSecondCommissionRate >
         createAffiliateDTO.maxSubFristCommissionRate
     )
       throw ApiError(
         'E35',
-        'maxSubSecondCommissionRate must be less than masterCommissionRate and maxSubFristCommissionRate',
+        'maxSubSecondCommissionRate must be less than commissionRate and maxSubFristCommissionRate',
       );
 
     if (createAffiliateDTO.bd) {
@@ -173,11 +187,137 @@ export class UserService {
       updatedBy: updatedBy.fullname,
       deactivateBy: deactivateBy.fullname,
     };
-    const affiliateDetail = this.userBuilderService.getUserDetail(
+    const affiliateDetail = this.userBuilderService.getAffiliateDetail(
       affliate,
       data,
     );
     return affiliateDetail;
+  }
+
+  async getAllUsers(filter: FilterUserDto) {
+    const { offset, limit } = filter;
+    const match: Record<string, any> = {};
+    const sort: Record<string, any> = {};
+    const pipeline: PipelineStage[] = [];
+
+    if (filter.queryType === QUERY_TYPE.AFFILIATE) {
+      match['role'] = {
+        $in: [
+          USER_ROLE.MASTER_AFFILIATE,
+          USER_ROLE.AFFILIATE_SUB_1,
+          USER_ROLE.AFFILIATE_SUB_2,
+        ],
+      };
+    }
+
+    if (filter.hasOwnProperty('textSearch')) {
+      const textSearch = filter.textSearch.trim();
+      Object.assign(match, {
+        ...match,
+        $or: [
+          { userId: Utils.queryInsensitive(textSearch) },
+          { emailConfirmed: Utils.queryInsensitive(textSearch) },
+          { walletAddress: Utils.queryInsensitive(textSearch) },
+        ],
+      });
+    }
+
+    if (filter.hasOwnProperty('role')) {
+      Object.assign(match, {
+        ...match,
+        role: { $in: [Number(filter.role)] },
+      });
+    }
+
+    if (filter.hasOwnProperty('status')) {
+      Object.assign(match, {
+        ...match,
+        status: { $in: [Number(filter.status)] },
+      });
+    }
+    pipeline.push(
+      {
+        $addFields: {
+          emailConfirmed: {
+            $cond: {
+              if: { $eq: ['$isEmailConfirmed', true] },
+              then: '$email',
+              else: null,
+            },
+          },
+        },
+      },
+      {
+        $match: match,
+      },
+      {
+        $project: {
+          userId: 1,
+          createdAt: 1,
+          walletAddress: 1,
+          role: 1,
+          status: 1,
+          emailConfirmed: 1,
+          createdAffiliateBy: 1,
+          masterId: 1,
+          subFirstId: 1,
+          timeAcceptOffer: 1,
+        },
+      },
+    );
+
+    if (filter.sortField && filter.sortType) {
+      sort[filter.sortField] = filter.sortType;
+    } else {
+      sort['createdAt'] = SORT_AGGREGATE.DESC;
+    }
+
+    const $facet: any = {
+      count: [{ $count: 'totalItem' }],
+      items: [
+        { $sort: sort },
+        { $skip: offset || DEFAULT_OFFET },
+        { $limit: limit || DEFAULT_LIMIT },
+      ],
+    };
+
+    pipeline.push({ $facet });
+
+    const data = await this.dataService.user.aggregate(pipeline, {
+      collation: { locale: 'en_US', strength: 1 },
+    });
+
+    const [result] = data;
+    const [total] = result.count;
+    const items = result.items.map((item) => {
+      if (item.role === USER_ROLE.MASTER_AFFILIATE)
+        item.timeAcceptOffer = item.createdAffiliateBy?.createdAt;
+      return item;
+    });
+    return {
+      totalDocs: total ? total.totalItem : 0,
+      docs: items || [],
+    } as ListDocument;
+  }
+
+  async getUserDetail(userId: string) {
+    const user = await this.dataService.user.findOne({ userId });
+    if (!user) throw ApiError('', 'User not found');
+    const referedBy: User = await this.dataService.user.findOne({
+      walletAddress: user?.referedBy,
+    });
+    let deactivateBy = null;
+    if (user.status === USER_STATUS.INACTIVE) {
+      deactivateBy = await this.dataService.admin.findOne({
+        adminId: user.deactivatedAffiliateBy?.deactivatedBy,
+      });
+    }
+    const data = {
+      referedBy,
+      deactivateBy,
+    };
+    const userDetail = this.userBuilderService.getUserDetail(user, data);
+    return userDetail;
   }
 
   async randomReferal() {

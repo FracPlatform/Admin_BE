@@ -82,36 +82,7 @@ export class IaoEventService {
       error['FNFTcontractAddress'] =
         'This F-NFT has been selected for another IAO event';
 
-    const query: any = {
-      $or: [
-        {
-          'iaoEventName.en': {
-            $regex: createIaoEventDto.iaoEventName.en.trim(),
-            $options: 'i',
-          },
-        },
-      ],
-    };
-
-    if (createIaoEventDto.iaoEventName.cn)
-      query['$or'].push({
-        'iaoEventName.cn': {
-          $regex: createIaoEventDto.iaoEventName.cn.trim(),
-          $options: 'i',
-        },
-      });
-
-    if (createIaoEventDto.iaoEventName.jp)
-      query['$or'].push({
-        'iaoEventName.jp': {
-          $regex: createIaoEventDto.iaoEventName.jp.trim(),
-          $options: 'i',
-        },
-      });
-
-    const existsIAOEvent = await this.dataService.iaoEvent.findOne({
-      ...query,
-    });
+    const existsIAOEvent = await this.checkIaoEventName(createIaoEventDto);
 
     if (existsIAOEvent)
       error['iaoEventName'] =
@@ -161,6 +132,11 @@ export class IaoEventService {
         await this.dataService.asset.updateMany(
           { itemId: { $in: items } },
           { $set: { status: ASSET_STATUS.IAO_EVENT } },
+        );
+        await this.dataService.iaoRequest.updateOne(
+          { iaoId: fnft.iaoRequestId },
+          { $set: { iaoEventId: iaoEvent.iaoEventId } },
+          { session },
         );
       }
 
@@ -353,6 +329,17 @@ export class IaoEventService {
     const agg = [];
     agg.push(
       {
+        $lookup: {
+          from: 'Fnft',
+          localField: 'FNFTcontractAddress',
+          foreignField: 'contractAddress',
+          as: 'fnft',
+        },
+      },
+      {
+        $unwind: '$fnft',
+      },
+      {
         $project: {
           iaoEventId: '$iaoEventId',
           createdAt: '$createdAt',
@@ -372,6 +359,7 @@ export class IaoEventService {
           eventPhotoUrl: '$eventPhotoUrl',
           eventBannerUrl: '$eventBannerUrl',
           isDeleted: '$isDeleted',
+          fnftId: '$fnft.fnftId',
         },
       },
       {
@@ -599,9 +587,7 @@ export class IaoEventService {
     } else {
       sort = { $sort: { createdAt: -1 } };
     }
-    const dataReturnFilter = [sort, { $skip: filter.offset || 0 }];
-    if (filter.limit !== -1)
-      dataReturnFilter.push({ $limit: filter.limit || 10 });
+    const dataReturnFilter = [sort];
     if (dateQuery.length) query['$and'] = dateQuery;
     const dataQuery = await this.dataService.iaoEvent.aggregate([
       {
@@ -919,12 +905,52 @@ export class IaoEventService {
     updateIaoEventDto: UpdateIaoEventDto,
     user: any,
   ) {
+    const error = {};
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.DRAFT,
     });
     if (!iaoEvent) throw ApiError('', 'Data not exists');
+    const fnft = await this.dataService.fnft.findOne({
+      contractAddress: updateIaoEventDto.FNFTcontractAddress,
+      status: F_NFT_STATUS.ACTIVE,
+    });
+    if (!fnft)
+      error['FNFTcontractAddress'] = 'F-NFT contractAddress is invalid';
+
+    const checkFnft = await this.dataService.iaoEvent.findOne({
+      FNFTcontractAddress: updateIaoEventDto.FNFTcontractAddress,
+      status: IAO_EVENT_STATUS.ACTIVE,
+      isDeleted: false,
+    });
+    if (checkFnft && checkFnft.iaoEventId !== id)
+      error['FNFTcontractAddress'] =
+        'This F-NFT has been selected for another IAO event';
+
+    const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
+
+    if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+
+    try {
+      const { currencySymbol, currencyDecimal } = await Utils.getCurrencySymbol(
+        updateIaoEventDto.acceptedCurrencyAddress,
+      );
+      updateIaoEventDto['currencySymbol'] = currencySymbol;
+      updateIaoEventDto['currencyDecimal'] = +currencyDecimal;
+    } catch (err) {
+      error['acceptedCurrencyAddress'] = 'Accepted Currency Address is invalid';
+    }
+
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
+
+    updateIaoEventDto['totalSupply'] = fnft.totalSupply;
+    updateIaoEventDto['availableSupply'] = fnft.totalSupply;
+    updateIaoEventDto['tokenSymbol'] = fnft.tokenSymbol;
+    updateIaoEventDto['iaoRequestId'] = fnft.iaoRequestId;
+
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoEventDetail(
       updateIaoEventDto,
       user,
@@ -950,13 +976,22 @@ export class IaoEventService {
     updateIaoEventDto: UpdateIaoEventDto,
     user: any,
   ) {
+    const error = {};
     const iaoEvent = await this.dataService.iaoEvent.findOne({
       iaoEventId: id,
       isDeleted: false,
       onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
       status: IAO_EVENT_STATUS.ACTIVE,
     });
+
     if (!iaoEvent) throw ApiError('', 'Data not exists');
+
+    const existsIAOEvent = await this.checkIaoEventName(updateIaoEventDto);
+
+    if (existsIAOEvent && existsIAOEvent.iaoEventId !== id)
+      error['iaoEventName'] =
+        'IAO event name has existed. Please enter another value.';
+    if (Object.keys(error).length > 0) throw ApiError('', '', error);
     const iaoEventToUpdate = this.iaoEventBuilderService.updateIaoOnChain(
       updateIaoEventDto,
       user,
@@ -975,6 +1010,39 @@ export class IaoEventService {
       },
     );
     return id;
+  }
+
+  async checkIaoEventName(dto) {
+    const query: any = {
+      $or: [
+        {
+          'iaoEventName.en': {
+            $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
+            $options: 'i',
+          },
+        },
+      ],
+    };
+
+    if (dto.iaoEventName.cn)
+      query['$or'].push({
+        'iaoEventName.cn': {
+          $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
+          $options: 'i',
+        },
+      });
+
+    if (dto.iaoEventName.jp)
+      query['$or'].push({
+        'iaoEventName.jp': {
+          $regex: Utils.escapeRegex(dto.iaoEventName.en.trim()),
+          $options: 'i',
+        },
+      });
+
+    return await this.dataService.iaoEvent.findOne({
+      ...query,
+    });
   }
 
   async remove(id: string, user: any) {
@@ -1658,7 +1726,9 @@ export class IaoEventService {
     }
     //
     const groups = iaoEventList.reduce((groups, iao) => {
-      const day = moment(iao.date).format('YYYY-MM-DD');
+      const day = iao.date
+        .toLocaleString('en', { timeZone: calenderDTO.timezone })
+        .split(',')[0];
       if (!groups[day]) {
         groups[day] = [];
       }

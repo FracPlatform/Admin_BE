@@ -5,12 +5,10 @@ import {
   FilterIAORequestDto,
 } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
-import moment = require('moment');
 import {
   AssetType,
   IAORequest,
   Asset,
-  Fractor,
   IAO_REQUEST_STATUS,
   ASSET_STATUS,
 } from 'src/datalayer/model';
@@ -107,16 +105,16 @@ export class IaoRequestService {
     // filter submitted
     if (filter.submittedFrom && filter.submittedTo) {
       query['createdAt'] = {
-        $gte: moment(filter.submittedFrom, 'DD-MM-YYYY').toDate(),
-        $lte: moment(filter.submittedTo, 'DD-MM-YYYY').toDate(),
+        $gte: filter.submittedFrom,
+        $lte: filter.submittedTo,
       };
     } else if (filter.submittedFrom) {
       query['createdAt'] = {
-        $gte: moment(filter.submittedFrom, 'DD-MM-YYYY').toDate(),
+        $gte: filter.submittedFrom,
       };
     } else if (filter.submittedTo) {
       query['createdAt'] = {
-        $lte: moment(filter.submittedTo, 'DD-MM-YYYY').toDate(),
+        $lte: filter.submittedTo,
       };
     }
     if (filter.submittedBy) {
@@ -129,16 +127,16 @@ export class IaoRequestService {
     // filter 1st reviewed
     if (filter._1stReviewedFrom && filter._1stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._1stReviewedFrom, 'DD-MM-YYYY').toDate(),
-        $lte: moment(filter._1stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $gte: filter._1stReviewedFrom,
+        $lte: filter._1stReviewedTo,
       };
     } else if (filter._1stReviewedFrom) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._1stReviewedFrom, 'DD-MM-YYYY').toDate(),
+        $gte: filter._1stReviewedFrom,
       };
     } else if (filter._1stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $lte: moment(filter._1stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $lte: filter._1stReviewedTo,
       };
     }
     if (filter._1stReviewedBy) {
@@ -151,16 +149,16 @@ export class IaoRequestService {
     // filter 2st reviewed
     if (filter._2stReviewedFrom && filter._2stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._2stReviewedFrom, 'DD-MM-YYYY').toDate(),
-        $lte: moment(filter._2stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $gte: filter._2stReviewedFrom,
+        $lte: filter._2stReviewedTo,
       };
     } else if (filter._2stReviewedFrom) {
       query['firstReviewer.createdAt'] = {
-        $gte: moment(filter._2stReviewedFrom, 'DD-MM-YYYY').toDate(),
+        $gte: filter._2stReviewedFrom,
       };
     } else if (filter._2stReviewedTo) {
       query['firstReviewer.createdAt'] = {
-        $lte: moment(filter._2stReviewedTo, 'DD-MM-YYYY').toDate(),
+        $lte: filter._2stReviewedTo,
       };
     }
     if (filter._2stReviewedBy) {
@@ -415,26 +413,6 @@ export class IaoRequestService {
         },
       },
       {
-        $lookup: {
-          from: Fractor.name,
-          let: { fractorId: '$ownerId' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ['$$fractorId', '$fractorId'] },
-              },
-            },
-            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
-          ],
-          as: 'updatedBys',
-        },
-      },
-      {
-        $addFields: {
-          updatedBy: { $arrayElemAt: ['$updatedBys', 0] },
-        },
-      },
-      {
         $addFields: {
           sizeOfItem: { $size: '$items' },
         },
@@ -591,12 +569,26 @@ export class IaoRequestService {
         updatedAt: { $first: '$updatedAt' },
         updatedBy: { $first: '$updatedBy' },
         bd: { $first: '$bd' },
+        iaoEventId: { $first: '$iaoEventId' },
       },
     });
 
     const iaos = await this.dataService.iaoRequest.aggregate(agg);
 
     if (iaos.length === 0) throw 'No data exists';
+    if (iaos[0].updatedBy) {
+      const admin = await this.dataService.admin.findOne({
+        adminId: iaos[0].updatedBy,
+      });
+      const fractor = await this.dataService.fractor.findOne({
+        fractorId: iaos[0].updatedBy,
+      });
+      const updatedBy = {
+        fractorId: admin ? admin.adminId : fractor.fractorId,
+        fullname: admin ? admin.fullname : fractor.fullname,
+      };
+      iaos[0].updatedBy = updatedBy;
+    }
     const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
     return iao;
   }
@@ -623,10 +615,9 @@ export class IaoRequestService {
         updatedAt: iaoRequest['updatedAt'],
       },
       {
-        $set: {
-          firstReviewer: { ...firstReview },
-          status: IAO_REQUEST_STATUS.APPROVED_A,
-        },
+        firstReviewer: { ...firstReview },
+        status: IAO_REQUEST_STATUS.APPROVED_A,
+        updatedBy: user.adminId,
       },
     );
     if (updateIaoRequest.modifiedCount === 0)
@@ -661,10 +652,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            secondReviewer: { ...secondReview },
-            status: IAO_REQUEST_STATUS.APPROVED_B,
-          },
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.APPROVED_B,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -685,7 +675,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.IAO_APPROVED },
+          status: ASSET_STATUS.IAO_APPROVED,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -727,10 +718,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            firstReviewer: { ...firstReview },
-            status: IAO_REQUEST_STATUS.REJECTED,
-          },
+          firstReviewer: { ...firstReview },
+          status: IAO_REQUEST_STATUS.REJECTED,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -751,7 +741,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN },
+          status: ASSET_STATUS.OPEN,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -793,10 +784,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            secondReviewer: { ...secondReview },
-            status: IAO_REQUEST_STATUS.REJECTED,
-          },
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.REJECTED,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -817,7 +807,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN },
+          status: ASSET_STATUS.OPEN,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -888,7 +879,7 @@ export class IaoRequestService {
           ownerId: iaoRequest.ownerId,
           status: IAO_REQUEST_STATUS.IN_REVIEW,
         },
-        { $set: { status: IAO_REQUEST_STATUS.DRAFT } },
+        { status: IAO_REQUEST_STATUS.DRAFT, updatedBy: user.adminId },
         { session },
       );
       if (updateIaoRequest.modifiedCount === 0)
@@ -909,7 +900,9 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN, inDraft: true },
+          status: ASSET_STATUS.OPEN,
+          inDraft: true,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -939,12 +932,11 @@ export class IaoRequestService {
       throw 'Second review is not exists';
 
     const update = {
-      $set: {
-        firstReviewer: {
-          ...iaoRequest.firstReviewer,
-          comment: dto.firstComment,
-        },
+      firstReviewer: {
+        ...iaoRequest.firstReviewer,
+        comment: dto.firstComment,
       },
+      updatedBy: user.adminId,
     };
 
     if (dto.secondComment && iaoRequest.secondReviewer) {

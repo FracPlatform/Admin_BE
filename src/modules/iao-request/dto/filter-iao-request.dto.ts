@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsOptional,
@@ -8,6 +8,7 @@ import {
   IsEnum,
   ValidationOptions,
   registerDecorator,
+  IsDate,
 } from 'class-validator';
 import { IAO_REQUEST_STATUS, IAO_REQUEST_TYPE } from 'src/datalayer/model';
 import moment = require('moment');
@@ -47,31 +48,27 @@ export class FilterIAORequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ValidateDate('submittedFrom', {
-    message: 'submitted From  must be formatted as dd-mm-yyyy',
-  })
-  submittedFrom: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  submittedFrom: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ValidateDate('submittedTo', {
-    message: 'submitted To  must be formatted as dd-mm-yyyy',
-  })
-  submittedTo: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  submittedTo: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ValidateDate('_1stReviewedFrom', {
-    message: '1st reviewed From  must be formatted as dd-mm-yyyy',
-  })
-  _1stReviewedFrom: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  _1stReviewedFrom: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ValidateDate('_1stReviewedTo', {
-    message: '1st reviewed To  must be formatted as dd-mm-yyyy',
-  })
-  _1stReviewedTo: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  _1stReviewedTo: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -81,17 +78,15 @@ export class FilterIAORequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ValidateDate('_2stReviewedFrom', {
-    message: '2st reviewed From  must be formatted as dd-mm-yyyy',
-  })
-  _2stReviewedFrom: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  _2stReviewedFrom: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @ValidateDate('_2stReviewedTo', {
-    message: '2st reviewed to  must be formatted as dd-mm-yyyy',
-  })
-  _2stReviewedTo: string;
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  _2stReviewedTo: Date;
 
   @ApiProperty({ required: false })
   @IsOptional()

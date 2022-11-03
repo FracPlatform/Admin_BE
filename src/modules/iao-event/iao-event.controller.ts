@@ -35,6 +35,7 @@ import { GetListIaoEventDto } from './dto/get-list-iao-event.dto';
 import { CalenderDTO } from './dto/calendar.dto';
 
 @Controller('iao-event')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('IAO Event')
 export class IaoEventController {
   constructor(private readonly iaoEventService: IaoEventService) {}
@@ -42,7 +43,6 @@ export class IaoEventController {
   @Post('/draft')
   @ApiOperation({ summary: 'Create IAO event as draft' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async createDraft(
@@ -61,7 +61,6 @@ export class IaoEventController {
   }
 
   @Get('/whitelist')
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Filter whitelist' })
@@ -85,7 +84,6 @@ export class IaoEventController {
   }
 
   @Post('/whitelist')
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a whitelist' })
@@ -101,7 +99,6 @@ export class IaoEventController {
   }
 
   @Delete('/whitelist/:iaoEventId')
-  @UseGuards(JwtAuthGuard)
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Edit record in whitelist' })
@@ -152,7 +149,6 @@ export class IaoEventController {
   @Get('detail/:id')
   @ApiOperation({ summary: 'get IAO event detail' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async findOne(@Param('id') id: string) {
@@ -167,7 +163,6 @@ export class IaoEventController {
   @Put(':id/draft')
   @ApiOperation({ summary: 'update IAO event as draft' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async updateIaoDraft(
@@ -190,7 +185,6 @@ export class IaoEventController {
   @Put(':id/onchain')
   @ApiOperation({ summary: 'update IAO OnChain' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async updateIaoOnChain(
@@ -213,7 +207,6 @@ export class IaoEventController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete IAO event' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async remove(@Param('id') id: string, @Req() req: Request) {
@@ -228,7 +221,6 @@ export class IaoEventController {
   @Post('check-time')
   @ApiOperation({ summary: 'Check time IAO event' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async checkRegistrationParticipation(@Body() data: CheckTimeDTO) {
@@ -244,7 +236,6 @@ export class IaoEventController {
   @Get('calender')
   @ApiOperation({ summary: 'get IAO event for calender' })
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async getIaoEventListForCalender(@Query() data: CalenderDTO) {

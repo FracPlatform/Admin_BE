@@ -79,6 +79,11 @@ export const DEFAULT_OFFET = 0;
 
 export const DEFAULT_LIMIT = 10;
 
+export enum SORT_AGGREGATE {
+  ASC = 1,
+  DESC = -1,
+}
+
 export enum PREFIX_ID {
   FRACTOR = 'FRT',
   ADMIN = 'ADM',
@@ -106,6 +111,8 @@ export const CONTRACT_EVENTS = {
   DEPOSIT_FUND_EVENT: 'DepositFundEvent',
   CLAIM_FNFT_SUCCESSFUL: 'WithdrawFNFTEvent',
   CLAIM_FNFT_FAILURE: 'WithdrawFundEvent',
+  MERGE_FNFT: 'getNFTEvent',
+  APPROVE_IAO_REVENUE_EVENT: 'SetFractorRevenueEvent',
 };
 
 export enum CHAINID {
@@ -116,6 +123,7 @@ export enum CHAINID {
 export enum CVS_NAME {
   WHITELIST = '[Frac]_IAOwhitelist_',
   IAO_EVENT = '[Frac]_IAOeventlist_',
+  IAO_REVENUE = '[Frac]_IAOrevenuelist_',
 }
 
 export const VAULT_TYPE_BY_ID = {
@@ -145,3 +153,5 @@ export const REDEMPTION_REQUEST_TYPE = {
   APPROVE: 1,
   REJECT: 2,
 };
+
+export const DEFAULT_BD_COMMISSION_RATE = 5;

@@ -5,7 +5,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { SETTINGS_NAME_DEFAULT } from 'src/datalayer/model';
-import { UpdateSettingsDto } from './dto/settings.dto';
+import { SettingBanner, UpdateSettingsDto } from './dto/settings.dto';
 import { SettingsBuilderService } from './settings.factory.service';
 
 @Injectable()
@@ -51,5 +51,16 @@ export class SettingsService {
       updateSettings,
       { new: true },
     );
+  }
+
+  async uploadBanner(settingBanner: SettingBanner) {
+    const settings = await this.dataServices.settings.findOneAndUpdate(
+      {
+        settingsName: SETTINGS_NAME_DEFAULT,
+      },
+      { banner: settingBanner.banner },
+      { new: true },
+    );
+    return settings;
   }
 }

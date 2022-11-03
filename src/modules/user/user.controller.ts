@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -14,19 +15,24 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
-import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
+import {
+  CreateAffiliateDTO,
+  DeactivateUserDTO,
+  FilterUserDto,
+} from './dto/user.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('User')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('/affiliate')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.HeadOfBD, Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Create new affiliate' })
@@ -41,7 +47,6 @@ export class UserController {
 
   @Get('/affiliate/:id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(
     Role.SuperAdmin,
@@ -60,9 +65,48 @@ export class UserController {
     }
   }
 
+  @Get('/')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Roles(
+    Role.SuperAdmin,
+    Role.OWNER,
+    Role.MasterBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+  )
+  @ApiOperation({ summary: 'Get list user' })
+  async getAllUsers(@Query() filter: FilterUserDto) {
+    try {
+      const users = await this.userService.getAllUsers(filter);
+      return new ApiSuccessResponse().success(users, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Roles(
+    Role.SuperAdmin,
+    Role.OWNER,
+    Role.MasterBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+  )
+  @ApiOperation({ summary: 'Get user detail' })
+  async getUserDetail(@Param('id') userId: string) {
+    try {
+      const user = await this.userService.getUserDetail(userId);
+      return new ApiSuccessResponse().success(user, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Put('/deactivate/:id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Deactivate User' })
@@ -81,7 +125,6 @@ export class UserController {
 
   @Put('/active/:id')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Roles(Role.SuperAdmin, Role.OWNER)
   @ApiOperation({ summary: 'Active User' })

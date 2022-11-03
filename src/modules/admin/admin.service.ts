@@ -124,12 +124,20 @@ export class AdminService {
     if (data.role == Role.SuperAdmin && user.role !== Role.OWNER)
       throw new ForbiddenException('Forbidden');
 
+    // validate if role is bd of affiliate
+    if (data.role === Role.MasterBD && !data.commissionRate) {
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'commissionRate must require when role is bd of affiliate',
+      );
+    }
+
     const session = await this.connection.startSession();
     session.startTransaction();
 
     try {
       // create referral
-      const referral = [Role.FractorBD, Role.MasterBD].includes(data.role)
+      const referral = [Role.FractorBD].includes(data.role)
         ? await this.randomReferal()
         : null;
 
@@ -166,6 +174,14 @@ export class AdminService {
     const currentAdmin = await this.dataServices.admin.findOne(filter);
     if (!currentAdmin)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'Id not already exists');
+
+    // validate if role is bd of affiliate
+    if (currentAdmin.role === Role.MasterBD && !data.commissionRate) {
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'commissionRate must require when role is bd of affiliate',
+      );
+    }
 
     if (currentAdmin.role == Role.OWNER && user.role !== Role.OWNER)
       throw new ForbiddenException('Forbidden');
