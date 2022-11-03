@@ -95,33 +95,21 @@ export class GetIntervalSettingDto {
 }
 
 export class FilterPairDto {
-  @IsNumber()
-  @IsOptional()
   @ApiProperty({ type: Number, required: false })
   page: number;
 
-  @IsNumber()
-  @IsOptional()
   @ApiProperty({ type: Number, required: false })
   limit: number;
 
-  @IsNumber()
-  @IsOptional()
   @ApiProperty({ type: Number, required: false })
   status: number;
 
-  @IsNumber()
-  @IsOptional()
   @ApiProperty({ type: Number, required: false })
   base_symbol_coin: number;
 
-  @IsString()
-  @IsOptional()
   @ApiProperty({ type: String, required: false })
   search: string;
 
-  @IsNumber()
-  @IsOptional()
   @ApiProperty({ type: Number, required: false })
   is_show: number;
 }
@@ -305,4 +293,45 @@ export class GetTradeDto {
 
   @ApiProperty({ required: false })
   endDate: string;
+}
+
+export class DownloadTradeDto {
+  @ApiProperty({ required: false })
+  pair: number;
+
+  @ApiProperty({ required: false })
+  wallet: string;
+
+  @ApiProperty({ type: [String], required: false })
+  tradeMethodTab: string;
+
+  @ApiProperty({ required: false })
+  userId: number;
+
+  @ApiProperty({ required: false })
+  orderId: string;
+
+  @ApiProperty({ required: false })
+  pool: string;
+
+  @ApiProperty({ required: false })
+  type: number;
+
+  @ApiProperty({ required: false })
+  coinId: number;
+
+  @ApiProperty({ required: false })
+  startDate: string;
+
+  @ApiProperty({ required: false })
+  endDate: string;
+
+  @ApiProperty({ required: false })
+  startDateTimestamp: number;
+
+  @ApiProperty({ required: false })
+  endDateTimestamp: number;
+
+  @ApiProperty({ required: false })
+  timezone: string;
 }
