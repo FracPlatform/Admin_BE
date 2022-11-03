@@ -12,8 +12,8 @@ export class UpdateIaoRevenueDto {
   @IsNumber()
   @IsOptional()
   @ApiProperty({ type: Number, required: false })
-  @Max(99)
-  @Min(0)
+  @Max(99.99)
+  @Min(0.01)
   bdCommissionRate: number;
 
   @IsString()
