@@ -129,17 +129,10 @@ export class IaoRevenueBuilderService {
         iaoEvent.totalSupply - iaoEvent.availableSupply >=
           (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
       ),
-      platformGrossCommission:
-        iaoEvent.revenue.status === REVENUE_STATUS.APPROVED &&
-        platformGrossCommission,
-      fractorNetRevenue:
-        iaoEvent.revenue.status === REVENUE_STATUS.APPROVED &&
-        fractorNetRevenue,
-      bdCommission:
-        iaoEvent.revenue.status === REVENUE_STATUS.APPROVED && bdCommission,
-      platformNetCommission:
-        iaoEvent.revenue.status === REVENUE_STATUS.APPROVED &&
-        platformNetCommission,
+      platformGrossCommission,
+      fractorNetRevenue,
+      bdCommission,
+      platformNetCommission,
     };
     return iaoEventDetail;
   }

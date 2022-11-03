@@ -16,7 +16,6 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
-import { ApproveIaoRevenueDto } from './dto/approve-iao-revenue.dto';
 import { GetListIaoRevenueDto } from './dto/get-list-iao-revenue.dto';
 import { UpdateIaoRevenueDto } from './dto/update-iao-revenue.dto';
 import { IaoRevenueService } from './revenue.service';
@@ -105,24 +104,6 @@ export class IaoRevenueController {
   ) {
     try {
       const responseData = await this.iaoRevenueService.updateIaoRevenue(
-        iaoEventId,
-        body,
-      );
-      return new ApiSuccessResponse().success(responseData, '');
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Put('approve/:id')
-  @ApiOperation({ summary: 'Approve IAO revenue' })
-  @Roles(Role.SuperAdmin, Role.OWNER)
-  async approveIaoRevenue(
-    @Param('id') iaoEventId: string,
-    @Body() body: ApproveIaoRevenueDto,
-  ) {
-    try {
-      const responseData = await this.iaoRevenueService.approveIaoRevenue(
         iaoEventId,
         body,
       );
