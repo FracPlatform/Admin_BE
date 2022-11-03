@@ -1205,7 +1205,7 @@ export class IaoEventService {
     return await this.dataService.whitelist.updateOne(filter, option);
   }
 
-  async exportWhitelist(user: any, data: ExportWhitelistDto) {
+  async exportWhitelist(res: any, user: any, data: ExportWhitelistDto) {
     const filter = { iaoEventId: data.iaoEventId, isDeleted: false };
 
     const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
@@ -1218,12 +1218,52 @@ export class IaoEventService {
         'Now <= Participation start time',
       );
 
-    const currentWhiltelist = await this.dataService.whitelist.findOne({
-      iaoEventId: data.iaoEventId,
-      deleted: false,
+    const agg = [];
+
+    agg.push({
+      $match: { iaoEventId: data.iaoEventId, deleted: false },
     });
+
+    const query: any = {
+      $project: {
+        iaoEventId: 1,
+        deleted: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    };
+
+    if (data.wallet && data.wallet.trim()) {
+      query['$project']['whiteListAddresses'] = {
+        $filter: {
+          input: '$whiteListAddresses',
+          as: 'whiteListAddress',
+          cond: {
+            $regexMatch: {
+              input: '$$whiteListAddress.walletAddress',
+              regex: data.wallet.trim(),
+              options: 'i',
+            },
+          },
+        },
+      };
+    } else {
+      query['$project']['whiteListAddresses'] = 1;
+    }
+
+    agg.push(query);
+
+    const dataQuery = await this.dataService.whitelist.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+
+    const currentWhiltelist = get(dataQuery, [0]);
+
     if (!currentWhiltelist)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
+
+    if (!currentWhiltelist.whiteListAddresses.length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'No data');
 
     const headings = [
       [
@@ -1244,14 +1284,9 @@ export class IaoEventService {
     XLSX.utils.book_append_sheet(wb, ws);
 
     const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
+    res.attachment(`${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
 
-    const linkS3 = await this.s3Service.uploadS3(
-      buffer,
-      'text/csv',
-      `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`,
-    );
-
-    return { data: linkS3 };
+    return res.status(200).send(buffer);
   }
 
   async checkRegistrationParticipation(checkTimeDTO: CheckTimeDTO) {

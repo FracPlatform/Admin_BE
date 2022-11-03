@@ -74,8 +74,12 @@ export class IaoEventController {
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Export whitelist' })
-  async exportWhitelist(@GetUser() user, @Query() filter: ExportWhitelistDto) {
-    const data = await this.iaoEventService.exportWhitelist(user, filter);
+  async exportWhitelist(
+    @Res() res: Response,
+    @GetUser() user,
+    @Query() filter: ExportWhitelistDto,
+  ) {
+    const data = await this.iaoEventService.exportWhitelist(res, user, filter);
     return new ApiSuccessResponse().success(data, '');
   }
 
