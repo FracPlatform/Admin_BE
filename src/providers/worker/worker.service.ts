@@ -11,6 +11,8 @@ import {
   ADMIN_STATUS,
   CLAIM_STATUS,
   CLAIM_TYPE,
+  FNFT_DECIMAL,
+  FractorRevenue,
   F_NFT_MINTED_STATUS,
   F_NFT_STATUS,
   F_NFT_TYPE,
@@ -18,6 +20,7 @@ import {
   IAO_REQUEST_STATUS,
   ON_CHAIN_STATUS,
   PURCHASE_STATUS,
+  REVENUE_STATUS,
 } from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
 import { SOCKET_EVENT } from '../socket/socket.enum';
@@ -34,6 +37,7 @@ import { Connection } from 'mongoose';
 import { CommonService } from 'src/common-service/common.service';
 import { DepositedNFT } from 'src/entity';
 import axios from 'axios';
+import BigNumber from 'bignumber.js';
 const jwt = require('jsonwebtoken');
 
 @Injectable()
@@ -88,6 +92,8 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.MERGE_FNFT:
           await this._handleMergeFNFTEvent(requestData);
+        case CONTRACT_EVENTS.APPROVE_IAO_REVENUE_EVENT:
+          await this._handleApproveIaoRevenue(requestData);
         default:
           break;
       }
@@ -674,6 +680,68 @@ export class WorkerService {
         SOCKET_EVENT.MERGE_FNFT_EVENT,
         requestData,
         requestData.metadata.receiver,
+      );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+  private async _handleApproveIaoRevenue(requestData: WorkerDataDto) {
+    const iaoEventId = this.commonService.decodeHexToString(
+      requestData.metadata.iaoId,
+    );
+    const fractorId = this.commonService.decodeHexToString(
+      requestData.metadata.fractorId,
+    );
+    const iaoEvent = await this.dataServices.iaoEvent.findOne({
+      iaoEventId,
+    });
+    const admin = await this.dataServices.admin.findOne({
+      walletAddress: {
+        $regex: requestData.metadata.caller,
+        $options: 'i',
+      },
+    });
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      await this.dataServices.iaoEvent.updateOne(
+        {
+          iaoEventId,
+        },
+        {
+          $set: {
+            'revenue.status': REVENUE_STATUS.APPROVED,
+            'revenue.finalizedOn': new Date(),
+            'revenue.finalizedBy': admin.adminId,
+          },
+        },
+      );
+      const newApproveIaoRevenue: FractorRevenue = {
+        balance: new BigNumber(requestData.metadata.revenue)
+          .dividedBy(Math.pow(10, FNFT_DECIMAL))
+          .toNumber(),
+        currencyContract: iaoEvent.acceptedCurrencyAddress,
+        tokenSymbol: iaoEvent.acceptedCurrencySymbol,
+        iaoEventId,
+      };
+      await this.dataServices.fractor.updateOne(
+        {
+          fractorId,
+        },
+        {
+          $push: {
+            revenue: newApproveIaoRevenue,
+          },
+        },
+      );
+      await session.commitTransaction();
+      this.socketGateway.sendMessage(
+        SOCKET_EVENT.APPROVE_IAO_REVENUE,
+        requestData,
+        requestData.metadata.caller,
       );
     } catch (error) {
       await session.abortTransaction();
