@@ -57,6 +57,34 @@ export class NotificationQueueService {
       });
     }
 
+    if (filter.sortField === 'sentOn' && filter.sortType) {
+      pipeline.push({
+        $addFields: {
+          schedule: {
+            $cond: {
+              if: {
+                $and: [
+                  {
+                    $in: [
+                      '$status',
+                      [
+                        NOTIFICATION_QUEUE_STATUS.SCHEDULED,
+                        NOTIFICATION_QUEUE_STATUS.SENT,
+                      ],
+                    ],
+                  },
+                  { $ne: ['$sentOn', null] },
+                ],
+              },
+              then: 0,
+              else: 1,
+            },
+          },
+        },
+      });
+      sort['schedule'] = SORT_AGGREGATE.ASC;
+    }
+
     if (filter.sortField && filter.sortType) {
       sort[filter.sortField] = filter.sortType;
     } else {

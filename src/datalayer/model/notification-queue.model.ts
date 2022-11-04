@@ -59,7 +59,7 @@ export class NotificationQueue {
   @Prop({ type: Date })
   scheduledOn?: Date;
 
-  @Prop({ type: Date })
+  @Prop({ type: Date, default: null })
   sentOn?: Date;
 
   @Prop({ type: Date })
