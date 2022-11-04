@@ -1,19 +1,27 @@
 import {
   CreateNotifQueueDto,
+  FilterNotificationDto,
   ScheduleNotificationDto,
   UpdateNotifQueueDto,
 } from './dto/notification-queue.dto';
 import { Injectable, Logger } from '@nestjs/common';
-import { ErrorCode } from 'src/common/constants';
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_OFFET,
+  ErrorCode,
+  SORT_AGGREGATE,
+} from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
+import { Connection, PipelineStage } from 'mongoose';
 import { ApiError } from 'src/common/api';
 import { NotificationQueueBuilderService } from './notification-queue.factory.service';
 import {
   NotificationQueue,
   NOTIFICATION_QUEUE_STATUS,
 } from 'src/datalayer/model';
+import { Utils } from 'src/common/utils';
+import { ListDocument } from '../iao-request/iao-request.service';
 
 @Injectable()
 export class NotificationQueueService {
@@ -25,8 +33,61 @@ export class NotificationQueueService {
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
-  async getNotifications() {
-    return '';
+  async getAll(filter: FilterNotificationDto) {
+    const { offset, limit } = filter;
+    const match: Record<string, any> = {};
+    const sort: Record<string, any> = {};
+    const pipeline: PipelineStage[] = [];
+
+    if (filter.hasOwnProperty('textSearch')) {
+      const textSearch = filter.textSearch.trim();
+      Object.assign(match, {
+        ...match,
+        $or: [
+          { notiQueueId: Utils.queryInsensitive(textSearch) },
+          { title: Utils.queryInsensitive(textSearch) },
+        ],
+      });
+    }
+
+    if (filter.hasOwnProperty('status')) {
+      Object.assign(match, {
+        ...match,
+        status: { $in: [Number(filter.status)] },
+      });
+    }
+
+    if (filter.sortField && filter.sortType) {
+      sort[filter.sortField] = filter.sortType;
+    } else {
+      sort['createdAt'] = SORT_AGGREGATE.DESC;
+    }
+
+    pipeline.push({
+      $match: match,
+    });
+
+    const $facet: any = {
+      count: [{ $count: 'totalItem' }],
+      items: [
+        { $sort: sort },
+        { $skip: offset || DEFAULT_OFFET },
+        { $limit: limit || DEFAULT_LIMIT },
+      ],
+    };
+
+    pipeline.push({ $facet });
+
+    const data = await this.dataService.notificationQueue.aggregate(pipeline, {
+      collation: { locale: 'en_US', strength: 1 },
+    });
+
+    const [result] = data;
+    const [total] = result.count;
+    return {
+      totalDocs: total ? total.totalItem : 0,
+      docs: result.items || [],
+    } as ListDocument;
   }
 
   async getDetail(notiQueueId: string) {

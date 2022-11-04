@@ -7,10 +7,10 @@ export enum NOTIFICATION_QUEUE_TYPE {
 }
 
 export enum NOTIFICATION_QUEUE_STATUS {
-  INACTIVE = 0,
   DRAFT = 1,
   SCHEDULED = 2,
   SENT = 3,
+  INACTIVE = 4,
 }
 
 export enum LOCALIZATION {

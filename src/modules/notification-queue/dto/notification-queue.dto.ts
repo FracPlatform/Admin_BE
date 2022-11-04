@@ -9,6 +9,7 @@ import {
   IsEnum,
   IsDate,
   IsDateString,
+  IsNumber,
 } from 'class-validator';
 import {
   LOCALIZATION,
@@ -112,4 +113,55 @@ export class UpdateNotifQueueDto {
   @IsString()
   @MaxLength(30000)
   description: string;
+}
+
+export class FilterNotificationDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  textSearch: string;
+
+  @ApiProperty({
+    required: false,
+    description: ' 1 - Draft, 2- Scheduled, 3 - Send, 4- Inative ',
+    enum: { DRAFT: 1, SCHEDULED: 2, SEND: 3, INACTIVE: 4 },
+    enumName: 'status',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  status: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  limit: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  offset: number;
+
+  @ApiProperty({
+    required: false,
+    enum: { createdAt: 'createdAt', sentOn: 'sentOn' },
+    enumName: 'sortField',
+  })
+  @IsOptional()
+  @IsString({ message: 'E0' })
+  sortField: string;
+
+  @ApiProperty({
+    required: false,
+    description: '-1 => DESC, 1 => ASC',
+    enum: { DESC: -1, ASC: 1 },
+    enumName: 'sortType',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  sortType: number;
 }

@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { RolesGuard } from '../auth/guard/roles.guard';
 import { NotificationQueueService } from './notification-queue.service';
 import {
   CreateNotifQueueDto,
+  FilterNotificationDto,
   ScheduleNotificationDto,
   UpdateNotifQueueDto,
 } from './dto/notification-queue.dto';
@@ -29,6 +31,18 @@ import { Request } from 'express';
 @ApiTags('Notification Queue')
 export class NotificationQueueController {
   constructor(private readonly notifQueueService: NotificationQueueService) {}
+
+  @Get('')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get List Notification' })
+  async getAll(@Query('') filter: FilterNotificationDto) {
+    try {
+      const data = await this.notifQueueService.getAll(filter);
+      return new ApiSuccessResponse().success(data, '');
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Get(':notiQueueId')
   @ApiBearerAuth()
