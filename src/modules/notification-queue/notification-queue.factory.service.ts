@@ -27,8 +27,8 @@ export class NotificationQueueBuilderService {
       sendTo: data.sendTo,
       title: data.title,
       description: data.description,
-      updatedBy: 'admin.adminId',
-      createdBy: 'admin.adminId',
+      updatedBy: admin.adminId,
+      createdBy: admin.adminId,
     };
     return response;
   }
