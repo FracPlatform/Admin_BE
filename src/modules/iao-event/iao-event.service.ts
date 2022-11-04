@@ -135,7 +135,7 @@ export class IaoEventService {
         );
         await this.dataService.iaoRequest.updateOne(
           { iaoId: fnft.iaoRequestId },
-          { $set: { iaoEventId: iaoEvent.iaoEventId } },
+          { $set: { iaoEventId: iaoEvent[0].iaoEventId } },
           { session },
         );
       }
