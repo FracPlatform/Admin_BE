@@ -104,16 +104,16 @@ export class IaoRequestService {
 
     // filter submitted
     if (filter.submittedFrom && filter.submittedTo) {
-      query['createdAt'] = {
+      query['submitedAt'] = {
         $gte: filter.submittedFrom,
         $lte: filter.submittedTo,
       };
     } else if (filter.submittedFrom) {
-      query['createdAt'] = {
+      query['submitedAt'] = {
         $gte: filter.submittedFrom,
       };
     } else if (filter.submittedTo) {
-      query['createdAt'] = {
+      query['submitedAt'] = {
         $lte: filter.submittedTo,
       };
     }
