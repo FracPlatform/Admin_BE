@@ -161,7 +161,17 @@ export class UserService {
   }
 
   async getAffiliateDetail(userId: string) {
-    const affliate = await this.dataService.user.findOne({ userId });
+    const affliate = await this.dataService.user.findOne({
+      userId,
+      role: {
+        $in: [
+          USER_ROLE.AFFILIATE_SUB_1,
+          USER_ROLE.AFFILIATE_SUB_2,
+          USER_ROLE.MASTER_AFFILIATE,
+        ],
+      },
+    });
+    if (!affliate) throw ApiError('', 'Affiliate is invalid');
     const idList = [
       affliate.bd,
       affliate.createdAffiliateBy?.createdBy,
@@ -183,9 +193,9 @@ export class UserService {
     );
     const data = {
       bd: bd?.fullname,
-      createdBy: createdBy.fullname,
-      updatedBy: updatedBy.fullname,
-      deactivateBy: deactivateBy.fullname,
+      createdBy: createdBy?.fullname,
+      updatedBy: updatedBy?.fullname,
+      deactivateBy: deactivateBy?.fullname,
     };
     const affiliateDetail = this.userBuilderService.getAffiliateDetail(
       affliate,
