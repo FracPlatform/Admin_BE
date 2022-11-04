@@ -114,6 +114,9 @@ export class Nft {
 
   @Prop({ type: String })
   collectionId?: string;
+
+  @Prop({ type: String })
+  assetUuid?: string;
 }
 export const NftSchema = SchemaFactory.createForClass(Nft);
 NftSchema.index({ tokenId: 1 });
