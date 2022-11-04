@@ -66,6 +66,7 @@ export class NftBuilderService {
       deleted: false,
       metadataUrl,
       collectionId: assetItem?.collectionId,
+      assetUuid: assetItem?._id,
     };
     return newNft;
   }

@@ -21,6 +21,7 @@ export class NftEntity {
   createdBy: string;
   deleted: boolean;
   collectionId: string;
+  assetUuid: string;
 }
 
 export class NftMetadataEntity {
