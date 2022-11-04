@@ -4,6 +4,13 @@ export type SettingsDocument = Settings & Document;
 
 export const SETTINGS_NAME_DEFAULT = 'SETING_DEFAULT';
 
+export class Affiliate {
+  registrationUrl: string;
+  resourceUrl: string;
+  telegramUrl: string;
+  feedbackUrl: string;
+}
+
 export class AssetItem {
   maxFile: number;
   maxSizeOfFile: number;
@@ -81,6 +88,9 @@ export class Banner {
 export class Settings {
   @Prop({ type: String })
   settingsName: string;
+
+  @Prop({ type: Affiliate })
+  affiliate: Affiliate;
 
   @Prop({ type: AssetItem })
   assetItem: AssetItem;

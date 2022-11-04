@@ -15,6 +15,32 @@ import {
   IsArray,
 } from 'class-validator';
 
+export class Affiliate {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  registrationUrl: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  resourceUrl: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  telegramUrl: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(256)
+  feedbackUrl: string;
+}
+
 export class AssetItem {
   @ApiProperty({ required: false })
   @IsOptional()
@@ -224,6 +250,12 @@ export class CustodianshipLabel {
 }
 
 export class UpdateSettingsDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => Affiliate)
+  affiliate: Affiliate;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @ValidateNested({ each: true })
