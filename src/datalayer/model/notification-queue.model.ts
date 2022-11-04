@@ -7,10 +7,10 @@ export enum NOTIFICATION_QUEUE_TYPE {
 }
 
 export enum NOTIFICATION_QUEUE_STATUS {
-  INACTIVE = 0,
   DRAFT = 1,
   SCHEDULED = 2,
   SENT = 3,
+  INACTIVE = 4,
 }
 
 export enum LOCALIZATION {
@@ -59,7 +59,7 @@ export class NotificationQueue {
   @Prop({ type: Date })
   scheduledOn?: Date;
 
-  @Prop({ type: Date })
+  @Prop({ type: Date, default: null })
   sentOn?: Date;
 
   @Prop({ type: Date })
