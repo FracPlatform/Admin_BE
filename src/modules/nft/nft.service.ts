@@ -279,8 +279,9 @@ export class NftService {
   }
 
   async createNft(body: CreateNftDto, user: any) {
+    let assetItem;
     if (body.assetId) {
-      const assetItem = await this.dataService.asset.findOne({
+      assetItem = await this.dataService.asset.findOne({
         itemId: body.assetId,
       });
       if (!assetItem) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Invalid asset');
@@ -301,6 +302,7 @@ export class NftService {
         body,
         user,
         session,
+        assetItem,
       );
       await this.dataService.nft.create(newNft, { session });
       await session.commitTransaction();
