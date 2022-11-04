@@ -18,12 +18,22 @@ export enum SocialType {
   TWITTER = 'twitter',
 }
 
+Schema({
+  collection: 'FractorRevenue',
+  timestamps: true,
+});
 export class FractorRevenue {
+  isWithdrawed: boolean;
   balance: number;
   currencyContract: string;
-  tokenSymbol: string;
+  acceptedCurrencySymbol: string;
+  fnftContractAddress: string;
+  exchangeRate: number;
   iaoEventId: string;
 }
+
+export const FractorRevenueSchema =
+  SchemaFactory.createForClass(FractorRevenue);
 
 export class SocialLink {
   @Prop({ type: String })
@@ -116,7 +126,7 @@ export class Fractor {
   @Prop({ type: String, default: '' })
   fractorAddress: string;
 
-  @Prop({ type: () => [FractorRevenue] })
+  @Prop({ type: [FractorRevenueSchema] })
   revenue: FractorRevenue[];
 }
 

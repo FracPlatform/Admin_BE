@@ -17,4 +17,5 @@ export enum SOCKET_EVENT {
   CLAIM_FNFT_FAILURE_EVENT = 'claim-fnft-failure-event',
   MERGE_FNFT_EVENT = 'merge-fnft-event',
   APPROVE_IAO_REVENUE = 'approve-iao-revenue',
+  REJECT_IAO_REVENUE = 'reject-iao-revenue',
 }
