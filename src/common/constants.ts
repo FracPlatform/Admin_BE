@@ -98,6 +98,7 @@ export enum PREFIX_ID {
   AFFILIATE = 'AFF',
   EXCHANGE_TOKEN = 'TKN',
   EXCHANGE_TRADING_PAIRS = 'TP',
+  NOTIF_QUEUE = 'NTQ',
 }
 
 export const CONTRACT_EVENTS = {
