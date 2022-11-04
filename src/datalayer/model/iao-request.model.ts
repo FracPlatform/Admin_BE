@@ -116,6 +116,9 @@ export class IAORequest {
 
   @Prop({ type: String })
   iaoEventId?: string;
+
+  @Prop({ type: Date })
+  submitedAt?: Date;
 }
 
 export const IAORequestSchema = SchemaFactory.createForClass(IAORequest);
