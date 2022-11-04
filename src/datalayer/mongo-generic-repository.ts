@@ -57,4 +57,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   aggregate(pipeline: PipelineStage[], options?: object) {
     return this._repository.aggregate(pipeline, options);
   }
+
+  count(conditions: object) {
+    return this._repository.count(conditions);
+  }
 }

@@ -6,7 +6,7 @@ export abstract class IGenericRepository<T> {
   abstract getById(id: string);
 
   abstract create(item: T, options?: object);
-  
+
   abstract insertMany(item: T[], options?: object);
 
   abstract updateById(id: string, item: T);
@@ -15,7 +15,11 @@ export abstract class IGenericRepository<T> {
 
   abstract updateMany(filter: object, update: object, options?: object);
 
-  abstract findOne(conditions: object, projection?: object, options?: object): Promise<T>;
+  abstract findOne(
+    conditions: object,
+    projection?: object,
+    options?: object,
+  ): Promise<T>;
 
   abstract findOneAndUpdate(
     conditions: object,
@@ -26,4 +30,6 @@ export abstract class IGenericRepository<T> {
   abstract findMany(conditions: object, options?: object): Promise<T[]>;
 
   abstract aggregate(pipeline: PipelineStage[], options?: object);
+
+  abstract count(conditions: object);
 }

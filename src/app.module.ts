@@ -26,6 +26,7 @@ import { RedemptionRequestModule } from './modules/redemption-request/redemption
 import { UserModule } from './modules/user/user.module';
 import { IaoRevenueModule } from './modules/revenue/revenue.module';
 import { NotificationQueueModule } from './modules/notification-queue/notification-queue.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { NotificationQueueModule } from './modules/notification-queue/notificati
     DexModule,
     IaoRevenueModule,
     NotificationQueueModule,
+    DashboardModule,
   ],
   controllers: [AppController],
 })
