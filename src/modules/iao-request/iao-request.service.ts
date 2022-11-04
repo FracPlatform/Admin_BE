@@ -879,7 +879,11 @@ export class IaoRequestService {
           ownerId: iaoRequest.ownerId,
           status: IAO_REQUEST_STATUS.IN_REVIEW,
         },
-        { status: IAO_REQUEST_STATUS.DRAFT, updatedBy: user.adminId },
+        {
+          status: IAO_REQUEST_STATUS.DRAFT,
+          updatedBy: user.adminId,
+          submitedAt: null,
+        },
         { session },
       );
       if (updateIaoRequest.modifiedCount === 0)
