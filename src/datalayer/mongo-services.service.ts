@@ -37,6 +37,7 @@ import {
   RedemptionRequest,
   RedemptionRequestDocument,
   NotificationQueueDocument,
+  NotificationQueue,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -92,7 +93,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private ClaimRepository: Model<ClaimDocument>,
     @InjectModel(RedemptionRequest.name)
     private redemptionRequestRepository: Model<RedemptionRequestDocument>,
-    @InjectModel(Notification.name)
+    @InjectModel(NotificationQueue.name)
     private notificationQueueRepository: Model<NotificationQueueDocument>,
   ) {}
 

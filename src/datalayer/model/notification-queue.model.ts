@@ -35,14 +35,11 @@ export class NotificationQueue {
   @Prop({ type: Number, default: NOTIFICATION_QUEUE_STATUS.DRAFT })
   status: NOTIFICATION_QUEUE_STATUS;
 
-  @Prop({ type: Number, default: LOCALIZATION.ENGLISH })
+  @Prop({ type: String, default: LOCALIZATION.ENGLISH })
   localization: string;
 
   @Prop({ type: Array, default: [SENT_TO.FRACTORS, SENT_TO.TRADERS] })
-  sendTo: SENT_TO[];
-
-  @Prop({ type: Date })
-  scheduleTime?: Date;
+  sendTo?: SENT_TO[];
 
   @Prop({ type: String })
   title: string;
@@ -64,6 +61,12 @@ export class NotificationQueue {
 
   @Prop({ type: Date })
   sentOn?: Date;
+
+  @Prop({ type: Date })
+  createdAt?: Date;
+
+  @Prop({ type: Date })
+  updatedAt?: Date;
 }
 export const NotificationQueueSchema =
   SchemaFactory.createForClass(NotificationQueue);
