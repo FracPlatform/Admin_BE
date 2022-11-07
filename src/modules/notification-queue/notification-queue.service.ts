@@ -8,7 +8,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   DEFAULT_LIMIT,
   DEFAULT_OFFET,
-  ErrorCode,
   SORT_AGGREGATE,
 } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
