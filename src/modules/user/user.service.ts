@@ -42,6 +42,12 @@ export class UserService {
       USER_ROLE.AFFILIATE_SUB_2,
       USER_ROLE.MASTER_AFFILIATE,
     ];
+
+    const isAdmin = await this.dataService.admin.findOne({
+      walletAddress: createAffiliateDTO.walletAddress,
+    });
+    if (isAdmin) throw ApiError('', 'This wallet is an admin');
+    
     const affiliate = await this.dataService.user.findOne({
       walletAddress: createAffiliateDTO.walletAddress,
       role: { $in: roleList },

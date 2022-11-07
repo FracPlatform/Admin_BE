@@ -3,13 +3,13 @@ import { Transform } from 'class-transformer';
 import { IsDate, IsOptional } from 'class-validator';
 
 export class DashboardDTO {
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsOptional()
   @Transform(({ value }) => new Date(value))
   @IsDate()
   dateFrom: Date;
 
-  @ApiProperty({ required: true })
+  @ApiProperty({ required: false })
   @IsOptional()
   @Transform(({ value }) => new Date(value))
   @IsDate()
