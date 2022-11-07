@@ -7,7 +7,6 @@ import {
   IsNotEmpty,
   IsArray,
   IsEnum,
-  IsDate,
   IsDateString,
   IsNumber,
 } from 'class-validator';

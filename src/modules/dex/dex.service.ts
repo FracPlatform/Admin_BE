@@ -99,6 +99,14 @@ export class DexService {
           sub1Affiliate.commissionRate,
       });
     }
+    const bdOfAffiliate = await this.dataService.admin.findOne({
+      walletAddress: affiliateOfUser.bd,
+    });
+    res.push({
+      role: USER_ROLE.BD_OF_AFFILIATE,
+      walletAddress: bdOfAffiliate.walletAddress,
+      feeReceive: bdOfAffiliate.commissionRate,
+    });
     return res;
   }
 }
