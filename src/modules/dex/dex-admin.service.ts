@@ -20,6 +20,7 @@ import {
   DownloadCollectedFeeDto,
   GetIntervalSettingsDto,
   GetTradeDto,
+  DownloadTradeDto,
 } from './dto/dex.dto';
 const FormData = require('form-data');
 
@@ -90,7 +91,9 @@ export class DexAdminService {
   async getTradingLevel(filter: TradingLevelDto) {
     return this.http
       .get(
-        `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level?page=${filter.page}&limit=${filter.limit}`,
+        `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trading-level?page=${
+          filter.page || 1
+        }&limit=${filter.limit || 20}`,
         {
           headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         },
@@ -498,6 +501,24 @@ export class DexAdminService {
   async getTrades(filter: GetTradeDto) {
     return this.http
       .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/trades`, {
+        headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
+        params: filter,
+      })
+      .pipe(
+        map((res) => {
+          return res.data;
+        }),
+      )
+      .pipe(
+        catchError((e) => {
+          throw e;
+        }),
+      );
+  }
+  
+  async downloadTrades(filter: DownloadTradeDto) {
+    return this.http
+      .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-trades`, {
         headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         params: filter,
       })
