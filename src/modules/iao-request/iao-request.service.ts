@@ -764,10 +764,7 @@ export class IaoRequestService {
   ) {
     const iaoRequest = await this.dataService.iaoRequest.findOne({
       iaoId: approveIaoRequestDTO.requestId,
-      status: IAO_REQUEST_STATUS.APPROVED_A,
     });
-
-    this._validateSecondReviewer(iaoRequest, user);
 
     const secondReview = this.iaoRequestBuilderService.createReject(
       approveIaoRequestDTO,
