@@ -54,7 +54,7 @@ export class DexService {
       });
     } else if (affiliateOfUser.role === USER_ROLE.AFFILIATE_SUB_1) {
       const masterAffiliate = await this.dataService.user.findOne({
-        walletAddress: affiliateOfUser.masterId,
+        userId: affiliateOfUser.masterId,
       });
       // rate for sub1
       res.push({
@@ -71,10 +71,10 @@ export class DexService {
       });
     } else if (affiliateOfUser.role === USER_ROLE.AFFILIATE_SUB_2) {
       const masterAffiliate = await this.dataService.user.findOne({
-        walletAddress: affiliateOfUser.masterId,
+        userId: affiliateOfUser.masterId,
       });
       const sub1Affiliate = await this.dataService.user.findOne({
-        walletAddress: affiliateOfUser.subFirstId,
+        userId: affiliateOfUser.subFirstId,
       });
       // rate for sub1
       res.push({
@@ -99,14 +99,16 @@ export class DexService {
           sub1Affiliate.commissionRate,
       });
     }
-    const bdOfAffiliate = await this.dataService.admin.findOne({
-      adminId: affiliateOfUser.bd,
-    });
-    res.push({
-      role: USER_ROLE.BD_OF_AFFILIATE,
-      walletAddress: bdOfAffiliate.walletAddress,
-      feeReceive: bdOfAffiliate.commissionRate,
-    });
+    if (affiliateOfUser.bd) {
+      const bdOfAffiliate = await this.dataService.admin.findOne({
+        adminId: affiliateOfUser.bd,
+      });
+      res.push({
+        role: USER_ROLE.BD_OF_AFFILIATE,
+        walletAddress: bdOfAffiliate.walletAddress,
+        feeReceive: bdOfAffiliate.commissionRate,
+      });
+    }
     return res;
   }
 }
