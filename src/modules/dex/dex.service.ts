@@ -100,7 +100,7 @@ export class DexService {
       });
     }
     const bdOfAffiliate = await this.dataService.admin.findOne({
-      walletAddress: affiliateOfUser.bd,
+      adminId: affiliateOfUser.bd,
     });
     res.push({
       role: USER_ROLE.BD_OF_AFFILIATE,
