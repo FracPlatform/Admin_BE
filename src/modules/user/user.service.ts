@@ -267,6 +267,17 @@ export class UserService {
         $match: match,
       },
       {
+        $addFields: {
+          date: {
+            $cond: {
+              if: '$createdAffiliateBy',
+              then: '$createdAffiliateBy.createdAt',
+              else: '$timeAcceptOffer',
+            },
+          },
+        },
+      },
+      {
         $project: {
           userId: 1,
           createdAt: 1,
@@ -278,12 +289,20 @@ export class UserService {
           masterId: 1,
           subFirstId: 1,
           timeAcceptOffer: 1,
+          date: 1,
         },
       },
     );
 
     if (filter.sortField && filter.sortType) {
-      sort[filter.sortField] = filter.sortType;
+      if (
+        filter.queryType === QUERY_TYPE.AFFILIATE &&
+        filter.sortField === 'createdAt'
+      ) {
+        sort['date'] = filter.sortType;
+      } else {
+        sort[filter.sortField] = filter.sortType;
+      }
     } else {
       sort['createdAt'] = SORT_AGGREGATE.DESC;
     }
