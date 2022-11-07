@@ -44,6 +44,7 @@ export const FILE_PRESIGN_URL = [
   'gltf-binary',
   'pdf',
   'docx',
+  'gltf',
 ];
 
 export class PresignUrlDto {
