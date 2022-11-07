@@ -67,7 +67,7 @@ export class IaoRequestController {
       );
       return new ApiSuccessResponse().success(data, '');
     } catch (error) {
-      throw ApiError('', 'Get iao request detail error');
+      throw error;
     }
   }
 

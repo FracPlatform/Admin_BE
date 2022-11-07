@@ -418,7 +418,10 @@ export class IaoRequestService {
         },
       },
       {
-        $unwind: '$items',
+        $unwind: {
+          path: '$items',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $lookup: {
