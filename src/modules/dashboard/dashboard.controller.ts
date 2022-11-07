@@ -1,8 +1,18 @@
-import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiSuccessResponse } from 'src/common/response/api-success';
+import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+import { RolesGuard } from '../auth/guard/roles.guard';
 import { Role } from '../auth/role.enum';
 import { Roles } from '../auth/roles.decorator';
+import { DashboardDTO } from './dashboard.dto';
 import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
@@ -14,10 +24,41 @@ export class DashboardController {
   @ApiOperation({ summary: 'Get pending tasks' })
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
   async getPendingTaks() {
     try {
       const response = await this.dashboardService.getPendingTasks();
+      return new ApiSuccessResponse().success(response, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('overview')
+  @ApiOperation({ summary: 'Get overview' })
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async getOverview(@Query() data: DashboardDTO) {
+    try {
+      const response = await this.dashboardService.getOverview(data);
+      return new ApiSuccessResponse().success(response, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('statistics')
+  @ApiOperation({ summary: 'Get statistics' })
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  async getStatistics() {
+    try {
+      const response = await this.dashboardService.getStatistics();
       return new ApiSuccessResponse().success(response, '');
     } catch (error) {
       throw error;

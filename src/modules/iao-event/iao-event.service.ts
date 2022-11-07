@@ -1460,40 +1460,6 @@ export class IaoEventService {
     return iaoEventList;
   }
 
-  checkCurrentStage(
-    registrationStartTime: Date,
-    registrationEndTime: Date,
-    participationStartTime: Date,
-    participationEndTime: Date,
-    type: number,
-    vaultUnlockThreshold?: boolean,
-  ) {
-    const nowDate = new Date();
-    let currentStage;
-    if (nowDate < registrationStartTime)
-      currentStage = IAO_EVENT_STAGE.UPCOMING;
-    else if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
-      currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
-    else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
-      currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
-    else if (
-      nowDate >= participationStartTime &&
-      nowDate < participationEndTime
-    )
-      currentStage = IAO_EVENT_STAGE.ON_SALE;
-    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
-      currentStage = IAO_EVENT_STAGE.COMPLETED;
-    else if (
-      nowDate >= participationEndTime &&
-      type === VAULT_TYPE.VAULT &&
-      vaultUnlockThreshold
-    )
-      currentStage = IAO_EVENT_STAGE.COMPLETED;
-    else currentStage = IAO_EVENT_STAGE.FAILED;
-
-    return currentStage;
-  }
-
   async getIaoEventListForCalender(calenderDTO: CalenderDTO) {
     const queryRegistrationStartTime = {};
     const queryRegistrationEndTime = {};
@@ -1743,5 +1709,39 @@ export class IaoEventService {
       };
     });
     return groupArrays;
+  }
+
+  checkCurrentStage(
+    registrationStartTime: Date,
+    registrationEndTime: Date,
+    participationStartTime: Date,
+    participationEndTime: Date,
+    type: number,
+    vaultUnlockThreshold?: boolean,
+  ) {
+    const nowDate = new Date();
+    let currentStage;
+    if (nowDate < registrationStartTime)
+      currentStage = IAO_EVENT_STAGE.UPCOMING;
+    else if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
+      currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
+    else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
+      currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
+    else if (
+      nowDate >= participationStartTime &&
+      nowDate < participationEndTime
+    )
+      currentStage = IAO_EVENT_STAGE.ON_SALE;
+    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else if (
+      nowDate >= participationEndTime &&
+      type === VAULT_TYPE.VAULT &&
+      vaultUnlockThreshold
+    )
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else currentStage = IAO_EVENT_STAGE.FAILED;
+
+    return currentStage;
   }
 }

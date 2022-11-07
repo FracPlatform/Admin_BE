@@ -61,4 +61,5 @@ export class NftDetailEntity {
   fnft: object;
   asset: object;
   mediaType?: string;
+  iaoEvent?: object;
 }

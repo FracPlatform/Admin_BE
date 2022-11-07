@@ -108,6 +108,9 @@ export class NftBuilderService {
       description: data.description,
       metadata: data.metadata,
       unlockableContent: data.unlockableContent,
+      iaoEvent: {
+        iaoEventId: data?.iaoRequest?.iaoEventId,
+      },
       fnft: {
         id: data.fnft?.fnftId,
         tokenSymbol: data.fnft?.tokenSymbol,
