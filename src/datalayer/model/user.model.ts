@@ -24,6 +24,7 @@ export enum USER_ROLE {
   MASTER_AFFILIATE = 2,
   AFFILIATE_SUB_1 = 3,
   AFFILIATE_SUB_2 = 4,
+  BD_OF_AFFILIATE = 5,
 }
 
 export class CreatedAffiliateBy {
