@@ -203,9 +203,16 @@ export class UserService {
       updatedBy: updatedBy?.fullname,
       deactivateBy: deactivateBy?.fullname,
     };
+    let uplineAffiliate: any = affliate.masterId || affliate.subFirstId;
+    if (uplineAffiliate) {
+      uplineAffiliate = await this.dataService.user.findOne({
+        userId: uplineAffiliate,
+      });
+    }
     const affiliateDetail = this.userBuilderService.getAffiliateDetail(
       affliate,
       data,
+      uplineAffiliate,
     );
     return affiliateDetail;
   }
