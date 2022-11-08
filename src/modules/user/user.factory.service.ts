@@ -112,6 +112,7 @@ export class UserBuilderService {
       referralLink: user.referalCode,
       email: user.email,
       description: user.description,
+      uplineAffiliate: user.masterId || user.subFirstId || null,
     };
   }
 
