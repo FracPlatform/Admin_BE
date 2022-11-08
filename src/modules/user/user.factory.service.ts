@@ -43,6 +43,7 @@ export class UserBuilderService {
         updatedAt: new Date(),
         updatedBy: user.adminId,
       },
+      'deactivatedAffiliateBy.comment': updateDto.deactivationComment,
     };
   }
 

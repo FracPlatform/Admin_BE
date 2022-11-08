@@ -114,4 +114,11 @@ export class UpdateAffiliateDTO extends CreateAffiliateDTO {
   @ApiProperty({ required: false })
   @IsOptional()
   walletAddress: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  @MinLength(1)
+  deactivationComment: string;
 }
