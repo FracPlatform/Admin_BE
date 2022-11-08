@@ -254,12 +254,27 @@ export class NotificationQueueService {
     if (notification.status !== NOTIFICATION_QUEUE_STATUS.SENT) {
       throw ApiError('', 'Only deactivate notifications has status SENT');
     }
-    await this.dataService.notificationQueue.updateOne(
-      {
-        notiQueueId: notiQueueId,
-      },
-      { status: NOTIFICATION_QUEUE_STATUS.INACTIVE, updatedBy: admin.adminId },
-    );
+    const session = await this.connection.startSession();
+    await session.withTransaction(async () => {
+      await this.dataService.notificationQueue.updateOne(
+        {
+          notiQueueId: notiQueueId,
+        },
+        {
+          status: NOTIFICATION_QUEUE_STATUS.INACTIVE,
+          updatedBy: admin.adminId,
+        },
+        { session: session },
+      );
+      await this.dataService.notification.deleteMany(
+        {
+          notiQueueId: notiQueueId,
+        },
+        { session: session },
+      );
+    });
+    session.endSession();
+
     return notiQueueId;
   }
 

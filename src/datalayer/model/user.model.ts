@@ -46,6 +46,14 @@ export enum USER_STATUS {
   ACTIVE = 1,
   INACTIVE = 2,
 }
+
+export class NotificationSettings {
+  announcements: boolean;
+  whitelists: boolean;
+  iaoResult: boolean;
+  exchangeOrders: boolean;
+}
+
 @Schema({
   collection: 'User',
 })
@@ -115,6 +123,17 @@ export class User {
 
   @Prop({ type: Date })
   timeAcceptOffer?: Date;
+
+  @Prop({
+    type: NotificationSettings,
+    default: {
+      announcements: true,
+      whitelists: true,
+      iaoResult: true,
+      exchangeOrders: true,
+    },
+  })
+  notificationSettings?: NotificationSettings;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

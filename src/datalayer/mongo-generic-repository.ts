@@ -61,4 +61,8 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
   count(conditions: object) {
     return this._repository.count(conditions);
   }
+
+  deleteMany(conditions: object, options?: object) {
+    return this._repository.deleteMany(conditions, options);
+  }
 }
