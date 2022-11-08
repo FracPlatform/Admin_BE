@@ -3,7 +3,11 @@ import { PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { User, USER_ROLE, USER_STATUS } from 'src/datalayer/model';
-import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
+import {
+  CreateAffiliateDTO,
+  DeactivateUserDTO,
+  UpdateAffiliateDTO,
+} from './dto/user.dto';
 
 @Injectable()
 export class UserBuilderService {
@@ -25,6 +29,19 @@ export class UserBuilderService {
       createdAffiliateBy: {
         createdAt: new Date(),
         createdBy: user.adminId,
+      },
+    };
+  }
+
+  updateAffiliate(updateDto: UpdateAffiliateDTO, user: any) {
+    return {
+      commissionRate: updateDto.commissionRate,
+      maxSubFristCommissionRate: updateDto.maxSubFristCommissionRate,
+      maxSubSecondCommissionRate: updateDto.maxSubSecondCommissionRate,
+      bd: updateDto.bd,
+      updatedAffiliateBy: {
+        updatedAt: new Date(),
+        updatedBy: user.adminId,
       },
     };
   }

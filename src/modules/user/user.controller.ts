@@ -22,6 +22,7 @@ import {
   CreateAffiliateDTO,
   DeactivateUserDTO,
   FilterUserDto,
+  UpdateAffiliateDTO,
 } from './dto/user.dto';
 import { UserService } from './user.service';
 
@@ -39,6 +40,28 @@ export class UserController {
   async createAffiliate(@Body() data: CreateAffiliateDTO, @Req() req: Request) {
     try {
       const affilate = await this.userService.createAffiliate(data, req.user);
+      return new ApiSuccessResponse().success(affilate, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Put('/affiliate/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Roles(Role.HeadOfBD, Role.OperationAdmin, Role.SuperAdmin, Role.OWNER)
+  @ApiOperation({ summary: 'update affiliate' })
+  async updateAffiliate(
+    @Body() data: UpdateAffiliateDTO,
+    @Req() req: Request,
+    @Param('id') id: string,
+  ) {
+    try {
+      const affilate = await this.userService.updateAffiliate(
+        data,
+        req.user,
+        id,
+      );
       return new ApiSuccessResponse().success(affilate, '');
     } catch (error) {
       throw error;
