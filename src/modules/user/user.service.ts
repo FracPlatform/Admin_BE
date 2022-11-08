@@ -13,6 +13,7 @@ import {
   DeactivateUserDTO,
   FilterUserDto,
   QUERY_TYPE,
+  UpdateAffiliateDTO,
 } from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
@@ -55,7 +56,8 @@ export class UserService {
     if (affiliate)
       throw ApiError('E33', 'This wallet has already been in affiliate list');
     if (
-      createAffiliateDTO.maxSubFristCommissionRate >= MAX_MASTER_COMMISION_RATE
+      createAffiliateDTO.maxSubFristCommissionRate >=
+      createAffiliateDTO.commissionRate
     )
       throw ApiError(
         'E35',
@@ -365,5 +367,63 @@ export class UserService {
     if (!userExisted) return referral;
 
     return await this.randomReferal();
+  }
+
+  async updateAffiliate(updateAffiliateDTO: UpdateAffiliateDTO, admin, id) {
+    const affiliate = await this.dataService.user.findOne({
+      userId: id,
+      role: USER_ROLE.MASTER_AFFILIATE,
+    });
+    if (!affiliate) throw ApiError('', 'This wallet is invalid');
+    const sub1 = await this.dataService.user.findOne({
+      userId: affiliate.subFirstId,
+    });
+    if (sub1 && updateAffiliateDTO.commissionRate <= sub1.commissionRate)
+      throw ApiError(
+        'E35',
+        'Master commission rate must greater than current commision rate of sub1 ',
+      );
+    if (
+      updateAffiliateDTO.maxSubFristCommissionRate >=
+      updateAffiliateDTO.commissionRate
+    )
+      throw ApiError(
+        'E35',
+        'maxSubFristCommissionRate must less than master commision rate ',
+      );
+    if (
+      updateAffiliateDTO.maxSubSecondCommissionRate >
+        updateAffiliateDTO.commissionRate ||
+      updateAffiliateDTO.maxSubSecondCommissionRate >
+        updateAffiliateDTO.maxSubFristCommissionRate
+    )
+      throw ApiError(
+        'E35',
+        'maxSubSecondCommissionRate must be less than commissionRate and maxSubFristCommissionRate',
+      );
+
+    if (updateAffiliateDTO.bd) {
+      const admin = await this.dataService.admin.findOne({
+        adminId: updateAffiliateDTO.bd,
+        status: ADMIN_STATUS.ACTIVE,
+        role: Role.MasterBD,
+      });
+      if (!admin) throw ApiError('E4', 'bd is invalid');
+    }
+
+    const buildAffiliate = this.userBuilderService.updateAffiliate(
+      updateAffiliateDTO,
+      admin,
+    );
+
+    const newAffiliate = await this.dataService.user.findOneAndUpdate(
+      {
+        userId: id,
+      },
+      buildAffiliate,
+      { new: true },
+    );
+
+    return id;
   }
 }
