@@ -424,6 +424,6 @@ export class UserService {
       { new: true },
     );
 
-    return newAffiliate;
+    return id;
   }
 }
