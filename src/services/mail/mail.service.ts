@@ -5,7 +5,10 @@ import { Injectable } from '@nestjs/common';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendUserConfirmation(email: string, verificationCode: number) {
+  async sendUserConfirmation(
+    email: string | string[],
+    verificationCode: number,
+  ) {
     await this.mailerService.sendMail({
       to: email,
       // from: '"Support Team" <support@example.com>', // override default from
@@ -14,6 +17,19 @@ export class MailService {
       context: {
         // ✏️ filling curly brackets with content
         verificationCode,
+      },
+    });
+  }
+
+  async sendNotification(email: string | string[], description: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      // from: '"Support Team" <support@example.com>', // override default from
+      subject: 'Announcement Notification',
+      template: './notification', // `.hbs` extension is appended automatically
+      context: {
+        // ✏️ filling curly brackets with content
+        description,
       },
     });
   }

@@ -16,6 +16,7 @@ import { join } from 'path';
           user: process.env.MAIL_USER,
           pass: process.env.MAIL_PASSWORD,
         },
+        pool: true,
       },
       defaults: {
         from: `"No Reply" <${process.env.MAIL_FROM}>`,
