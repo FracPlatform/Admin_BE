@@ -780,7 +780,6 @@ export class IaoRequestService {
       const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
         {
           iaoId: approveIaoRequestDTO.requestId,
-          status: IAO_REQUEST_STATUS.APPROVED_A,
           updatedAt: iaoRequest['updatedAt'],
         },
         {
@@ -935,24 +934,37 @@ export class IaoRequestService {
     if (dto.secondComment && !iaoRequest.secondReviewer)
       throw 'Second review is not exists';
 
-    const update = {
-      firstReviewer: {
-        ...iaoRequest.firstReviewer,
-        comment: dto.firstComment,
-      },
-      updatedBy: user.adminId,
-    };
+    let update = {};
+    if (
+      dto.firstComment &&
+      dto.firstComment !== iaoRequest.firstReviewer.comment
+    ) {
+      update = {
+        firstReviewer: {
+          ...iaoRequest.firstReviewer,
+          comment: dto.firstComment,
+          adminId: user.adminId,
+        },
+        updatedBy: user.adminId,
+      };
+    }
 
-    if (dto.secondComment && iaoRequest.secondReviewer) {
-      update['$set']['secondReviewer'] = {
+    if (
+      dto.secondComment &&
+      iaoRequest.secondReviewer &&
+      dto.secondComment !== iaoRequest.secondReviewer.comment
+    ) {
+      update['secondReviewer'] = {
         ...iaoRequest.secondReviewer,
         comment: dto.secondComment,
+        adminId: user.adminId,
       };
+      update['updatedBy'] = user.adminId;
     }
 
     await this.dataService.iaoRequest.updateOne(
       { iaoId: iaoRequest.iaoId },
-      { ...update },
+      update,
     );
     return iaoRequest.iaoId;
   }
