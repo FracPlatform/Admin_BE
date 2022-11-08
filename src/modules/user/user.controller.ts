@@ -45,27 +45,7 @@ export class UserController {
     }
   }
 
-  @Get('/affiliate/:id')
-  @HttpCode(HttpStatus.OK)
-  @ApiBearerAuth()
-  @Roles(
-    Role.SuperAdmin,
-    Role.OWNER,
-    Role.MasterBD,
-    Role.HeadOfBD,
-    Role.OperationAdmin,
-  )
-  @ApiOperation({ summary: 'Get affiliate detail' })
-  async getAffiliateDetail(@Param('id') userId: string) {
-    try {
-      const user = await this.userService.getAffiliateDetail(userId);
-      return new ApiSuccessResponse().success(user, '');
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Get('/')
+  @Get()
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles(
@@ -85,7 +65,7 @@ export class UserController {
     }
   }
 
-  @Get('/:id')
+  @Get('/affiliate/:id')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles(
@@ -95,10 +75,10 @@ export class UserController {
     Role.HeadOfBD,
     Role.OperationAdmin,
   )
-  @ApiOperation({ summary: 'Get user detail' })
-  async getUserDetail(@Param('id') userId: string) {
+  @ApiOperation({ summary: 'Get affiliate detail' })
+  async getAffiliateDetail(@Param('id') userId: string) {
     try {
-      const user = await this.userService.getUserDetail(userId);
+      const user = await this.userService.getAffiliateDetail(userId);
       return new ApiSuccessResponse().success(user, '');
     } catch (error) {
       throw error;
@@ -131,6 +111,26 @@ export class UserController {
   async activeUser(@Param('id') userId: string, @Req() req: Request) {
     try {
       const user = await this.userService.activeUser(userId, req.user);
+      return new ApiSuccessResponse().success(user, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Roles(
+    Role.SuperAdmin,
+    Role.OWNER,
+    Role.MasterBD,
+    Role.HeadOfBD,
+    Role.OperationAdmin,
+  )
+  @ApiOperation({ summary: 'Get user detail' })
+  async getUserDetail(@Param('id') userId: string) {
+    try {
+      const user = await this.userService.getUserDetail(userId);
       return new ApiSuccessResponse().success(user, '');
     } catch (error) {
       throw error;

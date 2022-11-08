@@ -36,6 +36,8 @@ import {
   RedemptionRequest,
   NotificationQueue,
   NotificationQueueSchema,
+  NotificationSchema,
+  Notification,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
@@ -60,6 +62,7 @@ import 'dotenv/config';
       { name: Claim.name, schema: ClaimSchema },
       { name: RedemptionRequest.name, schema: RedemptionRequestSchema },
       { name: NotificationQueue.name, schema: NotificationQueueSchema },
+      { name: Notification.name, schema: NotificationSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
   ],

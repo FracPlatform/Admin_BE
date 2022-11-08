@@ -32,4 +32,6 @@ export abstract class IGenericRepository<T> {
   abstract aggregate(pipeline: PipelineStage[], options?: object);
 
   abstract count(conditions: object);
+
+  abstract deleteMany(conditions: object, options?: object);
 }
