@@ -47,7 +47,7 @@ export class UserService {
       walletAddress: createAffiliateDTO.walletAddress,
     });
     if (isAdmin) throw ApiError('', 'This wallet is an admin');
-    
+
     const affiliate = await this.dataService.user.findOne({
       walletAddress: createAffiliateDTO.walletAddress,
       role: { $in: roleList },
@@ -295,16 +295,11 @@ export class UserService {
     );
 
     if (filter.sortField && filter.sortType) {
-      if (
-        filter.queryType === QUERY_TYPE.AFFILIATE &&
-        filter.sortField === 'createdAt'
-      ) {
-        sort['date'] = filter.sortType;
-      } else {
-        sort[filter.sortField] = filter.sortType;
-      }
+      sort[filter.sortField] = filter.sortType;
     } else {
-      sort['createdAt'] = SORT_AGGREGATE.DESC;
+      if (filter.queryType === QUERY_TYPE.AFFILIATE)
+        sort['date'] = SORT_AGGREGATE.DESC;
+      else sort['createdAt'] = SORT_AGGREGATE.DESC;
     }
 
     const $facet: any = {
