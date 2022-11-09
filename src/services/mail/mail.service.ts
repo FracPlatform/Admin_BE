@@ -33,4 +33,17 @@ export class MailService {
       },
     });
   }
+
+  async sendDeactivateAffiliate(email: string | string[], comment: string) {
+    await this.mailerService.sendMail({
+      to: email,
+      // from: '"Support Team" <support@example.com>', // override default from
+      subject: 'Your account has been deactivated',
+      template: './deactivate-affiliate.hbs', // `.hbs` extension is appended automatically
+      context: {
+        // ✏️ filling curly brackets with content
+        comment,
+      },
+    });
+  }
 }
