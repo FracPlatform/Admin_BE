@@ -27,6 +27,7 @@ import {
   SORT_AGGREGATE,
 } from 'src/common/constants';
 import { ListDocument } from 'src/common/common-type';
+import { MailService } from 'src/services/mail/mail.service';
 
 @Injectable()
 export class UserService {
@@ -34,6 +35,7 @@ export class UserService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly userBuilderService: UserBuilderService,
+    private readonly mailService: MailService,
     @InjectConnection() private readonly connection: mongoose.Connection,
   ) {}
 
@@ -147,6 +149,12 @@ export class UserService {
       { $set: buildUpdateUser },
       { new: true },
     );
+    if (user.email)
+      await this.mailService.sendDeactivateAffiliate(
+        user.email,
+        deactivateUserDTO.comment,
+      );
+
     return updateUser;
   }
 
@@ -165,6 +173,7 @@ export class UserService {
       { $set: buildUser },
       { new: true },
     );
+    if (user.email) await this.mailService.sendActiveAffiliate(user.email);
     return updateUser;
   }
 
