@@ -94,8 +94,10 @@ export class WorkerService {
           await this._handleMergeFNFTEvent(requestData);
         case CONTRACT_EVENTS.APPROVE_IAO_REVENUE_EVENT:
           await this._handleApproveIaoRevenueEvent(requestData);
+          break;
         case CONTRACT_EVENTS.REJECT_IAO_REVENUE:
           await this._handleRejectIaoRevenueEvent(requestData);
+          break;
         default:
           break;
       }
