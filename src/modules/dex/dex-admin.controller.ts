@@ -165,12 +165,12 @@ export class DexAdminController {
     return this.dexAdminService.deletePair(id);
   }
 
-  @Get('admin/collected-fee')
+  @Get('admin/collected-fees')
   async getCollectedFee(@Query() filter: GetCollectedFeeDto) {
     return await this.dexAdminService.getCollectedFee(filter);
   }
 
-  @Get('admin/download-collected-fee')
+  @Get('admin/collected-fees/download-csv')
   async downloadCollectedFee(@Query() filter: DownloadCollectedFeeDto) {
     return await this.dexAdminService.downloadCollectedFee(filter);
   }

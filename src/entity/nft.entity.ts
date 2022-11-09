@@ -20,6 +20,8 @@ export class NftEntity {
   metadataUrl: string;
   createdBy: string;
   deleted: boolean;
+  collectionId: string;
+  assetUuid: string;
 }
 
 export class NftMetadataEntity {
@@ -59,4 +61,5 @@ export class NftDetailEntity {
   fnft: object;
   asset: object;
   mediaType?: string;
+  iaoEvent?: object;
 }

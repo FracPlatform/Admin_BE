@@ -15,6 +15,8 @@ import {
   Purchase,
   Claim,
   RedemptionRequest,
+  NotificationQueue,
+  Notification,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
@@ -35,4 +37,6 @@ export abstract class IDataServices {
   abstract purchase: IGenericRepository<Purchase>;
   abstract claim: IGenericRepository<Claim>;
   abstract redemptionRequest: IGenericRepository<RedemptionRequest>;
+  abstract notificationQueue: IGenericRepository<NotificationQueue>;
+  abstract notification: IGenericRepository<Notification>;
 }

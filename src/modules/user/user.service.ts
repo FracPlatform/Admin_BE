@@ -13,6 +13,7 @@ import {
   DeactivateUserDTO,
   FilterUserDto,
   QUERY_TYPE,
+  UpdateAffiliateDTO,
 } from './dto/user.dto';
 import { UserBuilderService } from './user.factory.service';
 import { Role } from 'src/modules/auth/role.enum';
@@ -42,6 +43,12 @@ export class UserService {
       USER_ROLE.AFFILIATE_SUB_2,
       USER_ROLE.MASTER_AFFILIATE,
     ];
+
+    const isAdmin = await this.dataService.admin.findOne({
+      walletAddress: createAffiliateDTO.walletAddress,
+    });
+    if (isAdmin) throw ApiError('', 'This wallet is an admin');
+
     const affiliate = await this.dataService.user.findOne({
       walletAddress: createAffiliateDTO.walletAddress,
       role: { $in: roleList },
@@ -49,7 +56,8 @@ export class UserService {
     if (affiliate)
       throw ApiError('E33', 'This wallet has already been in affiliate list');
     if (
-      createAffiliateDTO.maxSubFristCommissionRate >= MAX_MASTER_COMMISION_RATE
+      createAffiliateDTO.maxSubFristCommissionRate >=
+      createAffiliateDTO.commissionRate
     )
       throw ApiError(
         'E35',
@@ -161,7 +169,17 @@ export class UserService {
   }
 
   async getAffiliateDetail(userId: string) {
-    const affliate = await this.dataService.user.findOne({ userId });
+    const affliate = await this.dataService.user.findOne({
+      userId,
+      role: {
+        $in: [
+          USER_ROLE.AFFILIATE_SUB_1,
+          USER_ROLE.AFFILIATE_SUB_2,
+          USER_ROLE.MASTER_AFFILIATE,
+        ],
+      },
+    });
+    if (!affliate) throw ApiError('', 'Affiliate is invalid');
     const idList = [
       affliate.bd,
       affliate.createdAffiliateBy?.createdBy,
@@ -183,13 +201,20 @@ export class UserService {
     );
     const data = {
       bd: bd?.fullname,
-      createdBy: createdBy.fullname,
-      updatedBy: updatedBy.fullname,
-      deactivateBy: deactivateBy.fullname,
+      createdBy: createdBy?.fullname,
+      updatedBy: updatedBy?.fullname,
+      deactivateBy: deactivateBy?.fullname,
     };
+    let uplineAffiliate: any = affliate.masterId || affliate.subFirstId;
+    if (uplineAffiliate) {
+      uplineAffiliate = await this.dataService.user.findOne({
+        userId: uplineAffiliate,
+      });
+    }
     const affiliateDetail = this.userBuilderService.getAffiliateDetail(
       affliate,
       data,
+      uplineAffiliate,
     );
     return affiliateDetail;
   }
@@ -251,6 +276,17 @@ export class UserService {
         $match: match,
       },
       {
+        $addFields: {
+          date: {
+            $cond: {
+              if: '$createdAffiliateBy',
+              then: '$createdAffiliateBy.createdAt',
+              else: '$timeAcceptOffer',
+            },
+          },
+        },
+      },
+      {
         $project: {
           userId: 1,
           createdAt: 1,
@@ -262,6 +298,7 @@ export class UserService {
           masterId: 1,
           subFirstId: 1,
           timeAcceptOffer: 1,
+          date: 1,
         },
       },
     );
@@ -269,7 +306,9 @@ export class UserService {
     if (filter.sortField && filter.sortType) {
       sort[filter.sortField] = filter.sortType;
     } else {
-      sort['createdAt'] = SORT_AGGREGATE.DESC;
+      if (filter.queryType === QUERY_TYPE.AFFILIATE)
+        sort['date'] = SORT_AGGREGATE.DESC;
+      else sort['createdAt'] = SORT_AGGREGATE.DESC;
     }
 
     const $facet: any = {
@@ -328,5 +367,63 @@ export class UserService {
     if (!userExisted) return referral;
 
     return await this.randomReferal();
+  }
+
+  async updateAffiliate(updateAffiliateDTO: UpdateAffiliateDTO, admin, id) {
+    const affiliate = await this.dataService.user.findOne({
+      userId: id,
+      role: USER_ROLE.MASTER_AFFILIATE,
+    });
+    if (!affiliate) throw ApiError('', 'This wallet is invalid');
+    const sub1 = await this.dataService.user.findOne({
+      userId: affiliate.subFirstId,
+    });
+    if (sub1 && updateAffiliateDTO.commissionRate <= sub1.commissionRate)
+      throw ApiError(
+        'E35',
+        'Master commission rate must greater than current commision rate of sub1 ',
+      );
+    if (
+      updateAffiliateDTO.maxSubFristCommissionRate >=
+      updateAffiliateDTO.commissionRate
+    )
+      throw ApiError(
+        'E35',
+        'maxSubFristCommissionRate must less than master commision rate ',
+      );
+    if (
+      updateAffiliateDTO.maxSubSecondCommissionRate >
+        updateAffiliateDTO.commissionRate ||
+      updateAffiliateDTO.maxSubSecondCommissionRate >
+        updateAffiliateDTO.maxSubFristCommissionRate
+    )
+      throw ApiError(
+        'E35',
+        'maxSubSecondCommissionRate must be less than commissionRate and maxSubFristCommissionRate',
+      );
+
+    if (updateAffiliateDTO.bd) {
+      const admin = await this.dataService.admin.findOne({
+        adminId: updateAffiliateDTO.bd,
+        status: ADMIN_STATUS.ACTIVE,
+        role: Role.MasterBD,
+      });
+      if (!admin) throw ApiError('E4', 'bd is invalid');
+    }
+
+    const buildAffiliate = this.userBuilderService.updateAffiliate(
+      updateAffiliateDTO,
+      admin,
+    );
+
+    const newAffiliate = await this.dataService.user.findOneAndUpdate(
+      {
+        userId: id,
+      },
+      buildAffiliate,
+      { new: true },
+    );
+
+    return id;
   }
 }

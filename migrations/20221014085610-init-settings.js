@@ -4,6 +4,12 @@ module.exports = {
     if (counterId === 0) {
       await db.collection('Settings').insertOne({
         settingsName: 'SETING_DEFAULT',
+        affiliate: {
+          registrationUrl: 'https://www.example.com',
+          resourceUrl: 'https://www.example.com',
+          telegramUrl: 'https://www.example.com',
+          feedbackUrl: 'https://www.example.com',
+        },
         assetItem: {
           maxFile: 4,
           maxSizeOfFile: 10,

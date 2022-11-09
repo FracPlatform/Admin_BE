@@ -8,6 +8,7 @@ export class ProfileAdmin {
   walletAddress: string;
   role: Role;
   adminId?: string;
+  commissionRate?: number;
 }
 
 export class AdminEntity {
@@ -22,6 +23,7 @@ export class AdminEntity {
   lastUpdateBy: string;
   adminId?: string;
   deleted: boolean;
+  commissionRate?: number;
 }
 
 export class ListAdminEntity {
@@ -39,6 +41,7 @@ export class ListAdminEntity {
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+  commissionRate?: number;
 }
 
 export class AdminDetailEntity {
@@ -56,6 +59,7 @@ export class AdminDetailEntity {
   deleted: boolean;
   createdAt: Date;
   updatedAt: Date;
+  commissionRate?: number;
 }
 
 export class InformationAdmin {
@@ -64,4 +68,5 @@ export class InformationAdmin {
   description: string;
   adminId: string;
   role: number;
+  commissionRate?: number;
 }

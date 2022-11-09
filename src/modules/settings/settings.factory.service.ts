@@ -22,6 +22,12 @@ export class SettingsBuilderService {
     }
     
     const dataUpdate = {
+      affiliate: data.affiliate ? {
+        registrationUrl: data.affiliate?.registrationUrl || currentSettings.affiliate.registrationUrl,
+        resourceUrl: data.affiliate?.resourceUrl || currentSettings.affiliate.resourceUrl,
+        telegramUrl: data.affiliate?.telegramUrl || currentSettings.affiliate.telegramUrl,
+        feedbackUrl: data.affiliate?.feedbackUrl || currentSettings.affiliate.feedbackUrl,
+      } : undefined,
       assetItem: data.assetItem ? { 
         maxFile: data.assetItem?.maxFile || currentSettings.assetItem.maxFile,
         maxSizeOfFile: data.assetItem?.maxSizeOfFile || currentSettings.assetItem.maxSizeOfFile,

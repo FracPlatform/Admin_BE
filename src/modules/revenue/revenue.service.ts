@@ -6,7 +6,6 @@ import {
   IAO_EVENT_STAGE,
   IAO_EVENT_STATUS,
   REVENUE_STATUS,
-  UserDocument,
   VAULT_TYPE,
 } from 'src/datalayer/model';
 import { GetListIaoRevenueDto } from './dto/get-list-iao-revenue.dto';
@@ -17,12 +16,15 @@ import { ApiError } from 'src/common/api';
 import { CVS_NAME, ErrorCode } from 'src/common/constants';
 import { UpdateIaoRevenueDto } from './dto/update-iao-revenue.dto';
 import moment = require('moment');
+import { ApproveIaoRevenueDto } from './dto/approve-iao-revenue.dto';
+import { IaoEventService } from '../iao-event/iao-event.service';
 const XLSX = require('xlsx');
 @Injectable()
 export class IaoRevenueService {
   constructor(
     private readonly dataService: IDataServices,
     private readonly iaoRevenuebuilderService: IaoRevenueBuilderService,
+    private readonly iaoEventService: IaoEventService,
   ) {}
   async getListIaoRevenue(filter: GetListIaoRevenueDto, user: AdminDocument) {
     const query = {};
@@ -62,6 +64,28 @@ export class IaoRevenueService {
     if (filter.status === REVENUE_STATUS.IN_REVIEW) {
       query['revenue.status'] = REVENUE_STATUS.PENDING;
       query['participationEndTime'] = { $gte: new Date() };
+    }
+    if (filter.status === REVENUE_STATUS.CLOSED) {
+      query['revenue.status'] = REVENUE_STATUS.PENDING;
+      dateQuery.push({
+        $and: [
+          {
+            participationEndTime: {
+              $lte: new Date(),
+            },
+          },
+          {
+            $expr: {
+              $lt: [
+                { $subtract: ['$totalSupply', '$availableSupply'] },
+                {
+                  $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+                },
+              ],
+            },
+          },
+        ],
+      });
     }
     if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
       dateQuery.push({
@@ -818,6 +842,51 @@ export class IaoRevenueService {
         },
       },
     );
-    if (res) return { success: true };
+    if (!res)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not update IAO revenue');
+    return { success: true };
+  }
+
+  async approveIaoRevenue(iaoEventId: string, body: ApproveIaoRevenueDto) {
+    const iaoEvent = await this.dataService.iaoEvent.findOne({
+      iaoEventId,
+      isDeleted: false,
+    });
+    if (!iaoEventId)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'IAO event does not exist');
+    const stage = this.iaoEventService.checkCurrentStage(
+      iaoEvent.registrationStartTime,
+      iaoEvent.registrationEndTime,
+      iaoEvent.participationStartTime,
+      iaoEvent.participationEndTime,
+      iaoEvent.vaultType,
+      iaoEvent.totalSupply - iaoEvent.availableSupply >=
+        (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
+    );
+    if (
+      iaoEvent.revenue.status >= REVENUE_STATUS.APPROVED ||
+      (iaoEvent.revenue.status === REVENUE_STATUS.PENDING &&
+        stage === IAO_EVENT_STAGE.FAILED)
+    )
+      throw ApiError(
+        ErrorCode.DEFAULT_ERROR,
+        'Can not approve this IAO revenue',
+      );
+    const res = await this.dataService.iaoEvent.findOneAndUpdate(
+      {
+        iaoEventId,
+        isDeleted: false,
+        updatedAt: iaoEvent['updatedAt'],
+      },
+      {
+        $set: {
+          'revenue.bdCommissionRate': body.bdCommissionRate,
+          'revenue.platformCommissionRate': body.platformCommissionRate,
+        },
+      },
+    );
+    if (!res)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'Can not approve IAO revenue');
+    return { success: true };
   }
 }

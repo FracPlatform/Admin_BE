@@ -208,37 +208,13 @@ export class GetCollectedFeeDto {
   endTime: number;
 
   @ApiProperty({ required: false })
-  poolAddress: string;
-
-  @ApiProperty({ type: [String], required: false })
-  methods: string;
-
-  @ApiProperty({ required: false })
-  pair: number;
-
-  @ApiProperty({ required: false })
-  interval: number;
-
-  @ApiProperty({ required: false })
-  timestamps: string;
-
-  @ApiProperty({ required: false })
   coinId: number;
 
-  @ApiProperty({ type: [String], required: false })
+  @ApiProperty({ required: false })
   calculationMethod: number;
 }
 
 export class DownloadCollectedFeeDto {
-  @ApiProperty({ required: false })
-  poolAddress: string;
-
-  @ApiProperty({ type: [String], required: false })
-  method: string;
-
-  @ApiProperty({ required: false })
-  pair: number;
-
   @ApiProperty({ required: false })
   startTime: number;
 
@@ -246,7 +222,10 @@ export class DownloadCollectedFeeDto {
   endTime: number;
 
   @ApiProperty({ required: false })
-  timezone: string;
+  coinId: number;
+
+  @ApiProperty({ required: false })
+  calculationMethod: number;
 }
 
 export class GetIntervalSettingsDto {

@@ -14,3 +14,5 @@ export * from './user.model';
 export * from './purchase.model';
 export * from './claim.model';
 export * from './redemption-request.model';
+export * from './notification-queue.model';
+export * from './notification.model';

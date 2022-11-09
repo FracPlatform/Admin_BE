@@ -3,7 +3,11 @@ import { PREFIX_ID } from 'src/common/constants';
 import { Utils } from 'src/common/utils';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
 import { User, USER_ROLE, USER_STATUS } from 'src/datalayer/model';
-import { CreateAffiliateDTO, DeactivateUserDTO } from './dto/user.dto';
+import {
+  CreateAffiliateDTO,
+  DeactivateUserDTO,
+  UpdateAffiliateDTO,
+} from './dto/user.dto';
 
 @Injectable()
 export class UserBuilderService {
@@ -26,6 +30,20 @@ export class UserBuilderService {
         createdAt: new Date(),
         createdBy: user.adminId,
       },
+    };
+  }
+
+  updateAffiliate(updateDto: UpdateAffiliateDTO, user: any) {
+    return {
+      commissionRate: updateDto.commissionRate,
+      maxSubFristCommissionRate: updateDto.maxSubFristCommissionRate,
+      maxSubSecondCommissionRate: updateDto.maxSubSecondCommissionRate,
+      bd: updateDto.bd,
+      updatedAffiliateBy: {
+        updatedAt: new Date(),
+        updatedBy: user.adminId,
+      },
+      'deactivatedAffiliateBy.comment': updateDto.deactivationComment,
     };
   }
 
@@ -82,7 +100,7 @@ export class UserBuilderService {
     };
   }
 
-  getAffiliateDetail(user: User, data: any) {
+  getAffiliateDetail(user: User, data: any, uplineAffiliate: User) {
     return {
       userId: user.userId,
       joinedOn: user.createdAt,
@@ -112,6 +130,12 @@ export class UserBuilderService {
       referralLink: user.referalCode,
       email: user.email,
       description: user.description,
+      uplineAffiliate: {
+        userId: uplineAffiliate?.userId || null,
+        wallet: uplineAffiliate?.walletAddress || null,
+        rank: uplineAffiliate?.role || null,
+        commissionRate: uplineAffiliate?.commissionRate || null,
+      },
     };
   }
 

@@ -36,6 +36,10 @@ import {
   Claim,
   RedemptionRequest,
   RedemptionRequestDocument,
+  NotificationQueueDocument,
+  NotificationQueue,
+  Notification,
+  NotificationDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -57,6 +61,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   purchase: IGenericRepository<Purchase>;
   claim: IGenericRepository<Claim>;
   redemptionRequest: IGenericRepository<RedemptionRequest>;
+  notificationQueue: IGenericRepository<NotificationQueueDocument>;
+  notification: IGenericRepository<NotificationDocument>;
 
   constructor(
     @InjectModel(Fractor.name)
@@ -90,6 +96,10 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private ClaimRepository: Model<ClaimDocument>,
     @InjectModel(RedemptionRequest.name)
     private redemptionRequestRepository: Model<RedemptionRequestDocument>,
+    @InjectModel(NotificationQueue.name)
+    private notificationQueueRepository: Model<NotificationQueueDocument>,
+    @InjectModel(Notification.name)
+    private notificationRepository: Model<NotificationDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -141,5 +151,14 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
       new MongoGenericRepository<RedemptionRequestDocument>(
         this.redemptionRequestRepository,
       );
+
+    this.notificationQueue =
+      new MongoGenericRepository<NotificationQueueDocument>(
+        this.notificationQueueRepository,
+      );
+
+    this.notification = new MongoGenericRepository<NotificationDocument>(
+      this.notificationRepository,
+    );
   }
 }

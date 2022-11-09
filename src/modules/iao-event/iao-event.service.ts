@@ -133,6 +133,11 @@ export class IaoEventService {
           { itemId: { $in: items } },
           { $set: { status: ASSET_STATUS.IAO_EVENT } },
         );
+        await this.dataService.iaoRequest.updateOne(
+          { iaoId: fnft.iaoRequestId },
+          { $set: { iaoEventId: iaoEvent[0].iaoEventId } },
+          { session },
+        );
       }
 
       await session.commitTransaction();
@@ -324,6 +329,17 @@ export class IaoEventService {
     const agg = [];
     agg.push(
       {
+        $lookup: {
+          from: 'Fnft',
+          localField: 'FNFTcontractAddress',
+          foreignField: 'contractAddress',
+          as: 'fnft',
+        },
+      },
+      {
+        $unwind: '$fnft',
+      },
+      {
         $project: {
           iaoEventId: '$iaoEventId',
           createdAt: '$createdAt',
@@ -343,6 +359,7 @@ export class IaoEventService {
           eventPhotoUrl: '$eventPhotoUrl',
           eventBannerUrl: '$eventBannerUrl',
           isDeleted: '$isDeleted',
+          fnftId: '$fnft.fnftId',
         },
       },
       {
@@ -1188,7 +1205,7 @@ export class IaoEventService {
     return await this.dataService.whitelist.updateOne(filter, option);
   }
 
-  async exportWhitelist(user: any, data: ExportWhitelistDto) {
+  async exportWhitelist(res: any, user: any, data: ExportWhitelistDto) {
     const filter = { iaoEventId: data.iaoEventId, isDeleted: false };
 
     const currentIaoEvent = await this.dataService.iaoEvent.findOne(filter);
@@ -1201,12 +1218,52 @@ export class IaoEventService {
         'Now <= Participation start time',
       );
 
-    const currentWhiltelist = await this.dataService.whitelist.findOne({
-      iaoEventId: data.iaoEventId,
-      deleted: false,
+    const agg = [];
+
+    agg.push({
+      $match: { iaoEventId: data.iaoEventId, deleted: false },
     });
+
+    const query: any = {
+      $project: {
+        iaoEventId: 1,
+        deleted: 1,
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    };
+
+    if (data.wallet && data.wallet.trim()) {
+      query['$project']['whiteListAddresses'] = {
+        $filter: {
+          input: '$whiteListAddresses',
+          as: 'whiteListAddress',
+          cond: {
+            $regexMatch: {
+              input: '$$whiteListAddress.walletAddress',
+              regex: data.wallet.trim(),
+              options: 'i',
+            },
+          },
+        },
+      };
+    } else {
+      query['$project']['whiteListAddresses'] = 1;
+    }
+
+    agg.push(query);
+
+    const dataQuery = await this.dataService.whitelist.aggregate(agg, {
+      collation: { locale: 'en' },
+    });
+
+    const currentWhiltelist = get(dataQuery, [0]);
+
     if (!currentWhiltelist)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'iaoEventId already exists');
+
+    if (!currentWhiltelist.whiteListAddresses.length)
+      throw ApiError(ErrorCode.DEFAULT_ERROR, 'No data');
 
     const headings = [
       [
@@ -1227,14 +1284,9 @@ export class IaoEventService {
     XLSX.utils.book_append_sheet(wb, ws);
 
     const buffer = XLSX.write(wb, { bookType: 'csv', type: 'buffer' });
+    res.attachment(`${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`);
 
-    const linkS3 = await this.s3Service.uploadS3(
-      buffer,
-      'text/csv',
-      `${CVS_NAME.WHITELIST}${moment().format('DDMMYY')}.csv`,
-    );
-
-    return { data: linkS3 };
+    return res.status(200).send(buffer);
   }
 
   async checkRegistrationParticipation(checkTimeDTO: CheckTimeDTO) {
@@ -1406,40 +1458,6 @@ export class IaoEventService {
     iaoEventList.sort((obj, _obj) => obj.date - _obj.date);
 
     return iaoEventList;
-  }
-
-  checkCurrentStage(
-    registrationStartTime: Date,
-    registrationEndTime: Date,
-    participationStartTime: Date,
-    participationEndTime: Date,
-    type: number,
-    vaultUnlockThreshold?: boolean,
-  ) {
-    const nowDate = new Date();
-    let currentStage;
-    if (nowDate < registrationStartTime)
-      currentStage = IAO_EVENT_STAGE.UPCOMING;
-    else if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
-      currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
-    else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
-      currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
-    else if (
-      nowDate >= participationStartTime &&
-      nowDate < participationEndTime
-    )
-      currentStage = IAO_EVENT_STAGE.ON_SALE;
-    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
-      currentStage = IAO_EVENT_STAGE.COMPLETED;
-    else if (
-      nowDate >= participationEndTime &&
-      type === VAULT_TYPE.VAULT &&
-      vaultUnlockThreshold
-    )
-      currentStage = IAO_EVENT_STAGE.COMPLETED;
-    else currentStage = IAO_EVENT_STAGE.FAILED;
-
-    return currentStage;
   }
 
   async getIaoEventListForCalender(calenderDTO: CalenderDTO) {
@@ -1691,5 +1709,39 @@ export class IaoEventService {
       };
     });
     return groupArrays;
+  }
+
+  checkCurrentStage(
+    registrationStartTime: Date,
+    registrationEndTime: Date,
+    participationStartTime: Date,
+    participationEndTime: Date,
+    type: number,
+    vaultUnlockThreshold?: boolean,
+  ) {
+    const nowDate = new Date();
+    let currentStage;
+    if (nowDate < registrationStartTime)
+      currentStage = IAO_EVENT_STAGE.UPCOMING;
+    else if (nowDate >= registrationStartTime && nowDate < registrationEndTime)
+      currentStage = IAO_EVENT_STAGE.REGISTER_NOW;
+    else if (nowDate >= registrationEndTime && nowDate < participationStartTime)
+      currentStage = IAO_EVENT_STAGE.ON_SALE_SOON;
+    else if (
+      nowDate >= participationStartTime &&
+      nowDate < participationEndTime
+    )
+      currentStage = IAO_EVENT_STAGE.ON_SALE;
+    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else if (
+      nowDate >= participationEndTime &&
+      type === VAULT_TYPE.VAULT &&
+      vaultUnlockThreshold
+    )
+      currentStage = IAO_EVENT_STAGE.COMPLETED;
+    else currentStage = IAO_EVENT_STAGE.FAILED;
+
+    return currentStage;
   }
 }

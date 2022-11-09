@@ -5,12 +5,10 @@ import {
   FilterIAORequestDto,
 } from './dto/filter-iao-request.dto';
 import { get } from 'lodash';
-import moment = require('moment');
 import {
   AssetType,
   IAORequest,
   Asset,
-  Fractor,
   IAO_REQUEST_STATUS,
   ASSET_STATUS,
 } from 'src/datalayer/model';
@@ -106,16 +104,16 @@ export class IaoRequestService {
 
     // filter submitted
     if (filter.submittedFrom && filter.submittedTo) {
-      query['createdAt'] = {
+      query['submitedAt'] = {
         $gte: filter.submittedFrom,
         $lte: filter.submittedTo,
       };
     } else if (filter.submittedFrom) {
-      query['createdAt'] = {
+      query['submitedAt'] = {
         $gte: filter.submittedFrom,
       };
     } else if (filter.submittedTo) {
-      query['createdAt'] = {
+      query['submitedAt'] = {
         $lte: filter.submittedTo,
       };
     }
@@ -415,32 +413,15 @@ export class IaoRequestService {
         },
       },
       {
-        $lookup: {
-          from: Fractor.name,
-          let: { fractorId: '$ownerId' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ['$$fractorId', '$fractorId'] },
-              },
-            },
-            { $project: { _id: 1, fullname: 1, fractorId: 1 } },
-          ],
-          as: 'updatedBys',
-        },
-      },
-      {
-        $addFields: {
-          updatedBy: { $arrayElemAt: ['$updatedBys', 0] },
-        },
-      },
-      {
         $addFields: {
           sizeOfItem: { $size: '$items' },
         },
       },
       {
-        $unwind: '$items',
+        $unwind: {
+          path: '$items',
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
         $lookup: {
@@ -460,6 +441,7 @@ export class IaoRequestService {
                 documents: 1,
                 status: 1,
                 typeId: 1,
+                custodianship: 1,
                 _id: 1,
               },
             },
@@ -555,6 +537,7 @@ export class IaoRequestService {
             documents: '$item.documents',
             category: '$assetType.category',
             type: '$assetType.name',
+            custodianship: '$item.custodianship',
           },
         },
       });
@@ -589,12 +572,26 @@ export class IaoRequestService {
         updatedAt: { $first: '$updatedAt' },
         updatedBy: { $first: '$updatedBy' },
         bd: { $first: '$bd' },
+        iaoEventId: { $first: '$iaoEventId' },
       },
     });
 
     const iaos = await this.dataService.iaoRequest.aggregate(agg);
 
     if (iaos.length === 0) throw 'No data exists';
+    if (iaos[0].updatedBy) {
+      const admin = await this.dataService.admin.findOne({
+        adminId: iaos[0].updatedBy,
+      });
+      const fractor = await this.dataService.fractor.findOne({
+        fractorId: iaos[0].updatedBy,
+      });
+      const updatedBy = {
+        fractorId: admin ? admin.adminId : fractor.fractorId,
+        fullname: admin ? admin.fullname : fractor.fullname,
+      };
+      iaos[0].updatedBy = updatedBy;
+    }
     const iao = this.iaoRequestBuilderService.createIaoRequestDetail(iaos);
     return iao;
   }
@@ -621,10 +618,9 @@ export class IaoRequestService {
         updatedAt: iaoRequest['updatedAt'],
       },
       {
-        $set: {
-          firstReviewer: { ...firstReview },
-          status: IAO_REQUEST_STATUS.APPROVED_A,
-        },
+        firstReviewer: { ...firstReview },
+        status: IAO_REQUEST_STATUS.APPROVED_A,
+        updatedBy: user.adminId,
       },
     );
     if (updateIaoRequest.modifiedCount === 0)
@@ -659,10 +655,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            secondReviewer: { ...secondReview },
-            status: IAO_REQUEST_STATUS.APPROVED_B,
-          },
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.APPROVED_B,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -683,7 +678,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.IAO_APPROVED },
+          status: ASSET_STATUS.IAO_APPROVED,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -725,10 +721,9 @@ export class IaoRequestService {
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            firstReviewer: { ...firstReview },
-            status: IAO_REQUEST_STATUS.REJECTED,
-          },
+          firstReviewer: { ...firstReview },
+          status: IAO_REQUEST_STATUS.REJECTED,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -749,7 +744,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN },
+          status: ASSET_STATUS.OPEN,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -771,10 +767,7 @@ export class IaoRequestService {
   ) {
     const iaoRequest = await this.dataService.iaoRequest.findOne({
       iaoId: approveIaoRequestDTO.requestId,
-      status: IAO_REQUEST_STATUS.APPROVED_A,
     });
-
-    this._validateSecondReviewer(iaoRequest, user);
 
     const secondReview = this.iaoRequestBuilderService.createReject(
       approveIaoRequestDTO,
@@ -787,14 +780,12 @@ export class IaoRequestService {
       const updateIaoRequest = await this.dataService.iaoRequest.updateOne(
         {
           iaoId: approveIaoRequestDTO.requestId,
-          status: IAO_REQUEST_STATUS.APPROVED_A,
           updatedAt: iaoRequest['updatedAt'],
         },
         {
-          $set: {
-            secondReviewer: { ...secondReview },
-            status: IAO_REQUEST_STATUS.REJECTED,
-          },
+          secondReviewer: { ...secondReview },
+          status: IAO_REQUEST_STATUS.REJECTED,
+          updatedBy: user.adminId,
         },
         { session },
       );
@@ -815,7 +806,8 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN },
+          status: ASSET_STATUS.OPEN,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -886,7 +878,11 @@ export class IaoRequestService {
           ownerId: iaoRequest.ownerId,
           status: IAO_REQUEST_STATUS.IN_REVIEW,
         },
-        { $set: { status: IAO_REQUEST_STATUS.DRAFT } },
+        {
+          status: IAO_REQUEST_STATUS.DRAFT,
+          updatedBy: user.adminId,
+          submitedAt: null,
+        },
         { session },
       );
       if (updateIaoRequest.modifiedCount === 0)
@@ -907,7 +903,9 @@ export class IaoRequestService {
           deleted: false,
         },
         {
-          $set: { status: ASSET_STATUS.OPEN, inDraft: true },
+          status: ASSET_STATUS.OPEN,
+          inDraft: true,
+          lastUpdatedBy: user.adminId,
         },
         { session },
       );
@@ -936,25 +934,37 @@ export class IaoRequestService {
     if (dto.secondComment && !iaoRequest.secondReviewer)
       throw 'Second review is not exists';
 
-    const update = {
-      $set: {
+    let update = {};
+    if (
+      dto.firstComment &&
+      dto.firstComment !== iaoRequest.firstReviewer.comment
+    ) {
+      update = {
         firstReviewer: {
           ...iaoRequest.firstReviewer,
           comment: dto.firstComment,
+          adminId: user.adminId,
         },
-      },
-    };
+        updatedBy: user.adminId,
+      };
+    }
 
-    if (dto.secondComment && iaoRequest.secondReviewer) {
-      update['$set']['secondReviewer'] = {
+    if (
+      dto.secondComment &&
+      iaoRequest.secondReviewer &&
+      dto.secondComment !== iaoRequest.secondReviewer.comment
+    ) {
+      update['secondReviewer'] = {
         ...iaoRequest.secondReviewer,
         comment: dto.secondComment,
+        adminId: user.adminId,
       };
+      update['updatedBy'] = user.adminId;
     }
 
     await this.dataService.iaoRequest.updateOne(
       { iaoId: iaoRequest.iaoId },
-      { ...update },
+      update,
     );
     return iaoRequest.iaoId;
   }

@@ -8,6 +8,7 @@ export enum S3_TYPE {
   FNFT = 'fnft',
   IAO_REQUEST = 'iao-request',
   ASSET_TYPE = 'asset-type',
+  BANNER = 'banner',
 }
 
 export const FILE_PRESIGN_URL = [
@@ -43,6 +44,7 @@ export const FILE_PRESIGN_URL = [
   'gltf-binary',
   'pdf',
   'docx',
+  'gltf',
 ];
 
 export class PresignUrlDto {

@@ -24,7 +24,7 @@ export class NftBuilderService {
     private readonly s3Service: S3Service,
   ) {}
 
-  async createNft(body: CreateNftDto, user: any, session) {
+  async createNft(body: CreateNftDto, user: any, session, assetItem) {
     const tokenId = await Utils.getNextPrefixId(
       this.dataServices.counterId,
       PREFIX_ID.NFT,
@@ -65,6 +65,8 @@ export class NftBuilderService {
       createdBy: user.adminId,
       deleted: false,
       metadataUrl,
+      collectionId: assetItem?.collectionId,
+      assetUuid: assetItem?._id,
     };
     return newNft;
   }
@@ -106,6 +108,9 @@ export class NftBuilderService {
       description: data.description,
       metadata: data.metadata,
       unlockableContent: data.unlockableContent,
+      iaoEvent: {
+        iaoEventId: data?.iaoRequest?.iaoEventId,
+      },
       fnft: {
         id: data.fnft?.fnftId,
         tokenSymbol: data.fnft?.tokenSymbol,

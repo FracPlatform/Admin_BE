@@ -110,6 +110,15 @@ export class IAORequest {
 
   @Prop({ type: [DocumentItemSchema] })
   documents: DocumentItem[];
+
+  @Prop({ type: String })
+  updatedBy?: string;
+
+  @Prop({ type: String })
+  iaoEventId?: string;
+
+  @Prop({ type: Date })
+  submitedAt?: Date;
 }
 
 export const IAORequestSchema = SchemaFactory.createForClass(IAORequest);

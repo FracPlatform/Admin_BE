@@ -79,4 +79,11 @@ export class ExportWhitelistDto {
   @IsNotEmpty()
   @IsString()
   iaoEventId: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @Transform(({ value }) => value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+  @MaxLength(256)
+  wallet: string;
 }

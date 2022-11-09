@@ -25,6 +25,8 @@ import { DexModule } from './modules/dex/dex.module';
 import { RedemptionRequestModule } from './modules/redemption-request/redemption-request.module';
 import { UserModule } from './modules/user/user.module';
 import { IaoRevenueModule } from './modules/revenue/revenue.module';
+import { NotificationQueueModule } from './modules/notification-queue/notification-queue.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { IaoRevenueModule } from './modules/revenue/revenue.module';
     RedemptionRequestModule,
     DexModule,
     IaoRevenueModule,
+    NotificationQueueModule,
+    DashboardModule,
   ],
   controllers: [AppController],
 })

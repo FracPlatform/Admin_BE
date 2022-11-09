@@ -111,6 +111,12 @@ export class Nft {
 
   @Prop({ type: Boolean, required: false, default: false })
   deleted: boolean;
+
+  @Prop({ type: String })
+  collectionId?: string;
+
+  @Prop({ type: String })
+  assetUuid?: string;
 }
 export const NftSchema = SchemaFactory.createForClass(Nft);
 NftSchema.index({ tokenId: 1 });

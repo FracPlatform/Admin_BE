@@ -48,6 +48,9 @@ export class Admin {
 
   @Prop({ type: Boolean, default: false })
   deleted: boolean;
+
+  @Prop({ type: Number, default: 0 })
+  commissionRate?: number;
 }
 
 export const AdminSchema = SchemaFactory.createForClass(Admin);

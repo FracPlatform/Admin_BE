@@ -9,6 +9,8 @@ import {
   IsEnum,
   IsEmail,
   IsEthereumAddress,
+  Min,
+  Max,
 } from 'class-validator';
 
 export class FilterAdminDto {
@@ -90,6 +92,17 @@ export class CreateAdminDto {
   @IsNumber()
   @IsEnum([1, 2, 3, 4, 5])
   role: number;
+
+  @ApiProperty({
+    required: false,
+    description: "Commission rate of Affiliate's BD",
+  })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(99.99)
+  @IsOptional()
+  commissionRate: number;
 }
 
 export class UpdateAdminDto {
@@ -110,4 +123,15 @@ export class UpdateAdminDto {
   @IsString()
   @MaxLength(3000)
   description: string;
+
+  @ApiProperty({
+    required: false,
+    description: "Commission rate of Affiliate's BD",
+  })
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0.01)
+  @Max(99.99)
+  @IsOptional()
+  commissionRate: number;
 }

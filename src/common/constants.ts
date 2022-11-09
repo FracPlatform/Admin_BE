@@ -98,6 +98,7 @@ export enum PREFIX_ID {
   AFFILIATE = 'AFF',
   EXCHANGE_TOKEN = 'TKN',
   EXCHANGE_TRADING_PAIRS = 'TP',
+  NOTIF_QUEUE = 'NTQ',
 }
 
 export const CONTRACT_EVENTS = {
@@ -112,6 +113,9 @@ export const CONTRACT_EVENTS = {
   CLAIM_FNFT_SUCCESSFUL: 'WithdrawFNFTEvent',
   CLAIM_FNFT_FAILURE: 'WithdrawFundEvent',
   MERGE_FNFT: 'getNFTEvent',
+  APPROVE_IAO_REVENUE_EVENT: 'SetFractorRevenueEvent',
+  REJECT_IAO_REVENUE: 'ReturnFundEvent',
+  RETURN_FUND_EVENT: 'FundReturnedEvent',
 };
 
 export enum CHAINID {
