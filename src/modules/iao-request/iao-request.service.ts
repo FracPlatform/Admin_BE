@@ -140,7 +140,7 @@ export class IaoRequestService {
       };
     }
     if (filter._1stReviewedBy) {
-      query['ownerId'] = {
+      query['firstReviewer.adminId'] = {
         $regex: filter._1stReviewedBy.trim(),
         $options: 'i',
       };
@@ -162,7 +162,7 @@ export class IaoRequestService {
       };
     }
     if (filter._2stReviewedBy) {
-      query['ownerId'] = {
+      query['secondReviewer.adminId'] = {
         $regex: filter._2stReviewedBy.trim(),
         $options: 'i',
       };
