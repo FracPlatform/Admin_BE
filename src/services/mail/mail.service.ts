@@ -46,4 +46,13 @@ export class MailService {
       },
     });
   }
+
+  async sendActiveAffiliate(email) {
+    await this.mailerService.sendMail({
+      to: email,
+      // from: '"Support Team" <support@example.com>', // override default from
+      subject: 'Your account has been activated',
+      template: './active-affiliate.hbs', // `.hbs` extension is appended automatically
+    });
+  }
 }

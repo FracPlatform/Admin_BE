@@ -173,6 +173,7 @@ export class UserService {
       { $set: buildUser },
       { new: true },
     );
+    if (user.email) await this.mailService.sendActiveAffiliate(user.email);
     return updateUser;
   }
 
