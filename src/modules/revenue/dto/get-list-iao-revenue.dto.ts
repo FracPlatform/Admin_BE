@@ -7,7 +7,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { IAO_EVENT_STAGE, REVENUE_STATUS } from 'src/datalayer/model';
+import { REVENUE_STATUS } from 'src/datalayer/model';
 
 export enum IAO_REVENUE_SORT_FIELD {
   PARTICIPATION_START_TIME = 'participationStartTime',
@@ -19,6 +19,12 @@ export enum IAO_REVENUE_SORT_FIELD {
   PROGRESS = 'progress',
 }
 
+export enum IAO_EVENT_STAGE_FILTERABLE {
+  ON_SALE = 4,
+  COMPLETED = 5,
+  FAILED = 6,
+}
+
 export class GetListIaoRevenueDto {
   @ApiProperty({ required: false })
   @IsOptional()
@@ -26,7 +32,7 @@ export class GetListIaoRevenueDto {
   @MaxLength(256)
   keyword: string;
 
-  @IsEnum(IAO_EVENT_STAGE)
+  @IsEnum(IAO_EVENT_STAGE_FILTERABLE)
   @IsOptional()
   @ApiProperty({
     required: false,
@@ -35,7 +41,7 @@ export class GetListIaoRevenueDto {
       '1 => Upcomming, 2 => Register now, 3 => On sale soon, 4 => On sale, 5 => Completed, 6 => Failed',
   })
   @Type(() => Number)
-  stage: IAO_EVENT_STAGE;
+  stage: IAO_EVENT_STAGE_FILTERABLE;
 
   @IsEnum(REVENUE_STATUS)
   @IsOptional()
