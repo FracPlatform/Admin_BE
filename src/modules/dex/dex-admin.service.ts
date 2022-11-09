@@ -440,7 +440,7 @@ export class DexAdminService {
 
   async getCollectedFee(filter: GetCollectedFeeDto) {
     return this.http
-      .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/collected-fee`, {
+      .get(`${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/collected-fees`, {
         headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
         params: filter,
       })
@@ -459,7 +459,7 @@ export class DexAdminService {
   async downloadCollectedFee(filter: DownloadCollectedFeeDto) {
     return this.http
       .get(
-        `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/download-collected-fee`,
+        `${process.env.SPOT_DEX_DOMAIN}/api/v1/admin/collected-fees/download-csv`,
         {
           headers: { 'API-Key': `${process.env.SPOT_DEX_API_KEY}` },
           params: filter,
