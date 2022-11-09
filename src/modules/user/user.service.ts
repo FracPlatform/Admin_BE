@@ -49,7 +49,7 @@ export class UserService {
     const isAdmin = await this.dataService.admin.findOne({
       walletAddress: createAffiliateDTO.walletAddress,
     });
-    if (isAdmin) throw ApiError('', 'This wallet is an admin');
+    if (isAdmin) throw ApiError('E39', "This wallet can't be an admin account");
 
     const affiliate = await this.dataService.user.findOne({
       walletAddress: createAffiliateDTO.walletAddress,
