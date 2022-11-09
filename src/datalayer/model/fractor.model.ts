@@ -18,17 +18,30 @@ export enum SocialType {
   TWITTER = 'twitter',
 }
 
-Schema({
+@Schema({
   collection: 'FractorRevenue',
   timestamps: true,
-});
+})
 export class FractorRevenue {
+  @Prop({ type: Boolean })
   isWithdrawed: boolean;
+
+  @Prop({ type: Number })
   balance: number;
+
+  @Prop({ type: String })
   currencyContract: string;
+
+  @Prop({ type: String })
   acceptedCurrencySymbol: string;
+
+  @Prop({ type: String })
   fnftContractAddress: string;
+
+  @Prop({ type: Number })
   exchangeRate: number;
+
+  @Prop({ type: String })
   iaoEventId: string;
 }
 
