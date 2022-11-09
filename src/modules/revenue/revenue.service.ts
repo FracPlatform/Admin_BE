@@ -8,7 +8,10 @@ import {
   REVENUE_STATUS,
   VAULT_TYPE,
 } from 'src/datalayer/model';
-import { GetListIaoRevenueDto } from './dto/get-list-iao-revenue.dto';
+import {
+  GetListIaoRevenueDto,
+  IAO_EVENT_STAGE_FILTERABLE,
+} from './dto/get-list-iao-revenue.dto';
 import { get } from 'lodash';
 import { IaoRevenueBuilderService } from './revenue.factory';
 import { Role } from '../auth/role.enum';
@@ -87,42 +90,7 @@ export class IaoRevenueService {
         ],
       });
     }
-    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
-      dateQuery.push({
-        registrationStartTime: {
-          $gte: new Date(),
-        },
-      });
-    }
-    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
-      dateQuery.push(
-        {
-          registrationStartTime: {
-            $lte: new Date(),
-          },
-        },
-        {
-          registrationEndTime: {
-            $gte: new Date(),
-          },
-        },
-      );
-    }
-    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
-      dateQuery.push(
-        {
-          registrationEndTime: {
-            $lte: new Date(),
-          },
-        },
-        {
-          participationStartTime: {
-            $gte: new Date(),
-          },
-        },
-      );
-    }
-    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+    if (filter.stage === IAO_EVENT_STAGE_FILTERABLE.ON_SALE) {
       dateQuery.push(
         {
           participationStartTime: {
@@ -136,7 +104,7 @@ export class IaoRevenueService {
         },
       );
     }
-    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+    if (filter.stage === IAO_EVENT_STAGE_FILTERABLE.COMPLETED) {
       dateQuery.push({
         $or: [
           {
@@ -181,7 +149,7 @@ export class IaoRevenueService {
       });
     }
 
-    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+    if (filter.stage === IAO_EVENT_STAGE_FILTERABLE.FAILED) {
       dateQuery.push({
         $and: [
           {
@@ -419,42 +387,7 @@ export class IaoRevenueService {
       query['revenue.status'] = REVENUE_STATUS.PENDING;
       query['participationEndTime'] = { $gte: new Date() };
     }
-    if (filter.stage === IAO_EVENT_STAGE.UPCOMING) {
-      dateQuery.push({
-        registrationStartTime: {
-          $gte: new Date(),
-        },
-      });
-    }
-    if (filter.stage === IAO_EVENT_STAGE.REGISTER_NOW) {
-      dateQuery.push(
-        {
-          registrationStartTime: {
-            $lte: new Date(),
-          },
-        },
-        {
-          registrationEndTime: {
-            $gte: new Date(),
-          },
-        },
-      );
-    }
-    if (filter.stage === IAO_EVENT_STAGE.ON_SALE_SOON) {
-      dateQuery.push(
-        {
-          registrationEndTime: {
-            $lte: new Date(),
-          },
-        },
-        {
-          participationStartTime: {
-            $gte: new Date(),
-          },
-        },
-      );
-    }
-    if (filter.stage === IAO_EVENT_STAGE.ON_SALE) {
+    if (filter.stage === IAO_EVENT_STAGE_FILTERABLE.ON_SALE) {
       dateQuery.push(
         {
           participationStartTime: {
@@ -468,7 +401,7 @@ export class IaoRevenueService {
         },
       );
     }
-    if (filter.stage === IAO_EVENT_STAGE.COMPLETED) {
+    if (filter.stage === IAO_EVENT_STAGE_FILTERABLE.COMPLETED) {
       dateQuery.push({
         $or: [
           {
@@ -513,7 +446,7 @@ export class IaoRevenueService {
       });
     }
 
-    if (filter.stage === IAO_EVENT_STAGE.FAILED) {
+    if (filter.stage === IAO_EVENT_STAGE_FILTERABLE.FAILED) {
       dateQuery.push({
         $and: [
           {
