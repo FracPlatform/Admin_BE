@@ -116,6 +116,7 @@ export const CONTRACT_EVENTS = {
   APPROVE_IAO_REVENUE_EVENT: 'SetFractorRevenueEvent',
   REJECT_IAO_REVENUE: 'ReturnFundEvent',
   RETURN_FUND_EVENT: 'FundReturnedEvent',
+  FRACTOR_CLAIM_EVENT: 'FractorClaimEvent',
 };
 
 export enum CHAINID {
@@ -158,3 +159,5 @@ export const REDEMPTION_REQUEST_TYPE = {
 };
 
 export const DEFAULT_BD_COMMISSION_RATE = 5;
+
+export const BASE_COINGECKO_URL = 'https://api.coingecko.com/api/v3';
