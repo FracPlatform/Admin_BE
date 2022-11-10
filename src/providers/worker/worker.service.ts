@@ -511,7 +511,7 @@ export class WorkerService {
 
   private async _handleDepositNFTsEvent(requestData: WorkerDataDto) {
     const asset = await this.dataServices.asset.findOne({
-      itemId: `${PREFIX_ID.ASSET}-${requestData.metadata.assetId}`,
+      itemId: requestData.metadata.assetId,
     });
     if (!asset) throw ApiError(ErrorCode.DEFAULT_ERROR, 'Asset not exists');
     if (asset.status < ASSET_STATUS.IAO_APPROVED)
