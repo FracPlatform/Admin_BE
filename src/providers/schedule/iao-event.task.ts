@@ -5,25 +5,19 @@ import {
   VAULT_TYPE,
   ON_CHAIN_STATUS,
   IAO_EVENT_STATUS,
+  ASSET_STATUS,
 } from 'src/datalayer/model';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
-import { MailService } from 'src/services/mail/mail.service';
 
 @Injectable()
 export class IAOEventTask {
   private readonly logger = new Logger(IAOEventTask.name);
-  constructor(
-    private readonly dataService: IDataServices,
-    private readonly mailService: MailService,
-    @InjectConnection() private readonly connection: Connection,
-  ) {}
+  constructor(private readonly dataService: IDataServices) {}
 
-  @Cron(CronExpression.EVERY_SECOND)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async handleCron() {
-    this.logger.debug('start scan iao event to update status of asset');
+    this.logger.debug('Start job scan iao event to update status of asset');
     const nowDate = new Date();
-    const iaoEvent = await this.dataService.iaoEvent.findMany({
+    let iaoEvent: any = await this.dataService.iaoEvent.findMany({
       $or: [
         {
           vaultType: VAULT_TYPE.NON_VAULT,
@@ -36,10 +30,31 @@ export class IAOEventTask {
           participationEndTime: { $lte: nowDate },
           onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
           status: IAO_EVENT_STATUS.ACTIVE,
-          vaultUnlockThreshold:{$lte:'$totalSupply' + '$availableSupply'}
+          $expr: {
+            $gte: [
+              { $subtract: ['$totalSupply', '$availableSupply'] },
+              {
+                $multiply: ['$vaultUnlockThreshold', '$totalSupply', 0.01],
+              },
+            ],
+          },
         },
       ],
     });
-    console.log(iaoEvent.length);
+    const iaoRequestIdList = iaoEvent.map((iao) => iao.iaoRequestId);
+
+    const iaoRequest = await this.dataService.iaoRequest.findMany({
+      iaoId: iaoRequestIdList,
+    });
+    let items = [];
+    iaoRequest.forEach((iao) => {
+      if (iao.items) items = items.concat(iao.items);
+    });
+    const updateAsset = await this.dataService.asset.updateMany(
+      { itemId: { $in: items } },
+      { status: ASSET_STATUS.EXCHANGE },
+    );
+    if (updateAsset)
+      this.logger.debug('End job scan iao event to update status of asset');
   }
 }
