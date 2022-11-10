@@ -396,6 +396,7 @@ export class IaoEventService {
         iaoEvent.participationStartTime,
         iaoEvent.participationEndTime,
         iaoEvent.vaultType,
+        iaoEvent.status,
         iaoEvent.totalSupply - iaoEvent.availableSupply >=
           (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
       ),
@@ -886,6 +887,7 @@ export class IaoEventService {
       iaoEvent.participationStartTime,
       iaoEvent.participationEndTime,
       iaoEvent.vaultType,
+      iaoEvent.status,
       fnft.totalSupply - iaoEvent.availableSupply >=
         (iaoEvent.vaultUnlockThreshold * fnft.totalSupply) / 100,
     );
@@ -1717,6 +1719,7 @@ export class IaoEventService {
     participationStartTime: Date,
     participationEndTime: Date,
     type: number,
+    status: number,
     vaultUnlockThreshold?: boolean,
   ) {
     const nowDate = new Date();
@@ -1732,12 +1735,17 @@ export class IaoEventService {
       nowDate < participationEndTime
     )
       currentStage = IAO_EVENT_STAGE.ON_SALE;
-    else if (nowDate >= participationEndTime && type === VAULT_TYPE.NON_VAULT)
+    else if (
+      nowDate >= participationEndTime &&
+      type === VAULT_TYPE.NON_VAULT &&
+      status === IAO_EVENT_STATUS.ACTIVE
+    )
       currentStage = IAO_EVENT_STAGE.COMPLETED;
     else if (
       nowDate >= participationEndTime &&
       type === VAULT_TYPE.VAULT &&
-      vaultUnlockThreshold
+      vaultUnlockThreshold &&
+      status === IAO_EVENT_STATUS.ACTIVE
     )
       currentStage = IAO_EVENT_STAGE.COMPLETED;
     else currentStage = IAO_EVENT_STAGE.FAILED;
