@@ -150,6 +150,32 @@ export class UserService {
     return updateUser;
   }
 
+  async updateDeactiveUser(
+    userId: string,
+    deactivateUserDTO: DeactivateUserDTO,
+    admin: any,
+  ) {
+    const user = await this.dataService.user.findOne({
+      userId: userId,
+      status: USER_STATUS.INACTIVE,
+    });
+    if (!user) throw ApiError('E2', 'userId is invalid');
+    const buildUpdateUser = this.userBuilderService.updateDeactivateUser(
+      admin.adminId,
+      deactivateUserDTO,
+      user,
+    );
+    const updateUser = await this.dataService.user.findOneAndUpdate(
+      {
+        userId: userId,
+        status: USER_STATUS.INACTIVE,
+      },
+      { $set: buildUpdateUser },
+      { new: true },
+    );
+    return updateUser;
+  }
+
   async activeUser(userId: string, admin) {
     const user = await this.dataService.user.findOne({
       userId: userId,

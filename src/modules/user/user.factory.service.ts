@@ -90,6 +90,24 @@ export class UserBuilderService {
     };
   }
 
+  updateDeactivateUser(
+    adminId: string,
+    deactivateUserDTO: DeactivateUserDTO,
+    user: any,
+  ) {
+    return {
+      deactivatedAffiliateBy: {
+        deactivatedAt: user.deactivatedAffiliateBy.deactivatedAt,
+        deactivatedBy: user.deactivatedAffiliateBy.deactivatedBy,
+        comment: deactivateUserDTO.comment,
+      },
+      updatedAffiliateBy: {
+        updatedAt: new Date(),
+        updatedBy: adminId,
+      },
+    };
+  }
+
   activeUser(adminId: string) {
     return {
       status: USER_STATUS.ACTIVE,
