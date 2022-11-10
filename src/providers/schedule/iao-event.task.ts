@@ -17,7 +17,7 @@ export class IAOEventTask {
   async handleCron() {
     this.logger.debug('Start job scan iao event to update status of asset');
     const nowDate = new Date();
-    let iaoEvent: any = await this.dataService.iaoEvent.findMany({
+    const iaoEvent: any = await this.dataService.iaoEvent.findMany({
       $or: [
         {
           vaultType: VAULT_TYPE.NON_VAULT,
