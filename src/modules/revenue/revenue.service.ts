@@ -793,6 +793,7 @@ export class IaoRevenueService {
       iaoEvent.participationStartTime,
       iaoEvent.participationEndTime,
       iaoEvent.vaultType,
+      iaoEvent.status,
       iaoEvent.totalSupply - iaoEvent.availableSupply >=
         (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
     );

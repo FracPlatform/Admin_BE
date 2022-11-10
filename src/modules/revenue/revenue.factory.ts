@@ -62,6 +62,7 @@ export class IaoRevenueBuilderService {
           iaoRevenue.participationStartTime,
           iaoRevenue.participationEndTime,
           iaoRevenue.vaultType,
+          iaoRevenue.status,
           iaoRevenue.totalSupply - iaoRevenue.availableSupply >=
             (iaoRevenue.vaultUnlockThreshold * iaoRevenue.totalSupply) / 100,
         ),
@@ -126,6 +127,7 @@ export class IaoRevenueBuilderService {
         iaoEvent.participationStartTime,
         iaoEvent.participationEndTime,
         iaoEvent.vaultType,
+        iaoEvent.status,
         iaoEvent.totalSupply - iaoEvent.availableSupply >=
           (iaoEvent.vaultUnlockThreshold * iaoEvent.totalSupply) / 100,
       ),
@@ -178,6 +180,7 @@ export class IaoRevenueBuilderService {
                 iaoRevenue.participationStartTime,
                 iaoRevenue.participationEndTime,
                 iaoRevenue.vaultType,
+                iaoRevenue.status,
                 iaoRevenue.totalSupply - iaoRevenue.availableSupply >=
                   (iaoRevenue.vaultUnlockThreshold * iaoRevenue.totalSupply) /
                     100,
