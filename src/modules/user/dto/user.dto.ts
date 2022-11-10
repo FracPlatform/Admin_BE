@@ -121,4 +121,9 @@ export class UpdateAffiliateDTO extends CreateAffiliateDTO {
   @MaxLength(2000)
   @MinLength(1)
   deactivationComment: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  description: string;
 }
