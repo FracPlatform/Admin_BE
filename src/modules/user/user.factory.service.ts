@@ -39,6 +39,7 @@ export class UserBuilderService {
       maxSubFristCommissionRate: updateDto.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: updateDto.maxSubSecondCommissionRate,
       bd: updateDto.bd,
+      description: updateDto.description,
       updatedAffiliateBy: {
         updatedAt: new Date(),
         updatedBy: user.adminId,
