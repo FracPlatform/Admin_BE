@@ -39,6 +39,7 @@ export class UserBuilderService {
       maxSubFristCommissionRate: updateDto.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: updateDto.maxSubSecondCommissionRate,
       bd: updateDto.bd,
+      description: updateDto.description,
       updatedAffiliateBy: {
         updatedAt: new Date(),
         updatedBy: user.adminId,
@@ -81,6 +82,24 @@ export class UserBuilderService {
       deactivatedAffiliateBy: {
         deactivatedAt: new Date(),
         deactivatedBy: adminId,
+        comment: deactivateUserDTO.comment,
+      },
+      updatedAffiliateBy: {
+        updatedAt: new Date(),
+        updatedBy: adminId,
+      },
+    };
+  }
+
+  updateDeactivateUser(
+    adminId: string,
+    deactivateUserDTO: DeactivateUserDTO,
+    user: any,
+  ) {
+    return {
+      deactivatedAffiliateBy: {
+        deactivatedAt: user.deactivatedAffiliateBy.deactivatedAt,
+        deactivatedBy: user.deactivatedAffiliateBy.deactivatedBy,
         comment: deactivateUserDTO.comment,
       },
       updatedAffiliateBy: {

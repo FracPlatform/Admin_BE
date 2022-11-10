@@ -40,6 +40,8 @@ import {
   NotificationQueue,
   Notification,
   NotificationDocument,
+  WithdrawalRequest,
+  WithdrawalRequestDocument,
 } from './model';
 import { MongoGenericRepository } from './mongo-generic-repository';
 
@@ -63,7 +65,7 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
   redemptionRequest: IGenericRepository<RedemptionRequest>;
   notificationQueue: IGenericRepository<NotificationQueueDocument>;
   notification: IGenericRepository<NotificationDocument>;
-
+  withdrawalRequest: IGenericRepository<WithdrawalRequest>;
   constructor(
     @InjectModel(Fractor.name)
     private FractorUserRepository: Model<FractorDocument>,
@@ -100,6 +102,8 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     private notificationQueueRepository: Model<NotificationQueueDocument>,
     @InjectModel(Notification.name)
     private notificationRepository: Model<NotificationDocument>,
+    @InjectModel(WithdrawalRequest.name)
+    private WithdrawalRequest: Model<WithdrawalRequestDocument>,
   ) {}
 
   onApplicationBootstrap() {
@@ -160,5 +164,9 @@ export class MongoServices implements IDataServices, OnApplicationBootstrap {
     this.notification = new MongoGenericRepository<NotificationDocument>(
       this.notificationRepository,
     );
+    this.withdrawalRequest =
+      new MongoGenericRepository<WithdrawalRequestDocument>(
+        this.WithdrawalRequest,
+      );
   }
 }

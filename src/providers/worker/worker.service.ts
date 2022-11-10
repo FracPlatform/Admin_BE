@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ApiError } from '../../common/api';
 import {
+  BASE_COINGECKO_URL,
   CONTRACT_EVENTS,
   ErrorCode,
   PREFIX_ID,
@@ -21,6 +22,7 @@ import {
   ON_CHAIN_STATUS,
   PURCHASE_STATUS,
   REVENUE_STATUS,
+  WITHDRAWAL_REQUEST_STATUS,
 } from '../../datalayer/model';
 import { Role } from '../../modules/auth/role.enum';
 import { SOCKET_EVENT } from '../socket/socket.enum';
@@ -97,6 +99,9 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.REJECT_IAO_REVENUE:
           await this._handleRejectIaoRevenueEvent(requestData);
+          break;
+        case CONTRACT_EVENTS.FRACTOR_CLAIM_EVENT:
+          await this._handleFractorClaimEvent(requestData);
           break;
         default:
           break;
@@ -819,6 +824,76 @@ export class WorkerService {
         requestData,
         requestData.metadata.caller,
       );
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async _handleFractorClaimEvent(requestData: WorkerDataDto) {
+    const listIaoEventId = requestData.metadata.iaoId.map((hexId) =>
+      this.commonService.decodeHexToString(hexId),
+    );
+    const fractorId = this.commonService.decodeHexToString(
+      requestData.metadata.fractorId,
+    );
+    const listIaoEvent = await this.dataServices.iaoEvent.findMany({
+      iaoEventId: {
+        $in: listIaoEventId,
+      },
+    });
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    try {
+      await this.dataServices.withdrawalRequest.findOneAndUpdate(
+        {
+          status: WITHDRAWAL_REQUEST_STATUS.PROCESSING,
+          'revenue.iaoEventId': {
+            $in: listIaoEventId,
+          },
+        },
+        {
+          status: WITHDRAWAL_REQUEST_STATUS.SUCCESSFUL,
+        },
+        {
+          session,
+        },
+      );
+      listIaoEvent.forEach(async (iaoEvent) => {
+        try {
+          const tokenInfo = await axios.get(
+            `${BASE_COINGECKO_URL}/coins/binance-smart-chain/contract/${iaoEvent.FNFTcontractAddress}/market_chart/?vs_currency=usd&days=0`,
+          );
+          const tokenUsdPrice = tokenInfo.data.prices[0][1];
+          await this.dataServices.fractor.findOneAndUpdate(
+            {
+              fractorId,
+              'revenue.iaoEventId': iaoEvent.iaoEventId,
+            },
+            {
+              'revenue.$.isWithdrawed': true,
+              acceptedCurrencyUsdPrice: tokenUsdPrice,
+            },
+            { session },
+          );
+        } catch (error) {
+          await this.dataServices.fractor.findOneAndUpdate(
+            {
+              fractorId,
+              'revenue.iaoEventId': iaoEvent.iaoEventId,
+            },
+            {
+              'revenue.$.isWithdrawed': true,
+              acceptedCurrencyUsdPrice: 1,
+            },
+            { session },
+          );
+        }
+      });
+
+      session.commitTransaction();
     } catch (error) {
       await session.abortTransaction();
       throw error;

@@ -43,6 +43,9 @@ export class FractorRevenue {
 
   @Prop({ type: String })
   iaoEventId: string;
+
+  @Prop({ type: Number, required: false })
+  acceptedCurrencyUsdPrice?: number;
 }
 
 export const FractorRevenueSchema =

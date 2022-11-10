@@ -17,6 +17,7 @@ import {
   RedemptionRequest,
   NotificationQueue,
   Notification,
+  WithdrawalRequest,
 } from '../../datalayer/model';
 import { IGenericRepository } from './generic-repository.abstract';
 
@@ -39,4 +40,5 @@ export abstract class IDataServices {
   abstract redemptionRequest: IGenericRepository<RedemptionRequest>;
   abstract notificationQueue: IGenericRepository<NotificationQueue>;
   abstract notification: IGenericRepository<Notification>;
+  abstract withdrawalRequest: IGenericRepository<WithdrawalRequest>;
 }
