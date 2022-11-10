@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -120,6 +121,28 @@ export class UserController {
   ) {
     try {
       const user = await this.userService.deactiveUser(userId, data, req.user);
+      return new ApiSuccessResponse().success(user, '');
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Patch('/deactivate/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @Roles(Role.SuperAdmin)
+  @ApiOperation({ summary: 'Update Comment Deactivate User' })
+  async updateDeactiveUser(
+    @Param('id') userId: string,
+    @Body() data: DeactivateUserDTO,
+    @Req() req: Request,
+  ) {
+    try {
+      const user = await this.userService.updateDeactiveUser(
+        userId,
+        data,
+        req.user,
+      );
       return new ApiSuccessResponse().success(user, '');
     } catch (error) {
       throw error;
