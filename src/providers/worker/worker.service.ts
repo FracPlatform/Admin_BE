@@ -863,6 +863,8 @@ export class WorkerService {
         },
         {
           status: WITHDRAWAL_REQUEST_STATUS.SUCCESSFUL,
+          txHash: requestData.transactionHash,
+          transactionCompletedOn: new Date(),
         },
         {
           session,

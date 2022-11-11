@@ -44,6 +44,12 @@ export class WithdrawalRequest {
 
   @Prop({ type: Date })
   requestedOn: Date;
+
+  @Prop({ type: String, required: false })
+  transactionCompletedOn?: string;
+
+  @Prop({ type: String, required: false })
+  txHash?: string;
 }
 export const WithdrawalRequestSchema =
   SchemaFactory.createForClass(WithdrawalRequest);
