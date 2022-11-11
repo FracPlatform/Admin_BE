@@ -60,6 +60,7 @@ export class AssetForOwnerEntity {
   createdAt: Date;
   updatedAt: Date;
   custodianship: Custodianship;
+  depositedNFTs?: DepositedNFT[];
 }
 
 export class DepositedNFT {

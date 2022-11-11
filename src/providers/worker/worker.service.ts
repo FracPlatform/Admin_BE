@@ -94,6 +94,7 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.MERGE_FNFT:
           await this._handleMergeFNFTEvent(requestData);
+          break;
         case CONTRACT_EVENTS.APPROVE_IAO_REVENUE_EVENT:
           await this._handleApproveIaoRevenueEvent(requestData);
           break;

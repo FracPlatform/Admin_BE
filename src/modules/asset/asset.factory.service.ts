@@ -80,6 +80,7 @@ export class AssetBuilderService {
       status: data.status,
       media: data.media,
       previewUrl: data.previewUrl,
+      depositedNFTs: data.depositedNFTs,
       owner: user
         ? {
             name: user.name,
