@@ -94,6 +94,7 @@ export class WorkerService {
           break;
         case CONTRACT_EVENTS.MERGE_FNFT:
           await this._handleMergeFNFTEvent(requestData);
+          break;
         case CONTRACT_EVENTS.APPROVE_IAO_REVENUE_EVENT:
           await this._handleApproveIaoRevenueEvent(requestData);
           break;
@@ -728,12 +729,19 @@ export class WorkerService {
           },
         },
       );
+
+      const tokenInfo = await axios.get(
+        `${BASE_COINGECKO_URL}/coins/binance-smart-chain/contract/${iaoEvent.FNFTcontractAddress}/market_chart/?vs_currency=usd&days=0`,
+      );
+      const tokenUsdPrice = tokenInfo.data.prices[0][1];
+
       const newApproveIaoRevenue: FractorRevenue = {
         isWithdrawed: false,
         balance: new BigNumber(requestData.metadata.revenue)
           .dividedBy(Math.pow(10, FNFT_DECIMAL))
           .toNumber(),
         currencyContract: iaoEvent.acceptedCurrencyAddress,
+        approveAcceptedCurrencyUsdPrice: tokenUsdPrice,
         acceptedCurrencySymbol: iaoEvent.acceptedCurrencySymbol,
         fnftContractAddress: iaoEvent.FNFTcontractAddress,
         exchangeRate: iaoEvent.exchangeRate,
@@ -856,6 +864,8 @@ export class WorkerService {
         },
         {
           status: WITHDRAWAL_REQUEST_STATUS.SUCCESSFUL,
+          txHash: requestData.transactionHash,
+          transactionCompletedOn: new Date(),
         },
         {
           session,

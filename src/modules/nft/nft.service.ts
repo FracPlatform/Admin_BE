@@ -60,7 +60,16 @@ export class NftService {
           break;
         case ASSET_CATEGORY.DIGITAL_NON_NFT:
           query['assetCategory'] = CategoryType.VIRTUAL;
-          query['asset.isMintNFT'] = false;
+          query['$or'] = [
+            {
+              'asset.isMintNFT': false,
+            },
+            {
+              'asset.isMintNFT': {
+                $exists: false,
+              },
+            },
+          ];
           break;
         default:
           break;

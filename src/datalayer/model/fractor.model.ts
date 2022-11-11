@@ -46,6 +46,9 @@ export class FractorRevenue {
 
   @Prop({ type: Number, required: false })
   acceptedCurrencyUsdPrice?: number;
+
+  @Prop({ type: Number, required: false })
+  approveAcceptedCurrencyUsdPrice?: number;
 }
 
 export const FractorRevenueSchema =
