@@ -215,8 +215,16 @@ export class UserService {
       },
     });
     if (!affliate) throw ApiError('', 'Affiliate is invalid');
+    let bdId = affliate.bd;
+    if (affliate.role !== USER_ROLE.MASTER_AFFILIATE) {
+      const upUser = await this.dataService.user.findOne({
+        userId: affliate.masterId,
+      });
+      bdId = upUser.bd;
+    }
+
     const idList = [
-      affliate.bd,
+      bdId,
       affliate.createdAffiliateBy?.createdBy,
       affliate.updatedAffiliateBy?.updatedBy,
       affliate.deactivatedAffiliateBy?.deactivatedBy,
@@ -224,7 +232,7 @@ export class UserService {
     const admin = await this.dataService.admin.findMany({
       adminId: { $in: idList },
     });
-    const bd = admin.find((ad) => ad.adminId === affliate.bd);
+    const bd = admin.find((ad) => ad.adminId === bdId);
     const createdBy = admin.find(
       (ad) => ad.adminId === affliate.createdAffiliateBy?.createdBy,
     );
@@ -235,12 +243,16 @@ export class UserService {
       (ad) => ad.adminId === affliate.deactivatedAffiliateBy?.deactivatedBy,
     );
     const data = {
-      bd: bd?.fullname,
+      bd,
       createdBy: createdBy?.fullname,
       updatedBy: updatedBy?.fullname,
       deactivateBy: deactivateBy?.fullname,
     };
-    let uplineAffiliate: any = affliate.masterId || affliate.subFirstId;
+    let uplineAffiliate;
+    if (affliate.role === USER_ROLE.AFFILIATE_SUB_1)
+      uplineAffiliate = affliate.masterId;
+    if (affliate.role === USER_ROLE.AFFILIATE_SUB_2)
+      uplineAffiliate = affliate.subFirstId;
     if (uplineAffiliate) {
       uplineAffiliate = await this.dataService.user.findOne({
         userId: uplineAffiliate,
