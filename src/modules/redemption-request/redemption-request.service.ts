@@ -17,7 +17,11 @@ import {
 } from './dto/redemption-request.dto';
 import { RedemptionRequestBuilderService } from './redemption-request.factory.service';
 import { ApiError } from 'src/common/api';
-import { ASSET_STATUS, REDEMPTION_REQUEST_STATUS } from 'src/datalayer/model';
+import {
+  ASSET_STATUS,
+  NFT_STATUS,
+  REDEMPTION_REQUEST_STATUS,
+} from 'src/datalayer/model';
 
 @Injectable()
 export class RedemptionRequestService {
@@ -290,21 +294,40 @@ export class RedemptionRequestService {
     if (data.type === REDEMPTION_REQUEST_TYPE.REJECT && !data.reviewComment)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'comment not exists');
 
+    const listOwnedNfts = await this.dataService.nft.findMany({
+      assetId: {
+        $in: currentRequest.items,
+      },
+    });
     const dataUpdate =
       await this.redemptionRequestBuilderService.updateRedemptionRequest(
         data,
         user.adminId,
       );
 
-    return await this.dataService.redemptionRequest.findOneAndUpdate(
+    const updatedRedemptionRequest =
+      await this.dataService.redemptionRequest.findOneAndUpdate(
+        {
+          requestId,
+          status: REDEMPTION_REQUEST_STATUS.IN_REVIEW,
+          updatedAt: currentRequest['updatedAt'],
+        },
+        dataUpdate,
+        { new: true },
+      );
+
+    await this.dataService.nft.updateMany(
       {
-        requestId,
-        status: REDEMPTION_REQUEST_STATUS.IN_REVIEW,
-        updatedAt: currentRequest['updatedAt'],
+        tokenId: listOwnedNfts.map((nft) => nft.tokenId),
       },
-      dataUpdate,
-      { new: true },
+      {
+        status:
+          data.type === REDEMPTION_REQUEST_TYPE.APPROVE
+            ? NFT_STATUS.PROCESSING
+            : NFT_STATUS.OWNED,
+      },
     );
+    return updatedRedemptionRequest;
   }
 
   async confirmRequest(user: any, requestId: string) {
@@ -316,7 +339,11 @@ export class RedemptionRequestService {
 
     if (currentRequest.status !== REDEMPTION_REQUEST_STATUS.PROCESSING)
       throw ApiError(ErrorCode.DEFAULT_ERROR, 'status invalid');
-
+    const listOwnedNfts = await this.dataService.nft.findMany({
+      assetId: {
+        $in: currentRequest.items,
+      },
+    });
     const session = await this.connection.startSession();
     session.startTransaction();
 
@@ -351,6 +378,21 @@ export class RedemptionRequestService {
       );
       if (updateAsset.modifiedCount === 0)
         throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot update asset status');
+
+      const updatedNfts = await this.dataService.nft.updateMany(
+        {
+          tokenId: {
+            $in: listOwnedNfts.map((nft) => nft.tokenId),
+          },
+        },
+        {
+          status: NFT_STATUS.REDEEMED,
+        },
+        { session },
+      );
+
+      if (updatedNfts.modifiedCount === 0)
+        throw ApiError(ErrorCode.DEFAULT_ERROR, 'Cannot update NFT status');
 
       await session.commitTransaction();
       return { success: true };
