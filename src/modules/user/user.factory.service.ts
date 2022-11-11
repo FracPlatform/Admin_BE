@@ -129,7 +129,9 @@ export class UserBuilderService {
       commissionRate: user.commissionRate,
       maxSubFristCommissionRate: user.maxSubFristCommissionRate,
       maxSubSecondCommissionRate: user.maxSubSecondCommissionRate,
-      bd: user.bd ? { adminId: user.bd, fullname: data.bd } : null,
+      bd: data.bd
+        ? { adminId: data.bd.adminId, fullname: data.bd.fullname }
+        : null,
       createdAffiliateBy: {
         adminId: user.createdAffiliateBy?.createdBy,
         fullname: data.createdBy,
