@@ -728,12 +728,19 @@ export class WorkerService {
           },
         },
       );
+
+      const tokenInfo = await axios.get(
+        `${BASE_COINGECKO_URL}/coins/binance-smart-chain/contract/${iaoEvent.FNFTcontractAddress}/market_chart/?vs_currency=usd&days=0`,
+      );
+      const tokenUsdPrice = tokenInfo.data.prices[0][1];
+
       const newApproveIaoRevenue: FractorRevenue = {
         isWithdrawed: false,
         balance: new BigNumber(requestData.metadata.revenue)
           .dividedBy(Math.pow(10, FNFT_DECIMAL))
           .toNumber(),
         currencyContract: iaoEvent.acceptedCurrencyAddress,
+        approveAcceptedCurrencyUsdPrice: tokenUsdPrice,
         acceptedCurrencySymbol: iaoEvent.acceptedCurrencySymbol,
         fnftContractAddress: iaoEvent.FNFTcontractAddress,
         exchangeRate: iaoEvent.exchangeRate,
