@@ -15,10 +15,10 @@ export class IAOEventTask {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async handleCron() {
-    this.logger.debug('Start job scan IAO Event');
+    this.logger.warn('Start job scan IAO Event');
     const exchangeAsset = await this.handleCronToExchange();
     const openAsset = await this.handleCronToOpen();
-    if (exchangeAsset && openAsset) this.logger.debug('End job scan IAO Event');
+    if (exchangeAsset && openAsset) this.logger.warn('End job scan IAO Event');
   }
 
   async handleCronToExchange() {
