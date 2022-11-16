@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { ApiError } from 'src/common/api';
+import { ErrorCode } from 'src/common/constants';
 import { IDataServices } from 'src/core/abstracts/data-services.abstract';
+import { CategoryType } from 'src/datalayer/model';
 import {
   AssetForOwnerEntity,
   DocumentItemEntity,
@@ -162,6 +165,26 @@ export class AssetBuilderService {
     currentasset,
     update: UpdateCustodianshipDto,
   ) {
+    const arrayKeyOptional = ['4', '5', '7', '8'];
+    let errorData = '';
+
+    for (const key in update.label) {
+      if (currentasset.category !== CategoryType.PHYSICAL) {
+        for (const key2 in update.label[key]) {
+          if (arrayKeyOptional.includes(key2)) delete update.label[key][key2];
+        }
+      } else {
+        if (
+          !arrayKeyOptional.every((k) =>
+            Object.keys(update.label[key]).includes(k),
+          )
+        )
+          errorData += `Label ${key} missing key, `;
+      }
+    }
+
+    if (errorData.length) throw ApiError(ErrorCode.DEFAULT_ERROR, errorData);
+
     const dataLabel = update.label
       ? {
           en: update.label?.en || currentasset.custodianship?.label?.en,

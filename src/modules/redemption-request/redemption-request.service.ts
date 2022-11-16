@@ -244,6 +244,7 @@ export class RedemptionRequestService {
             note: { $first: '$note' },
             reviewComment: { $first: '$reviewComment' },
             createdAt: { $first: '$createdAt' },
+            updatedAt: { $first: '$updatedAt' },
             sizeOfItem: { $first: '$sizeOfItem' },
             Fractor: { $first: '$Fractor' },
             User: { $first: '$User' },
