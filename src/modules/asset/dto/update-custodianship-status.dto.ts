@@ -33,11 +33,13 @@ export class DataLabel {
   3: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsString()
   @MaxLength(256)
   4: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsString()
   @MaxLength(256)
   5: string;
@@ -48,11 +50,13 @@ export class DataLabel {
   6: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsString()
   @MaxLength(256)
   7: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsString()
   @MaxLength(256)
   8: string;
@@ -89,12 +93,14 @@ export class DataLabelNotEmpty {
   3: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   4: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
@@ -107,12 +113,14 @@ export class DataLabelNotEmpty {
   6: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
   7: string;
 
   @ApiProperty({ required: true })
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
   @MaxLength(256)
