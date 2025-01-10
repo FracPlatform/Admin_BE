@@ -38,6 +38,10 @@ export class CommonService {
     return this.cacheManager.get(key) as any;
   }
 
+  async delCache(key: string) {
+    return (await this.cacheManager.del(key)) as any;
+  }
+
   logError(error: Error) {
     this.logger.error(error.message, error.stack);
   }
@@ -60,5 +64,13 @@ export class CommonService {
         }
       }
     }
+  }
+
+  decodeHexToString(hexx) {
+    const hex = hexx.substring(2).toString(); //force conversion
+    let str = '';
+    for (let i = 0; i < hex.length; i += 2)
+      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    return str;
   }
 }

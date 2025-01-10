@@ -13,7 +13,7 @@ export class IpfsSelfHost implements IIPFS {
 
   public async upload(content: Express.Multer.File) {
     const { cid } = await this.client.add(content.buffer);
-    return cid.toString();
+    return `${process.env.IPFS_SOURCE}${cid.toString()}`;
   }
 
   public async uploadFromURL(url: string) {

@@ -1,0 +1,166 @@
+<html xmlns='http://www.w3.org/1999/xhtml'>
+
+  <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <link rel='preconnect' href='https://fonts.googleapis.com' />
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <link
+      href='https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap'
+      rel='stylesheet'
+    />
+    <style>
+      * { box-sizing: border-box; } body { font-family: "Poppins", sans-serif;
+      font-style: normal; font-size: 1rem; margin: 0; } .container { width:
+      800px; margin: 0 auto; text-align: center; padding: 24px 0 16px; }
+      .content { text-align: left; padding: 42px 50px 24px; margin: 32px 0 54px;
+      background: #FFFFFF; font-weight: 700; font-size: 14px; line-height: 21px;
+      letter-spacing: -0.003em; color: #4F5566; } .content .title { font-weight:
+      600; font-size: 32px; line-height: 48px; color: #23262F; margin: 0 0 14px;
+      } .content p { font-weight: normal; font-size: 14px; line-height: 21px;
+      letter-spacing: -0.003em; color: #4F5566; } .social { padding-bottom:
+      20px; border-bottom: 1px solid #E6E8EC; width: 500px; margin: 0 auto; }
+      .social img { width: 30px; height: 30px; margin: 0 10px; } .footer {
+      color: #4F5566; } .footer-content { font-size: 1rem; line-height: 26px; }
+      .footer-copyright { font-weight: 500; font-size: 14px; line-height: 21px;
+      } @media screen and (max-width: 565px) { .container { width: 100%; }
+      .content { padding: 42px 16px 24px; } .content .title { font-size: 24px;
+      line-height: 36px; } .social { width: 320px; } } .link { cursor: pointer;
+      } .button-confirm { background-color: #00948B; border-radius: 8px; border:
+      0; box-shadow: rgba(1, 60, 136, .5) 0 -1px 3px 0 inset, rgba(0, 44, 97,
+      .1) 0 3px 6px 0; color: #fff; cursor: pointer; font-size: 1rem;
+      font-weight: 700; line-height: 24px; margin: 0; min-width: 120px; padding:
+      8px 70px; position: relative; text-align: center; user-select: none;
+      -webkit-user-select: none; touch-action: manipulation; vertical-align:
+      baseline; transition: all .2s cubic-bezier(.22, .61, .36, 1); }
+      .button-confirm img { margin-right: 8px; } .button-edit {
+      background-color: #ffffff; border-radius: 8px; border: 1px solid #d1d1d1;
+      color: #000; cursor: pointer; font-size: 1rem; font-weight: 700;
+      line-height: 24px; margin: 0; min-width: 120px; padding: 15px 90px;
+      position: relative; text-align: center; user-select: none;
+      -webkit-user-select: none; vertical-align: baseline; }
+      .button-confirm:hover { background-color: #00948B; } button a {
+      text-decoration: none; } .contact { color: #00948B !important; cursor:
+      pointer; outline: none; text-decoration: none; } /* css-table */ .wrapper
+      { margin: 0 auto; max-width: 800px; border-radius: 8px; border: 1px solid
+      #d1d1d1; padding: 0 16px; margin-bottom: 16px } .table { margin: 0 0 40px
+      0; width: 100%; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); } .row {
+      display: flex; justify-content: space-around; align-items: center; }
+      .row:not(:last-child) { border-bottom: 1px solid #d1d1d1; } .table .header
+      { font-weight: 900; color: #000; } .cell { padding: 8px 12px; } .token {
+      display: flex; align-items: center; justify-content: flex-start; } .token
+      img{ margin-right: 8pxx; } .button-wrapper { display: table; width: 100%;
+      border-collapse: collapse; } .status-succeeded { background-color:
+      #4ECC79; color: white; font-weight: 700; border-radius: 4px; padding: 4px
+      8px; width: 104px; } .status-failed { background-color: #F35B37; color:
+      white; font-weight: 700; border-radius: 4px; padding: 4px 8px; width:
+      104px; }
+    </style>
+  </head>
+
+  <body>
+    <div class='container-wrapper'>
+      <div class='container'>
+
+        <!-- start -->
+        <div class='content'>
+          <p style='margin-bottom: 24px'>Dear {{recipientName}},</p>
+          <p>Thank you for using iGold withdrawal service.<br />
+            {{#if isSuccessful}}
+              We would like to inform you that your transaction has been done as
+              following.
+            {{else}}
+              Unfortunately, the transaction has been unsuccessful. Below is the
+              detailed information.
+            {{/if}}
+          </p>
+          <table style='width: 70%;'>
+            <tbody>
+              <tr>
+                <td>
+                  <p style='font-weight: 700; margin-bottom: 8px'>Request ID</p>
+                  <p style='margin-top: 0px;'>{{requestId}}</p>
+                </td>
+                <td>
+                  <p style='font-weight: 700; margin-bottom: 8px'>Status</p>
+                  {{#if isSuccessful}}
+                    <center class='status-succeeded'>Succeeded</center>
+                  {{else}}
+                    <center class='status-failed'>Failed</center>
+                  {{/if}}
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p style='font-weight: 700; margin-bottom: 8px'>Requested on</p>
+                  <p style='margin-top: 0px;'>{{requestedOn}}</p>
+                </td>
+                <td>
+                  <p style='font-weight: 700; margin-bottom: 8px'>Confirmed on</p>
+                  <p style='margin-top: 0px;'>{{confirmedOn}}</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p style='font-size: 16px'><b>Withdrawal Amount</b></p>
+
+          <div class='wrapper'>
+
+            <div class='table'>
+
+              <div class='row header'>
+                <div class='cell' style='width: 35%'>
+                  Currency
+                </div>
+                <div class='cell'>
+                  Amount
+                </div>
+
+              </div>
+              {{#each revenue}}
+                <div class='row'>
+                  <div class='cell token' style='width: 35%; font-weight: 400'>
+                    <img src={{logoUrl}} alt='token' />
+                    {{acceptedCurrencySymbol}}
+                  </div>
+                  <div class='cell' style='font-weight: 400'>
+                    {{balance}}
+                  </div>
+                </div>
+              {{/each}}
+
+            </div>
+
+          </div>
+
+          <p style='margin: 0px; margin-bottom: 8px; line-height: 24px'><b
+            >Recipient Wallet Address</b></p>
+          <p
+            style='margin: 0px; margin-bottom: 8px; line-height: 24px'
+          >{{recipientWalletAddress}}</p>
+          <p style='margin: 0px; margin-bottom: 8px; line-height: 24px'><b
+            >Recipient email</b></p>
+          <p
+            style='margin: 0px; margin-bottom: 8px; line-height: 24px'
+          >{{email}}</p>
+          {{#if isSuccessful}}
+            <p
+              style='margin: 0px; margin-bottom: 8px; line-height: 24px'
+            >Transaction hash</p>
+            <p
+              style='margin: 0px; margin-bottom: 8px; line-height: 24px'
+            >{{txHash}}</p>
+          {{/if}}
+          <p style='width: 500px'>If there are any issues, feel free to
+            <a
+              class='contact'
+              href='https://fractor.ekoios.net/contact-us'
+              style='font-weight: 800;'
+            >contact us</a>
+            for support.<br />
+            Best regards.</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,8 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 const paginate = require('mongoose-paginate-v2');
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
 export type AssetTypeDocument = AssetType & Document;
+export type SpecificationFieldDocument = SpecificationField & Document;
 
 export enum CategoryType {
   PHYSICAL = 'physical',
@@ -10,23 +13,48 @@ export enum CategoryType {
 }
 
 export class LanguageVariants {
+  @IsString()
+  @ApiProperty({ type: String })
   en: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
   ja: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
   cn: string;
+
+  @IsString()
+  @ApiProperty({ type: String })
+  vi: string;
 }
 
+@Schema({
+  timestamps: true,
+  collection: 'SpecificationField',
+})
 export class SpecificationField {
-  order: number;
+  @Prop({ type: LanguageVariants })
   label: LanguageVariants;
+
+  @Prop({ type: LanguageVariants })
   description: LanguageVariants;
+
+  @Prop({ type: Boolean })
   required: boolean;
+
+  @Prop({ type: LanguageVariants })
   placeholder: LanguageVariants;
 }
 
+export const SpecificationFieldSchema =
+  SchemaFactory.createForClass(SpecificationField);
+
 @Schema({ collection: 'AssetType', timestamps: true })
 export class AssetType {
-  @Prop({ type: String, default: 'ATYPE', required: false })
-  prefix?: string;
+  @Prop({ type: String })
+  assetTypeId: string;
 
   @Prop({ required: true, type: String })
   category: CategoryType;
@@ -46,10 +74,11 @@ export class AssetType {
   @Prop({ type: Boolean })
   isActive: boolean;
 
-  @Prop({ type: Array })
+  @Prop({ type: [SpecificationFieldSchema] })
   specifications: SpecificationField[];
 }
 
 export const AssetTypeSchema = SchemaFactory.createForClass(AssetType);
 AssetTypeSchema.plugin(paginate);
 AssetTypeSchema.plugin(aggregatePaginate);
+AssetTypeSchema.index({ assetTypeId: 1 });

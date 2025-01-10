@@ -18,8 +18,8 @@ export class AwsUtils {
   private static getKMSInstance() {
     if (!this.kmsInstance) {
       this.kmsInstance = new KMS({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_KMS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_KMS_SECRET_ACCESS_KEY,
         region: process.env.AWS_REGION,
       });
     }

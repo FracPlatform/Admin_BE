@@ -12,7 +12,7 @@ export class IpfsGateway {
 
   private instance: IIPFS;
 
-  constructor(ipfsClientType = undefined) {
+  constructor(ipfsClientType = IpfsClientType.SELF_HOST) {
     this.changeClientType(ipfsClientType);
   }
 

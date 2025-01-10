@@ -4,10 +4,15 @@ import { Types } from 'mongoose';
 const CryptoJS = require('crypto-js');
 import BigNumber from 'bignumber.js';
 import { PagingDocument } from './common-type';
-import { ErrorCode } from './constants';
+import { ErrorCode, LOCALIZATION } from './constants';
 import { ApiError } from './api';
 import { AwsUtils } from './aws.util';
 import mongoose from 'mongoose';
+import { IGenericRepository } from '../core/abstracts/generic-repository.abstract';
+import { CounterId } from '../datalayer/model';
+import { Web3ETH } from 'src/blockchain/web3.eth';
+import moment = require('moment');
+import axios from 'axios';
 const jwt = require('jsonwebtoken');
 const { URL, parse } = require('url');
 export class Utils {
@@ -298,7 +303,9 @@ export class Utils {
       const parsed = parse(s);
       return protocols
         ? parsed.protocol
-          ? protocols.map(x => `${x.toLowerCase()}:`).includes(parsed.protocol)
+          ? protocols
+              .map((x) => `${x.toLowerCase()}:`)
+              .includes(parsed.protocol)
           : false
         : true;
     } catch (err) {
@@ -306,4 +313,101 @@ export class Utils {
     }
   };
 
+  public static async getNextPrefixId(
+    counterRepository: IGenericRepository<CounterId>,
+    prefix,
+    session,
+  ) {
+    const res = await counterRepository.findOneAndUpdate(
+      { _id: prefix },
+      { $inc: { sequenceValue: 1 } },
+      { new: true, session: session },
+    );
+    return `${prefix}-${res?.sequenceValue || 1}`;
+  }
+
+  public static escapeRegex(string) {
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  }
+
+  public static queryInsensitive(value) {
+    return { $regex: Utils.escapeRegex(value), $options: 'i' };
+  }
+
+  public static async getNftContractAddress() {
+    const contractProxy = await new Web3ETH().getContractInstance();
+    const nftContractAddress = await contractProxy.methods
+      .token721Address()
+      .call();
+    return nftContractAddress;
+  }
+
+  public static formatDate(date: Date) {
+    return moment(date).utc().format('MM/DD/YYYY HH:mm:ss');
+  }
+
+  public static addDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() + hours));
+  }
+
+  public static subtractDateByHour(date: Date, hours: number): Date {
+    const copyDate = new Date(date);
+    return new Date(copyDate.setHours(copyDate.getHours() - hours));
+  }
+
+  public static async getCurrencySymbol(currencyAddress) {
+    const contract20 = await new Web3ETH().getContract20Instance(
+      currencyAddress,
+    );
+    const currencySymbol = await contract20.methods.symbol().call();
+    const currencyDecimal = await contract20.methods.decimals().call();
+    return { currencySymbol, currencyDecimal };
+  }
+
+  public static formateDateMail(dateISO: string) {
+    let date = dateISO.replace('T', ' ').replace('.', ' ');
+    date = date.replace(date.split(' ')[2], '(UTC)');
+    date = date.replace('-', '/');
+    date = date.replace('-', '/');
+    return date;
+  }
+
+  public static convertNumberToNoExponents(number) {
+    const data = String(number).split(/[eE]/);
+    if (data.length == 1) return data[0];
+
+    let z = '';
+    const sign = number < 0 ? '-' : '';
+    const str = data[0].replace('.', '');
+    let mag = Number(data[1]) + 1;
+
+    if (mag < 0) {
+      z = sign + '0.';
+      while (mag++) z += '0';
+      return z + str.replace(/^\-/, '');
+    }
+    mag -= str.length;
+    while (mag--) z += '0';
+    return str + z;
+  }
+
+  public static async getCurrentPriceFromContract(contractAddress) {
+    let currentPrice = {};
+    const BASE_COINGECKO_URL =
+      'https://api.coingecko.com/api/v3/simple/token_price/polygon-pos';
+    try {
+      const response = await axios.get(
+        `${BASE_COINGECKO_URL}?contract_addresses=${contractAddress}&vs_currencies=usd`,
+      );
+      currentPrice = response.data;
+    } catch (error) {
+      this.logger.error(error);
+    }
+    return currentPrice;
+  }
+
+  public static getPathUrlLocalize(localization: string = ''): string {
+    return localization === LOCALIZATION.EN ? '' : `${localization}/`;
+  }
 }

@@ -15,16 +15,28 @@ export class Web3Gateway {
       chainId = Number(process.env.CHAIN_ID);
     }
     if (!this.instances.has(chainId)) {
+      const rpcs = this.getRPCByChainId(chainId);
+      const web3 = new Web3ETH(rpcs);
+
       if (BlockChain.Network.BSC.includes(chainId)) {
-        this.instances.set(chainId, new Web3ETH());
+        this.instances.set(chainId, web3);
       } else if (BlockChain.Network.ETH.includes(chainId)) {
-        this.instances.set(chainId, new Web3ETH());
+        this.instances.set(chainId, web3);
       } else {
         throw new Error('Not support this chain');
       }
     }
 
     this.instance = this.instances.get(chainId);
+  }
+
+  private getRPCByChainId(chainId: number): string {
+    if (BlockChain.Network.BSC.includes(chainId)) {
+      return process.env.CHAIN_RPC_URL;
+    }
+    if (BlockChain.Network.ETH.includes(chainId)) {
+      return process.env.CHAIN_RPC_ETH_URL;
+    }
   }
 
   private isExceptionNeedRetry(error: Error) {
@@ -336,6 +348,27 @@ export class Web3Gateway {
         }
         this.logger.warn(
           `createAccount(): Retrying ${retry} time. ${error.message}`,
+        );
+        retry++;
+        if (retry > MAX_RETRY) {
+          throw error;
+        }
+        await Utils.wait(TIME_WAIT_RETRY);
+      }
+    }
+  }
+
+  public async getBalance(wallet: string) {
+    let retry = 1;
+    while (true) {
+      try {
+        return await this.instance.getBalance(wallet);
+      } catch (error) {
+        if (!this.isExceptionNeedRetry(error)) {
+          throw error;
+        }
+        this.logger.warn(
+          `getBalance(): Retrying ${retry} time. ${error.message}`,
         );
         retry++;
         if (retry > MAX_RETRY) {

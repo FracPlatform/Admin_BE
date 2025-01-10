@@ -34,6 +34,8 @@ export interface IWeb3API {
   getEventByHash(hash: string): Promise<Web3TransactionEvent[]>;
 
   createAccount(): Promise<Account>;
+
+  getBalance(wallet: string): Promise<string>;
 }
 
 export interface Web3Transaction {

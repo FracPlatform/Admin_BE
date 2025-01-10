@@ -7,10 +7,11 @@ import { Contract } from 'web3-eth-contract';
 import { IWeb3API } from './web3.type';
 const Web3 = require('web3');
 const abiDecoder = require('abi-decoder');
-const contract721Abi = require('./contract/erc721.json');
-const contract1155Abi = require('./contract/erc1155.json');
-const contractProxyAbi = require('./contract/proxy.json');
-
+import { AbiItem } from 'web3-utils';
+import * as contract721Abi from './contract/erc721.json';
+import * as contract1155Abi from './contract/erc1155.json';
+import * as contractProxyAbi from './contract/proxy.json';
+import * as contract20Abi from './contract/erc20.json';
 export class Web3ETH implements IWeb3API {
   private readonly logger = new Logger(Web3ETH.name);
 
@@ -18,42 +19,63 @@ export class Web3ETH implements IWeb3API {
   private contract721: Contract;
   private contract1155: Contract;
   private contractProxy: Contract;
+  private contract20: Contract;
+  private rpcs: string;
 
-  constructor() {
+  constructor(rpcs = undefined) {
     if (!this.web3Instance) {
       this.web3Instance = new Web3();
     }
+    if (rpcs) {
+      this.rpcs = rpcs;
+    }
   }
 
-  private async setProvider() {
-    while (true) {
-      const rpcUrl = Utils.getRandom(process.env.CHAIN_RPC_URL.split(','));
+  public setRPC(rpcs: string) {
+    this.rpcs = rpcs;
+  }
+
+  private async setProvider(contract20Address?: string) {
+    // while (true) {
+      if (!this.rpcs) {
+        this.setRPC(process.env.CHAIN_RPC_URL);
+      }
+      const rpcUrl = Utils.getRandom(this.rpcs.split(','));
       this.logger.debug(
         `setProvider(): ${this.web3Instance.currentProvider} -> ${rpcUrl}`,
       );
       this.web3Instance.setProvider(rpcUrl);
-      const isSyncing = await this.web3Instance.eth.isSyncing();
-      if (isSyncing === false) {
-        break;
-      }
-      this.logger.warn(`setProvider(): ${rpcUrl} is syncing. Change RPC`);
-      this.logger.debug(isSyncing);
-    }
+      
+    //   const isSyncing = await this.web3Instance.eth.isSyncing();
+    //   console.log("this.isSyncing", isSyncing);
+    //   if (isSyncing === false) {
+    //     break;
+    //   }
+    //   this.logger.warn(`setProvider(): ${rpcUrl} is syncing. Change RPC`);
+    //   this.logger.debug(isSyncing);
+    // }
 
     this.contract721 = new this.web3Instance.eth.Contract(
-      contract721Abi.output.abi,
+      contract721Abi.output.abi as AbiItem[],
       process.env.CONTRACT_ERC_721,
     );
 
     this.contract1155 = new this.web3Instance.eth.Contract(
-      contract1155Abi.output.abi,
+      contract1155Abi.output.abi as AbiItem[],
       process.env.CONTRACT_ERC_1155,
     );
 
     this.contractProxy = new this.web3Instance.eth.Contract(
-      contractProxyAbi.output.abi,
+      contractProxyAbi.output.abi as AbiItem[],
       process.env.CONTRACT_PROXY,
     );
+
+    if (contract20Address) {
+      this.contract20 = new this.web3Instance.eth.Contract(
+        contract20Abi.output.abi as AbiItem[],
+        contract20Address,
+      );
+    }
 
     abiDecoder.addABI(contractProxyAbi.output.abi);
   }
@@ -109,9 +131,19 @@ export class Web3ETH implements IWeb3API {
     return this.web3Instance.eth.accounts.recover(hash, signature);
   }
 
+  public async getContractInstance() {
+    await this.setProvider();
+    return this.contractProxy;
+  }
+
+  public async getContract20Instance(contract20Address: string) {
+    await this.setProvider(contract20Address);
+    return this.contract20;
+  }
+
   public toChecksumAddress(address: string) {
     try {
-      return this.web3Instance.utils.toChecksumAddress(address, Number());
+      return this.web3Instance.utils.toChecksumAddress(address);
     } catch (error) {
       return address;
     }
@@ -223,5 +255,12 @@ export class Web3ETH implements IWeb3API {
   public async createAccount() {
     await this.setProvider();
     return await this.web3Instance.eth.accounts.create();
+  }
+
+  public async getBalance(wallet: string) {
+    await this.setProvider();
+
+    const balance = await this.web3Instance.eth.getBalance(wallet);
+    return Utils.convertNumberToNoExponents(Number(balance) / 1e18);
   }
 }

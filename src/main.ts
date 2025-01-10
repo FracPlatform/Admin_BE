@@ -7,7 +7,7 @@ import {
   SwaggerCustomOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import * as expressBasicAuth from 'express-basic-auth';
+const expressBasicAuth = require('express-basic-auth')
 import { AllExceptionFilter } from './common/exception/exception.filter';
 import { ValidationPipe } from './common/validation/validation.pipe';
 import { LoggingInterceptor } from './common/interceptor/logging.interceptor';
@@ -35,7 +35,7 @@ async function bootstrap() {
   // Swagger
   if (process.env.NODE_ENV === 'dev') {
     app.use(
-      ['/swagger'],
+      ['/admin-swagger'],
       expressBasicAuth({
         challenge: true,
         users: {
@@ -56,7 +56,7 @@ async function bootstrap() {
       },
       customSiteTitle: 'My API Docs',
     };
-    SwaggerModule.setup('swagger', app, document, customOptions);
+    SwaggerModule.setup('admin-swagger', app, document, customOptions);
   }
 
   await app.listen(process.env.PORT);

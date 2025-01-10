@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule, getConnectionToken } from '@nestjs/mongoose';
+import { MongooseModule } from '@nestjs/mongoose';
 import { IDataServices } from '../core/abstracts/data-services.abstract';
 import {
   Asset,
@@ -8,31 +8,102 @@ import {
   FractorSchema,
   AssetType,
   AssetTypeSchema,
+  Admin,
+  AdminSchema,
+  IAORequest,
+  IAORequestSchema,
+  CounterId,
+  CounterIdSchema,
+  Fnft,
+  FnftSchema,
+  IAOEvent,
+  IaoEventSchema,
+  Nft,
+  NftSchema,
+  Whitelist,
+  WhitelistSchema,
+  Settings,
+  SettingsSchema,
+  Signer,
+  SignerSchema,
+  User,
+  UserSchema,
+  Purchase,
+  PurchaseSchema,
+  ClaimSchema,
+  Claim,
+  RedemptionRequestSchema,
+  RedemptionRequest,
+  NotificationQueue,
+  NotificationQueueSchema,
+  NotificationSchema,
+  Notification,
+  WithdrawalRequest,
+  WithdrawalRequestSchema,
+  NFTWithdrawalRequest,
+  NFTWithdrawalRequestSchema,
+  UserWithdrawal,
+  UserWithdrawalSchema,
+  Offer,
+  OfferSchema,
+  TieringPool,
+  TieringPoolSchema,
+  StakingHistory,
+  StakingHistorySchema,
+  GasWalletModel,
+  GasWalletSchema,
+  ExchangeRate,
+  ExchangeRateSchema,
+  EmailSubscriber,
+  EmailSubscriberSchema,
+  CustomerProfile,
+  CustomerProfileSchema,
+  FiatHistoryTransaction,
+  FiatHistoryTransactionSchema,
+  FiatPurchase,
+  FiatPurchaseSchema,
+  VirturalBankAccount,
+  VirturalBankAccountSchema,
 } from './model';
 import { MongoServices } from './mongo-services.service';
 import 'dotenv/config';
-import { Connection } from 'mongoose';
-import * as AutoIncrementFactory from 'mongoose-sequence';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Fractor.name, schema: FractorSchema },
       { name: Asset.name, schema: AssetSchema },
+      { name: AssetType.name, schema: AssetTypeSchema },
+      { name: Admin.name, schema: AdminSchema },
+      { name: IAORequest.name, schema: IAORequestSchema },
+      { name: CounterId.name, schema: CounterIdSchema },
+      { name: Fnft.name, schema: FnftSchema },
+      { name: IAOEvent.name, schema: IaoEventSchema },
+      { name: Nft.name, schema: NftSchema },
+      { name: Whitelist.name, schema: WhitelistSchema },
+      { name: Settings.name, schema: SettingsSchema },
+      { name: Signer.name, schema: SignerSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Purchase.name, schema: PurchaseSchema },
+      { name: Claim.name, schema: ClaimSchema },
+      { name: RedemptionRequest.name, schema: RedemptionRequestSchema },
+      { name: NotificationQueue.name, schema: NotificationQueueSchema },
+      { name: Notification.name, schema: NotificationSchema },
+      { name: WithdrawalRequest.name, schema: WithdrawalRequestSchema },
+      { name: NFTWithdrawalRequest.name, schema: NFTWithdrawalRequestSchema },
+      { name: UserWithdrawal.name, schema: UserWithdrawalSchema },
+      { name: Offer.name, schema: OfferSchema },
+      { name: TieringPool.name, schema: TieringPoolSchema },
+      { name: StakingHistory.name, schema: StakingHistorySchema },
+      { name: GasWalletModel.name, schema: GasWalletSchema },
+      { name: ExchangeRate.name, schema: ExchangeRateSchema },
+      { name: EmailSubscriber.name, schema: EmailSubscriberSchema },
+      { name: CustomerProfile.name, schema: CustomerProfileSchema },
+      { name: FiatHistoryTransaction.name, schema: FiatHistoryTransactionSchema },
+      { name: FiatPurchase.name, schema: FiatPurchaseSchema },
+      { name: VirturalBankAccount.name, schema: VirturalBankAccountSchema },
     ]),
     MongooseModule.forRoot(process.env.MONGODB_URI),
-    MongooseModule.forFeatureAsync([
-      {
-        name: AssetType.name,
-        useFactory: async (connection: Connection) => {
-          const schema = AssetTypeSchema;
-          const AutoIncrement = AutoIncrementFactory(connection);
-          schema.plugin(AutoIncrement, { inc_field: 'typeId' });
-          return schema;
-        },
-        inject: [getConnectionToken()],
-      },
-    ]),
   ],
   providers: [
     {

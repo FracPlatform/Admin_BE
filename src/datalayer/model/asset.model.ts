@@ -4,106 +4,290 @@ const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 import * as mongoose from 'mongoose';
 import { AssetType } from './asset_type.model';
 import { CollectionItem } from './collection-item.model';
-import { Fractor } from './fractor.model';
+import { SpecificationField } from './asset_type.model';
+import { DocumentItem, DocumentItemSchema } from './document-item.model';
+import { PREFIX_ID } from 'src/common/constants';
+import { TokenStandard } from 'src/common/common-type';
+import { CUSTODIANSHIP_DISPLAY } from 'src/modules/asset/dto/update-custodianship-status.dto';
 
 export type AssetDocument = Asset & Document;
 
 export enum OWNERSHIP_PRIVACY {
-    PUBLIC = 1,
-    PRIVATE = 2,
+  PUBLIC = 1,
+  PRIVATE = 2,
 }
 
 export enum ASSET_STATUS {
-    OPEN = 1,
-    IN_REVIEW = 2,
-    IAO = 3,
-    EXCHANGE = 4,
-    SOLD_OUT = 5,
+  OPEN = 1,
+  IN_REVIEW = 2,
+  IAO_APPROVED = 3,
+  CONVERTED_TO_NFT = 4,
+  FRACTIONALIZED = 5,
+  IAO_EVENT = 6,
+  EXCHANGE = 7,
+  REDEEMED = 8,
+}
+
+export enum CUSTODIANSHIP_STATUS {
+  FRACTOR = 0,
+  FRACTOR_TO_FRAC_OR_IN_REVIEW = 1,
+  FRAC = 2,
+  AVAILABLE_FOR_FRACTOR_TO_REDEEM = 3,
+  FRACTOR_REDEEMS = 4,
+  FRAC_TO_FRACTOR = 5,
+  AVAILABLE_FOR_USER_TO_REDEEM = 6,
+  USER_REDEEMS = 7,
+  FRAC_TO_USER = 8,
+  USER = 9,
+}
+
+export enum REVIEW_STATUS {
+  REJECTED = 0,
+  IN_REVIEW = 1,
+  APPROVED = 2,
 }
 
 export enum NETWORK {
-    ETH = 'eth',
-    BSC = 'bsc',
-    OTHER = 'other'
+  ETH = 'eth',
+  BSC = 'bsc',
+  OTHER = 'other',
 }
 
-
 export enum MEDIA_TYPE {
-    VIDEO = 1,
-    AUDIO = 2,
-    PHOTO = 3,
+  VIDEO = 1,
+  AUDIO = 2,
+  PHOTO = 3,
 }
 
 export const MAX_PHOTOS = 5;
 export const MIN_PHOTOS = 1;
 
-export enum CATEGORY_TYPE {
-    PHYSICAL = 'physical',
-    VIRTUAL = 'virtual',
-}
-
 export const ITEM_PREFIX = 'ITEM';
 
 export class Media {
-    url: string;
-    type: number;
+  url: string;
+  type: number;
+}
+
+export class Specifications extends SpecificationField {
+  value: string;
+}
+
+export class Label {
+  en: DataLabel;
+  cn: DataLabel;
+  ja: DataLabel;
+}
+
+export class DataLabel {
+  0: string;
+  1: string;
+  2: string;
+  3: string;
+  4: string;
+  5: string;
+  6: string;
+  7: string;
+  8: string;
+  9: string;
 }
 
 @Schema({
-    timestamps: true,
-    collection: 'Asset',
+  timestamps: false,
+  collection: 'ShipmentInfo',
+})
+export class ShipmentInfo {
+  @Prop({ type: String })
+  shipmentStatus: string;
+
+  @Prop({ type: Date, default: null })
+  shipmentTime: any;
+}
+
+export const ShipmentInfoSchema = SchemaFactory.createForClass(ShipmentInfo);
+
+@Schema({
+  collection: 'DepositedNFT',
+  timestamps: true,
+})
+export class DepositedNFT {
+  @Prop({ type: String })
+  contractAddress: string;
+
+  @Prop({ type: String })
+  tokenId: string;
+
+  @Prop({ type: Number })
+  balance: number;
+
+  @Prop({ type: Object })
+  metadata: object;
+
+  @Prop({ type: Date })
+  depositedOn: Date;
+
+  @Prop({ type: Number })
+  status: REVIEW_STATUS;
+
+  @Prop({ type: String })
+  tokenStandard: TokenStandard;
+
+  @Prop({ type: Number })
+  withdrawable: number;
+
+  @Prop({ type: String })
+  txHash: string;
+
+  @Prop({ type: Number })
+  chainId: number;
+
+  @Prop({ type: Date })
+  createdAt?: Date;
+}
+
+export const DepositedNFTSchema = SchemaFactory.createForClass(DepositedNFT);
+
+@Schema({ collection: 'DigitalAssetFile', timestamps: true })
+export class DigitalAssetFile {
+  @Prop({ type: String })
+  name: string;
+
+  @Prop({ type: String, default: null })
+  description: string;
+
+  @Prop({ type: String })
+  fileUrl: string;
+
+  @Prop({ type: Number })
+  size: number; //MB
+
+  @Prop({ type: Number })
+  status: REVIEW_STATUS;
+}
+export const DigitalAssetFileSchema =
+  SchemaFactory.createForClass(DigitalAssetFile);
+@Schema({ collection: 'CustodianshipInfo', _id: false })
+export class CustodianshipInfo {
+  @Prop({ type: Number })
+  status: CUSTODIANSHIP_STATUS;
+
+  @Prop({ type: Number })
+  isShow: CUSTODIANSHIP_DISPLAY;
+
+  @Prop({ type: Label })
+  label: Label;
+
+  @Prop({ type: [DigitalAssetFileSchema] })
+  files: DigitalAssetFile[];
+
+  @Prop({ type: Number })
+  storedByFrac?: number;
+
+  @Prop({ type: String })
+  warehousePublic?: string;
+
+  @Prop({ type: String })
+  warehousePrivate?: string;
+
+  @Prop({ type: [ShipmentInfoSchema] })
+  listShipmentInfo: ShipmentInfo[];
+
+  @Prop({ type: [DepositedNFTSchema], default: [] })
+  depositedNFTs: DepositedNFT[];
+}
+export const CustodianshipInfoSchema =
+  SchemaFactory.createForClass(CustodianshipInfo);
+
+@Schema({
+  collection: 'DocumentActivityLog',
+  timestamps: true,
+})
+export class DocumentActivityLog {
+  @Prop({ required: true, type: String })
+  adminId: string;
+
+  @Prop({ required: true, type: String })
+  adminName: string;
+
+  @Prop({ required: true, type: String })
+  documentName: string;
+
+  @Prop({ required: true, type: String })
+  documentDescription: string;
+}
+export const DocumentActivityLogSchema =
+  SchemaFactory.createForClass(DocumentActivityLog);
+
+@Schema({
+  timestamps: true,
+  collection: 'Asset',
 })
 export class Asset {
-    @Prop({ required: true, type: String })
-    name: string;
+  @Prop({ required: true, type: String })
+  name: string;
 
-    @Prop({ required: true, type: String })
-    category: string;
+  @Prop({ required: true, type: String })
+  category: string;
 
-    @Prop({ type: Boolean, default: false })
-    isMintNFT: boolean;
+  @Prop({ type: Boolean, default: false })
+  isMintNFT: boolean;
 
-    @Prop({ type: String })
-    network: string;
+  @Prop({ type: String })
+  network: string;
 
-    @Prop({ type: Number, default: OWNERSHIP_PRIVACY.PUBLIC })
-    ownershipPrivacy: number;
+  @Prop({ type: Number, default: OWNERSHIP_PRIVACY.PUBLIC })
+  ownershipPrivacy: number;
 
-    @Prop({ type: String })
-    description: string;
+  @Prop({ type: String })
+  description: string;
 
-    @Prop({ type: Array, default: [] })
-    specifications: [];
+  @Prop({ type: Array, default: [] })
+  specifications: Specifications[];
 
-    @Prop({ type: Number, default: ASSET_STATUS.OPEN })
-    status?: number;
+  @Prop({ type: Number, default: ASSET_STATUS.OPEN })
+  status?: number;
 
-    @Prop({ type: Array })
-    media: Media[];
+  @Prop({ type: Array })
+  media: Media[];
 
-    @Prop({ type: String })
-    previewUrl: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: AssetType.name })
+  typeId: string;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: AssetType.name })
-    typeId: string;
+  @Prop({ type: String, default: PREFIX_ID.ASSET })
+  itemId?: string;
 
-    @Prop({ unique: true })
-    itemId?: number;
+  @Prop({ type: String })
+  ownerId: string;
 
-    @Prop({ type: String, default: ITEM_PREFIX })
-    itemPrefix?: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionItem.name })
+  collectionId: string;
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Fractor.name })
-    ownerId: string;
+  @Prop({ type: [DocumentItemSchema], default: [] })
+  documents: DocumentItem[];
 
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionItem.name })
-    collectionId: string;
+  @Prop({ type: Boolean, default: false })
+  deleted: boolean;
 
-    @Prop({ type: Boolean, default: false })
-    deleted: boolean;
+  @Prop({ type: Boolean, default: false })
+  inDraft?: boolean;
+
+  @Prop({ type: String })
+  lastUpdatedBy: string;
+
+  @Prop({ type: CustodianshipInfoSchema })
+  custodianship?: CustodianshipInfo;
+
+  @Prop({ type: [DocumentActivityLogSchema], default: [] })
+  documentActivityLog: DocumentActivityLog[];
+
+  @Prop({ type: String })
+  iaoRequestId?: string;
+
+  @Prop({ type: Boolean, default: false })
+  hidden?: boolean;
 }
 
 export const AssetSchema = SchemaFactory.createForClass(Asset);
 AssetSchema.plugin(paginate);
 AssetSchema.plugin(aggregatePaginate);
-
+AssetSchema.index({ itemId: 1 });

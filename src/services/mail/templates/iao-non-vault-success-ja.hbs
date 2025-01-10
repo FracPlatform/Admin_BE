@@ -1,0 +1,165 @@
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      font-style: normal;
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .container {
+      width: 800px;
+      margin: 0 auto;
+      padding: 24px 0 16px;
+    }
+
+    p {
+      font-weight: normal;
+      font-size: 1rem;
+      color: #242424;
+    }
+
+    .social img {
+      width: 30px;
+      height: 30px;
+      margin: 0 10px;
+    }
+
+    .block {
+      display: block;
+    }
+
+    .menu-footer {
+      border-left: 1px solid #242424;
+      margin-left: 10px;
+      padding-left: 10px;
+      text-decoration: none;
+    }
+
+    .menu-footer:first-child {
+      border: none;
+    }
+
+    .column-left {
+      width: 50%;
+    }
+
+    .column-right {
+      width: 50%;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    .text-16 {
+      font-size: 1rem;
+    }
+
+    .mb-10 {
+      margin-bottom: 10px;
+    }
+
+    .mb-24 {
+      margin-bottom: 24px;
+    }
+
+    .mb-30 {
+      margin-bottom: 30px;
+    }
+
+    .ml-15 {
+      margin-left: 15px;
+    }
+
+    table {
+      width: 100%;
+    }
+
+    .image {
+      width: 100%;
+    }
+
+    .logo {
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-wrapper">
+    <div class='container'>
+      <!-- start -->
+      <div class="content">
+        <div class="logo mb-30">
+          <a href={{landingPage}} target="_blank"><img src="cid:logo-frac" height="100px" alt="logo"></a>
+        </div>
+        <div class="content-email">
+            <p>平素よりFracをご利用いただき、誠にありがとうございます。</p>
+
+            <p>Non-Vault IAOイベント『<a target="_blank" style="text-decoration: none;" href={{eventDetailUrl}}>{{eventName}}</a>』は終了致しました。</p>
+
+            <p>F-NFTは間もなくDEXに上場します。</p>
+
+            <p style="margin:24px 0 0;text-align:left">
+            <a href={{eventDetailUrl}}
+              style="display:inline-block;text-decoration:none;background:rgb(26,115,232);border-radius:3px;color:white;font-family:Helvetica,sans-serif;font-size: 1rem;line-height:24px;font-weight:400;padding:12px 48px 11px;margin:0px"
+              target="_blank">
+              イベント詳細
+            </a>
+            </p>
+
+            <p>ご不明な点がございましたら、<a target="_blank" style="text-decoration: none;" href={{contactUs}}>カスタマーサポート</a>までお気軽にご連絡ください。</p>
+
+            <p>引き続きFracをご愛顧賜りますよう、よろしくお願い申し上げます。</p>
+
+            <p>Frac</p>
+        </div>
+        <table>
+          <tbody>
+            <tr>
+              <td class="column-left">
+                <a class="mb-24" href={{landingPage}} target="_blank">
+                  <img src="cid:logo-frac" height="30px" alt="logo">
+                </a>
+                <p class="color-gray">Elegance meets Technology</p>
+              </td>
+              <td class="column-right">
+                <div class="mb-10">
+                  <a style="text-decoration: none;" href={{dexDomain}} class="menu-footer" target="_blank"><b>Exchange</b></a>
+                  <a style="text-decoration: none;" href={{traderDomain}} class="menu-footer" target="_blank"><b>IAO</b></a>
+                  <a style="text-decoration: none;" href={{fractorDomain}} class="menu-footer" target="_blank"><b>Fractor</b></a>
+                  <a style="text-decoration: none;" href={{landingPage}} class="menu-footer" target="_blank"><b>About us</b></a>
+                </div>
+                <div>
+                  <label class="mb-10 block">Follow us on:</label>
+                  <div>
+                    <a target="_blank" style="text-decoration: none;" href={{twitterLink}}>
+                      <img src="cid:twitter" alt="">
+                    </a>
+                    
+                    <a target="_blank" style="text-decoration: none;" class="ml-15" href={{linkedinLink}}>
+                      <img src="cid:linkedin" alt="">
+                    </a>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+</body>
+
+</html>

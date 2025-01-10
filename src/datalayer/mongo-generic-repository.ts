@@ -18,8 +18,12 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.findById(id).populate(this._populateOnFind).exec();
   }
 
-  create(item: T): Promise<T> {
-    return this._repository.create(item);
+  create(item: T, options?: object) {
+    return this._repository.create([item], options);
+  }
+
+  insertMany(items: T[], options?: object) {
+    return this._repository.insertMany(items, options);
   }
 
   updateById(id: string, item: T) {
@@ -30,23 +34,35 @@ export class MongoGenericRepository<T> implements IGenericRepository<T> {
     return this._repository.updateOne(filter, update, options);
   }
 
-  findOne(conditions: object): Promise<T> {
-    return this._repository.findOne(conditions).exec();
+  updateMany(filter: object, update: object, options?: object) {
+    return this._repository.updateMany(filter, update, options);
   }
 
-  findOneAndUpdate(conditions: object, update: object, options: object) {
+  findOne(
+    conditions: object,
+    projection?: object,
+    options?: object,
+  ): Promise<T> {
+    return this._repository.findOne(conditions, projection, options).exec();
+  }
+
+  findOneAndUpdate(conditions: object, update: object, options?: object) {
     return this._repository.findOneAndUpdate(conditions, update, options);
   }
 
-  findMany(conditions: object, options?: object): Promise<T[]> {
-    return this._repository.find(conditions, options).exec();
+  findMany(conditions: object, projection?: object, options?: object): Promise<T[]> {
+    return this._repository.find(conditions, projection, options).exec();
   }
 
   aggregate(pipeline: PipelineStage[], options?: object) {
     return this._repository.aggregate(pipeline, options);
   }
 
-  // aggregatePaginate(aggregate: Aggregate<any[]>, options: object) {
-  //   return this._repository.a
-  // };
+  count(conditions: object) {
+    return this._repository.count(conditions);
+  }
+
+  deleteMany(conditions: object, options?: object) {
+    return this._repository.deleteMany(conditions, options);
+  }
 }

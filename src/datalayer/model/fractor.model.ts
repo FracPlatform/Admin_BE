@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { LOCALIZATION } from 'src/common/constants';
 import { CollectionItem, CollectionItemSchema } from './collection-item.model';
+import { Phone } from './iao-request.model';
 const paginate = require('mongoose-paginate-v2');
 const aggregatePaginate = require('mongoose-aggregate-paginate-v2');
 
@@ -9,6 +11,65 @@ export enum AccountStatus {
   ACTIVE = 'active',
   DEACTIVE = 'deactive',
 }
+
+export enum SocialType {
+  FB = 'facebook',
+  TELEGRAM = 'telegram',
+  DISCORD = 'discord',
+  TWITTER = 'twitter',
+}
+
+export enum KYCStatus {
+  INCOMPLETE = 0,
+  WAITING = 1,
+  APPROVED = 2,
+  INREVIEW = 3,
+  REJECTED = 4,
+}
+
+export class FractorNotificationSettings {
+  announcements: boolean;
+  iaoRequestResult: boolean;
+  iaoEventResult: boolean;
+  revenueWithdrawal: boolean;
+  assetRedemptionResult: boolean;
+}
+
+@Schema({
+  collection: 'FractorRevenue',
+  timestamps: true,
+})
+export class FractorRevenue {
+  @Prop({ type: Boolean })
+  isWithdrawed: boolean;
+
+  @Prop({ type: Number })
+  balance: number;
+
+  @Prop({ type: String })
+  currencyContract: string;
+
+  @Prop({ type: String })
+  acceptedCurrencySymbol: string;
+
+  @Prop({ type: String })
+  fnftContractAddress: string;
+
+  @Prop({ type: Number })
+  exchangeRate: number;
+
+  @Prop({ type: String })
+  iaoEventId: string;
+
+  @Prop({ type: Number, required: false })
+  acceptedCurrencyUsdPrice?: number;
+
+  @Prop({ type: Number, required: false })
+  approveAcceptedCurrencyUsdPrice?: number;
+}
+
+export const FractorRevenueSchema =
+  SchemaFactory.createForClass(FractorRevenue);
 
 export class SocialLink {
   @Prop({ type: String })
@@ -32,8 +93,8 @@ export class Fractor {
   @Prop({ required: true, type: Boolean, default: false })
   verified: boolean;
 
-  @Prop({ required: true, type: Boolean, default: false })
-  kycStatus: boolean;
+  @Prop({ required: true, type: Number, default: KYCStatus.INCOMPLETE })
+  kycStatus: number;
 
   @Prop({ type: Number, default: null })
   verificationCode: number;
@@ -64,9 +125,70 @@ export class Fractor {
 
   @Prop({ type: [CollectionItemSchema] })
   collections: CollectionItem[];
+
+  @Prop({ type: Boolean, default: false })
+  isBlocked: boolean;
+
+  @Prop({ type: String })
+  fractorId?: string;
+
+  @Prop({ type: String })
+  assignedBD: string;
+
+  @Prop({ type: Number, default: null })
+  iaoFeeRate: number;
+
+  @Prop({ type: Number, default: null })
+  tradingFeeProfit: number;
+
+  @Prop({ type: String })
+  lastUpdatedBy: string;
+
+  @Prop({ type: String })
+  deactivationComment: string;
+
+  @Prop({ type: String })
+  deactivatedBy: string;
+
+  @Prop({ type: Date, default: null })
+  deactivetedOn: Date;
+
+  @Prop({ type: Phone })
+  contactPhone: Phone;
+
+  @Prop({ type: String })
+  walletAddress: string;
+
+  @Prop({ type: String, default: '' })
+  fractorAddress: string;
+
+  @Prop({ type: [FractorRevenueSchema] })
+  revenue?: FractorRevenue[];
+
+  @Prop({ type: [FractorRevenueSchema], default: [] })
+  revenueFiat?: FractorRevenue[];
+
+  @Prop({
+    type: FractorNotificationSettings,
+    default: {
+      announcements: true,
+      iaoRequestResult: true,
+      iaoEventResult: true,
+      revenueWithdrawal: true,
+      assetRedemptionResult: true,
+    },
+  })
+  notificationSettings?: FractorNotificationSettings;
+
+  @Prop({ type: String, default: LOCALIZATION.EN })
+  localization?: string;
 }
 
 export const FractorSchema = SchemaFactory.createForClass(Fractor);
 FractorSchema.plugin(paginate);
 FractorSchema.plugin(aggregatePaginate);
-FractorSchema.index({ email: 1 });
+FractorSchema.index({ fractorId: 1 });
+FractorSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { houseName: { $type: 'string' } } },
+);
