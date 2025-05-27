@@ -87,7 +87,9 @@ export class IaoRevenueBuilderService {
   ) {
     const participatedByFiatAmount = iaoEvent.participatedByFiatAmount || 0;
     const soldAmountByFiat = iaoEvent.soldAmountByFiat || 0;
-    const soldAmount = iaoEvent.totalSupply - iaoEvent.availableSupply;
+    const soldAmount =  Math.round(
+      (iaoEvent.totalSupply - iaoEvent.availableSupply) * Math.pow(10, 10),
+    ) / Math.pow(10, 10);
     const participatedAmount = (soldAmount - soldAmountByFiat) * iaoEvent.exchangeRate;
     const progress = (soldAmount / iaoEvent.totalSupply) * 100;
     const platformGrossCommission =
@@ -248,7 +250,7 @@ export class IaoRevenueBuilderService {
           acceptedCurrencySymbol: iaoRevenue.acceptedCurrencySymbol,
           participatedAmount,
           participatedByFiatAmount: participatedByFiatAmount,
-          // fiatSymbol: FIAT_CURRENCY.SGD,
+          fiatSymbol: FIAT_CURRENCY.SGD,
           grossRevenue:
             iaoRevenue.revenue.status !== REVENUE_STATUS.APPROVED
               ? 0

@@ -60,19 +60,19 @@ export class GasWalletTask {
               walletSetting.minThresholdIAO_BSC,
             ));
           // check balance in ETH
-          // const currentBalanceETH = await this._getBalanceWallet(
-          //   process.env.CHAIN_ETH_ID,
-          //   wallet.walletAddress,
-          // );
-          // currentBalanceETH <= walletSetting.minThresholdIAO_ETH &&
-          //   (await this._sendMailNotified(
-          //     walletSetting.mailNotified,
-          //     GAS_WALLET.IAO_ETH,
-          //     wallet.walletAddress,
-          //     currentBalanceETH,
-          //     walletSetting.minThresholdIAO_ETH,
-          //     'ETH',
-          //   ));
+          const currentBalanceETH = await this._getBalanceWallet(
+            process.env.CHAIN_ETH_ID,
+            wallet.walletAddress,
+          );
+          currentBalanceETH <= walletSetting.minThresholdIAO_ETH &&
+            (await this._sendMailNotified(
+              walletSetting.mailNotified,
+              GAS_WALLET.IAO_ETH,
+              wallet.walletAddress,
+              currentBalanceETH,
+              walletSetting.minThresholdIAO_ETH,
+              'ETH',
+            ));
         }
       }
     } catch (err) {

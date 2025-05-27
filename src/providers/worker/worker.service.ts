@@ -111,7 +111,7 @@ export class WorkerService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // await this.initUploadIPFSAssetQueue();
+    await this.initUploadIPFSAssetQueue();
   }
 
   async initUploadIPFSAssetQueue() {
@@ -140,14 +140,14 @@ export class WorkerService implements OnModuleInit {
         console.log(
           `initUploadIPFSAssetQueue(): Upload IPFS Asset ID ${assetId}`,
         );
-        return this._uploadIpfsAsset(assetId);
+        // return this._uploadIpfsAsset(assetId);
       } catch (error) {
         return Promise.reject(error);
       }
     });
     this.uploadIpfsAssetQueue.on('failed', async (job, err) => {
       this.logger.error(
-        `initUploadIPFSAssetQueue(): Job ${job.id} error failed: ${err}`,
+        `initUploadIPFSAssetQueue(): Job ${job.id} error failed: ${err.message}`,
       );
     });
     this.uploadIpfsAssetQueue.on('succeeded', async (job, result) => {
@@ -158,12 +158,12 @@ export class WorkerService implements OnModuleInit {
   }
 
   async addUploadIpfsAssetQueue(assetId: string) {
-    // await this.uploadIpfsAssetQueue
-    //   .createJob(assetId)
-    //   .setId(assetId)
-    //   .backoff('fixed', 5000)
-    //   .retries(Number.MAX_SAFE_INTEGER)
-    //   .save();
+    await this.uploadIpfsAssetQueue
+      .createJob(assetId)
+      .setId(assetId)
+      .backoff('fixed', 5000)
+      .retries(Number.MAX_SAFE_INTEGER)
+      .save();
   }
 
   async generateToken() {
@@ -2026,7 +2026,7 @@ export class WorkerService implements OnModuleInit {
               },
               createdBy: requestData.metadata.fractorId,
             });
-          console.log('withdrawalRequestDetail', withdrawalRequestDetail);
+
           const newWithdrawalRequest =
             await this.dataServices.withdrawalRequest.findOneAndUpdate(
               {
@@ -2043,7 +2043,6 @@ export class WorkerService implements OnModuleInit {
               },
               { session, new: true },
             );
-          console.log('newWithdrawalRequest', newWithdrawalRequest);
           try {
             const dataCurrency = await this.dataServices.exchangeRate.findOne(
               {
@@ -2054,7 +2053,6 @@ export class WorkerService implements OnModuleInit {
               { _id: 0, contractAddress: 1, exchangeRate: 1 },
             );
             const tokenUsdPrice = dataCurrency?.exchangeRate || 0;
-            console.log('tokenUsdPrice', tokenUsdPrice);
             await this.dataServices.withdrawalRequest.findOneAndUpdate(
               {
                 requestId: withdrawalRequestDetail.requestId,
@@ -2066,7 +2064,6 @@ export class WorkerService implements OnModuleInit {
               { session },
             );
           } catch (error) {
-            console.log('withdrawalRequest: ', error);
             await this.dataServices.withdrawalRequest.findOneAndUpdate(
               {
                 requestId: withdrawalRequestDetail.requestId,

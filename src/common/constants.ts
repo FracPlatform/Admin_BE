@@ -57,7 +57,7 @@ export const TIME_WAIT_RETRY = 300;
 
 export const BlockChain = {
   Network: {
-    BSC: [80002, 137],
+    BSC: [50, 51],
     ETH: [1, 3, 4, 5, 42, 11155111],
   },
 };
@@ -134,16 +134,16 @@ export const CONTRACT_EVENTS = {
 };
 
 export enum CHAINID {
-  POLYGON_MAINNET = 137,
-  POLYGON_TESTNET = 80002,
+  POLYGON_MAINNET = 50,
+  POLYGON_TESTNET = 51,
 }
 
 export enum CVS_NAME {
-  WHITELIST = '[iGold]_IAOwhitelist_',
-  IAO_EVENT = '[iGold]_IAOeventlist_',
-  IAO_REVENUE = '[iGold]_IAOrevenuelist_',
-  AFFILIATE_DASHBOARD = '[iGold]_AffiliateLineEarning_',
-  AFFILIATE_EARNING = '[iGold]_AfffiliateBDearning_',
+  WHITELIST = '[Frac]_IAOwhitelist_',
+  IAO_EVENT = '[Frac]_IAOeventlist_',
+  IAO_REVENUE = '[Frac]_IAOrevenuelist_',
+  AFFILIATE_DASHBOARD = '[Frac]_AffiliateLineEarning_',
+  AFFILIATE_EARNING = '[Frac]_AfffiliateBDearning_',
 }
 
 export const VAULT_TYPE_BY_ID = {
@@ -152,7 +152,8 @@ export const VAULT_TYPE_BY_ID = {
 };
 
 export const CHAIN_NAME_BY_ID = {
-  80002: 'POLYGON',
+  50: 'XDC',
+  51: 'XDC',
 };
 
 export const ALLOCATION_TYPE_BY_ID = {

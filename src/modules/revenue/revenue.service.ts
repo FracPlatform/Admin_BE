@@ -208,15 +208,15 @@ export class IaoRevenueService {
       {
         $match: {
           isDeleted: false,
-          // $or: [
-          //   {
-          //     status: IAO_EVENT_STATUS.ACTIVE,
-          //   },
-          //   {
-          //     status: IAO_EVENT_STATUS.INACTIVE,
-          //     'revenue.status': REVENUE_STATUS.REJECTED,
-          //   },
-          // ],
+          $or: [
+            {
+              status: IAO_EVENT_STATUS.ACTIVE,
+            },
+            {
+              status: IAO_EVENT_STATUS.INACTIVE,
+              'revenue.status': REVENUE_STATUS.REJECTED,
+            },
+          ],
           onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
         },
       },
@@ -512,44 +512,48 @@ export class IaoRevenueService {
       const mappedListFractorId = listFractor.map(
         (fractor) => fractor.fractorId,
       );
-      agg.push({
-        $match: {
-          $expr: {
-            $in: ['$iaoRequest.ownerId', mappedListFractorId],
+      agg.push(
+        {
+          $lookup: {
+            from: 'IAORequest',
+            localField: 'iaoRequestId',
+            foreignField: 'iaoId',
+            as: 'iaoRequest',
           },
         },
-      });
+        {
+          $unwind: '$iaoRequest',
+        },
+        {
+          $match: {
+            $expr: {
+              $in: ['$iaoRequest.ownerId', mappedListFractorId],
+            },
+          },
+        },
+      );
     }
     agg.push(
       {
         $match: {
           isDeleted: false,
-          // $or: [
-          //   {
-          //     status: IAO_EVENT_STATUS.ACTIVE,
-          //   },
-          //   {
-          //     status: IAO_EVENT_STATUS.INACTIVE,
-          //     'revenue.status': REVENUE_STATUS.REJECTED,
-          //   },
-          // ],
+          $or: [
+            {
+              status: IAO_EVENT_STATUS.ACTIVE,
+            },
+            {
+              status: IAO_EVENT_STATUS.INACTIVE,
+              'revenue.status': REVENUE_STATUS.REJECTED,
+            },
+          ],
           onChainStatus: ON_CHAIN_STATUS.ON_CHAIN,
         },
       },
       {
         $lookup: {
           from: 'Whitelist',
-          let: { id: '$iaoEventId' },
-          pipeline: [
-            {
-              $match: {
-                deleted: false,
-                $expr: {
-                  $eq: ['$iaoEventId', '$$id'],
-                },
-              },
-            },
-          ],
+          localField: 'iaoEventId',
+          foreignField: 'iaoEventId',
           as: 'whitelist',
         },
       },
@@ -557,14 +561,6 @@ export class IaoRevenueService {
         $unwind: {
           path: '$whitelist',
           preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $lookup: {
-          from: 'Nft',
-          localField: 'iaoRequest.items',
-          foreignField: 'assetId',
-          as: 'nfts',
         },
       },
       {
@@ -718,7 +714,7 @@ export class IaoRevenueService {
         'bdCommission',
         'bdCommissionByFiat',
         'fractor',
-        'assignedBD',
+        'assignBD',
         'finalizedOn',
         'finalizedBy',
       ],

@@ -21,6 +21,7 @@ export class IpfsPinataCloud implements IIPFS {
     if (response.status === 200) {
       return response.data.IpfsHash;
     } else {
+      console.log('upload(): response = ', response);
       throw new Error(response.statusText);
     }
   }

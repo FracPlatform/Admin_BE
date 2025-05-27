@@ -32,25 +32,6 @@ export class GasWalletService {
         });
         return result[0].walletAddress;
       } else {
-        // if exist private key in env, update hash key
-        if (process.env.PRIVATE_KEY_GAS_WALLET_IAO || process.env.PRIVATE_KEY_GAS_WALLET_DEX) {
-          let privateKey = process.env.PRIVATE_KEY_GAS_WALLET_IAO;
-          if (payload.type === WALLET_TYPE.DEX) {
-            privateKey = process.env.PRIVATE_KEY_GAS_WALLET_DEX;
-          }
-          const wallet = await this.dataService.gasWalletModel.findOneAndUpdate(
-            {
-              chain: network,
-              type: payload.type,
-              walletAddress: gasWallet.walletAddress,
-            },
-            {
-              hashKey: await AwsUtils.encrypt(privateKey),
-            },
-            { new: true },
-          );
-          return wallet.walletAddress;
-        }
         const wallet = await this.dataService.gasWalletModel.findOneAndUpdate(
           {
             chain: network,
@@ -78,8 +59,6 @@ export class GasWalletService {
 
     const wallet1 = wallet.find((w) => w.walletType === WALLET_TYPE.IAO);
     const wallet2 = wallet.find((w) => w.walletType === WALLET_TYPE.DEX);
-
-    console.log('wallet1', await AwsUtils.decrypt(wallet1.hashKey), 'wallet2', await AwsUtils.decrypt(wallet2.hashKey));
 
     const balance1BSC = await web3Gateway.getBalance(wallet1.walletAddress);
     const balance2BSC = await web3Gateway.getBalance(wallet2.walletAddress);

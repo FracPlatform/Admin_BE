@@ -694,6 +694,7 @@ export class IaoRequestService {
         assetId: { $in: itemIds },
         inIaoEventOnChain: false,
         status: { $in: [NFT_STATUS.MINTED, NFT_STATUS.DRAFT] },
+        deleted: false,
       });
       if (nfts.length > 0) {
         for (const item of iaos[0].items) {

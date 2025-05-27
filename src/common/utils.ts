@@ -395,7 +395,7 @@ export class Utils {
   public static async getCurrentPriceFromContract(contractAddress) {
     let currentPrice = {};
     const BASE_COINGECKO_URL =
-      'https://api.coingecko.com/api/v3/simple/token_price/polygon-pos';
+      'https://api.coingecko.com/api/v3/simple/token_price/binance-smart-chain';
     try {
       const response = await axios.get(
         `${BASE_COINGECKO_URL}?contract_addresses=${contractAddress}&vs_currencies=usd`,
